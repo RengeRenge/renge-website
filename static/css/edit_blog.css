@@ -1,0 +1,111 @@
+
+.editorWapper {
+    margin: 0px 0px;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    overflow: hidden;
+}
+
+.editorTitleInput {
+    margin-top: 40px;
+    margin-bottom: 40px;
+    width: 100%;
+    height: 40px;
+    line-height: 25px;
+    font-size: 20px;
+    border: 0;
+    background: rgba(0, 0, 0, 0);
+    font-weight: bold;
+    text-align: left;
+}
+
+.editorTitleInput:focus {
+    outline-style: none;
+}
+
+.editorTitleDiv {
+    margin-top: 40px;
+    margin-bottom: 10px;
+    width: 100%;
+    min-height: 40px;
+    line-height: 40px;
+    font-size: 30px;
+    border: 0;
+    background: rgba(0, 0, 0, 0);
+    font-weight: bold;
+    text-align: left;
+}
+
+.timeLabel {
+    width: 100%;
+    min-height: 30px;
+    line-height: 25px;
+    font-size: 13px;
+    border: 0;
+    background: rgba(0, 0, 0, 0);
+    text-align: left;
+    font-family: "SF Pro Text", "SF Pro Icons", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+}
+
+.separator {
+    height: 1px;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.privacyWrapper {
+    /*margin-top: 20px;*/
+    height: 30px;
+    text-align: center;
+    display: flex;
+    align-content: center;
+    /*justify-content: center;*/
+    flex-direction: row;
+    align-items: center;
+    font-size: 14px;
+    font-family: 微软雅黑, 宋体, Arial, Helvetica, Verdana, sans-serif;
+}
+
+.groupButton {
+    font-weight: 700;
+    padding: 1em;
+}
+
+.groupButton:hover {
+    cursor: pointer;
+}
+
+.publish_button {
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 44px;
+
+    text-decoration: none;
+
+    background: dimgray;
+    color: #f2f2f2;
+
+    padding: 5px 30px 5px 30px;
+    font-size: 16px;
+    font-family: 微软雅黑, 宋体, Arial, Helvetica, Verdana, sans-serif;
+    font-weight: bold;
+    /*border-radius: 3px;*/
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+    text-align: center;
+
+    -webkit-transition: all linear 0.30s;
+    -moz-transition: all linear 0.30s;
+    transition: all linear 0.30s;
+
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.publish_button:hover {
+    background: gray;
+    cursor: pointer;
+}

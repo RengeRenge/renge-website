@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<link href="/static/css/rg_base.css" rel="stylesheet" type="text/css">
+<link href="/static/css/dragEvent.css" rel="stylesheet" type="text/css">
+<link href="/static/color/spectrum.min.css" rel="stylesheet" type="text/css">
+
+<script type="text/javascript" src="/static/jquery/dist/jquery.min.js"></script>
+<!--bg-->
+<script type="text/javascript" src="/static/js/rg_base.js"></script>
+<script type="text/javascript" src="/static/js/bgLayout.js"></script>
+
+<script type="text/javascript" src="/static/js/dragEvent.js"></script>
+<script type="text/javascript" src="/static/color/spectrum.min.js"></script>
+
+<script type="text/javascript" src="/static/js/login.js"></script>
+<style>
+    .wrapperFlex {
+        width: 30%;
+        min-width: 64px;
+    }
+
+    .wrapperFull {
+        padding: 8px 20px 8px 20px;
+    }
+
+    .rgButton:hover {
+        cursor: auto;
+    }
+
+    .rgAvatar {
+        width: 64px;
+        height: 64px;
+        cursor: pointer;
+        border-radius: 50%;
+        /*background-color: #6c7f93;*/
+        background-size: cover;
+        background-position: center center;
+        background-repeat: no-repeat;
+        text-align: center;
+        /*font-size: 10px;*/
+        /*font-family: "SF Pro Text", "SF Pro Icons", "Helvetica Neue", "Helvetica", "Arial", sans-serif;*/
+    }
+
+    .tagWrapper {
+        overflow: initial;
+        display: inline;
+        border: 1px solid;
+        padding: 0 5px;
+        margin: 5px 5px;
+        min-height: 24px;
+        font-size: 18px;
+        text-align: center;
+        font-family: unset;
+    }
+    .tagCover {
+        display: block;
+        border: 0;
+        position: relative;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        min-height: 24px;
+        width: 100%;
+        z-index: -10;
+    }
+
+    .toolBarWrapper.titleWrapper {
+        margin-bottom: 20px;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .toolBarItem:hover {
+        cursor: auto;
+        background-color: rgba(100, 100, 100, 0.2);
+    }
+
+    .sp-replacer {
+        float: left;
+        margin-top: 5px;
+        margin-bottom: 5px;
+        margin-left: 25px;
+    }
+
+    input[type=range] {
+        -webkit-appearance: none;
+        width: 180px;
+        border-radius: 10px; /*这个属性设置使填充进度条时的图形为圆角*/
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+    }
+
+    input[type=range]::-webkit-slider-runnable-track {
+        height: 10px;
+        border-radius: 5px; /*将轨道设为圆角的*/
+        box-shadow: 0 1px 1px #def3f8, inset 0 .125em .125em #0d1112; /*轨道内置阴影效果*/
+    }
+
+    input[type=range]:focus {
+        outline: none;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 18px;
+        width: 18px;
+        margin-top: -5px; /*使滑块超出轨道部分的偏移量相等*/
+        background: #ffffff;
+        border-radius: 50%; /*外观设置为圆形*/
+        border: solid 0.125em rgba(205, 224, 230, 0.5); /*设置边框*/
+        box-shadow: 0 .125em .125em #0e0e0e; /*添加底部阴影*/
+    }
+
+</style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=1.0, user-scalable=yes"/>
+    <title>设置</title>
+</head>
+<body>
+<div class="boprt a-control" style="top: 20px; opacity: 1;">
+    <ul>
+        <li>
+            <form><a onclick="save()" class="boprt05" target="_top"><em>保存</em></a></form>
+        </li>
+        <li>
+            <form><a href="/" class="boprt01" target="_top"><em>主页</em></a></form>
+        </li>
+    </ul>
+</div>
+
+<div class="page_wrapper">
+    <input style="position: absolute; margin-top: 20px;" id="marginTop" type="range" value="{%if user.style.marginTop %}{{user.style.marginTop}}{% else %}0{% endif%}" max="2000" oninput="adjustHeight(this)">
+    <div class="page_wrapper titleWrapper" style="padding: 0">
+        <div class="page_wrapper titleWrapper" style="padding-left: 5px;">
+            <h1 class="auto_text pageTitle editEnableWrapper"
+                contenteditable="{% if home %}true{%else%}false{%endif%}"
+                id='title'
+                onblur="editName(this)"
+                onfocus="recordName(this)"
+                placeholder="博客标题">
+                {{-user.title-}}
+            </h1>
+            <h3 class="auto_text pageTitle editEnableWrapper"
+                contenteditable="{% if home %}true{%else%}false{%endif%}"
+                id='desc'
+                onblur="editDesc(this)"
+                onfocus="recordDesc(this)"
+                placeholder="博客描述">
+                {{-user.desc-}}
+            </h3>
+        </div>
+        <!--<div style='padding-left: 4px;'>-->
+
+            <!--<div style="margin-right: 10px; margin-bottom: 10px; display: inline">-->
+                <!--<input id='colorpicker'/>-->
+            <!--</div>-->
+
+            <!--<div style="color:#000; margin-top: 10px">-->
+                <!--<input id="marginBottom" type="range" value=-->
+                        <!--"{%-if user.style.marginBottom and user.style.marginBottom!='onepage' -%}-->
+                            <!--{{user.style.marginBottom}}-->
+                        <!--{%- else -%}-->
+                            <!--0-->
+                        <!--{%- endif-%}"-->
+                            <!--{%-if user.style.marginBottom and user.style.marginBottom=='onepage' -%}-->
+                       <!--disabled="disabled"-->
+                            <!--{%-endif-%}-->
+                       <!--max="2000" oninput="adjustHeight(this)">-->
+                <!--<label><input id="onepage" type="checkbox"-->
+                              <!--{%-if user.style.marginBottom=='onepage' -%}-->
+                    <!--checked="checked"-->
+                              <!--{%-endif-%}-->
+                    <!--onclick="adjustHeight(this)"/>one page</label>-->
+            <!--</div>-->
+        <!--</div>-->
+    </div>
+
+    <div style="margin-bottom: 20px;" class="toolBarWrapper">
+            <!--<a class="toolBarItem">颜色</a>-->
+            <!--<div class="toolBarItem">-->
+                <input id='colorpicker'/>
+            <!--</div>-->
+
+            <div style="margin-left: 10px" class="toolBarItem">
+                <input id="marginBottom" type="range" value=
+                        "{%-if user.style.marginBottom and user.style.marginBottom!='onepage' -%}
+                            {{user.style.marginBottom}}
+                        {%- else -%}
+                            0
+                        {%- endif-%}"
+                            {%-if user.style.marginBottom and user.style.marginBottom=='onepage' -%}
+                       disabled="disabled"
+                            {%-endif-%}
+                       max="2000" oninput="adjustHeight(this)">
+                <label style="margin-left: 10px;cursor: pointer;" for="onepage" >
+                    <input id="onepage" type="checkbox"
+                           {%-if user.style.marginBottom=='onepage' -%}
+                           checked="checked"
+                           {%-endif-%}
+                           onclick="adjustHeight(this)"
+                    /> 一整页</label>
+            </div>
+
+            <!--<a class="toolBarItem"><input id="onepage" type="checkbox"-->
+                                          <!--{%-if user.style.marginBottom=='onepage' -%}-->
+                                          <!--checked="checked"-->
+                                          <!--{%-endif-%}-->
+                                          <!--onclick="adjustHeight(this)"/>一整页</a>-->
+
+            <!--<a class="toolBarItem toolBarItem-selected">日志</a>-->
+            <!--<a class="toolBarItem">相册</a>-->
+            <!--<a class="toolBarItem">归档</a>-->
+            <!--<a href="//user/friends" class="toolBarItem">好友</a>-->
+            <!--<a class="toolBarItem">导入</a>-->
+        </div>
+
+    <div class="wrapperBg">
+        <!---->
+        <h2 class="auto_text wrapperItem" style="padding-top: 50px">博客设置</h2>
+        <!---->
+        <div class="wrapperLR wrapperItem">
+            <div class="wrapperFlex wrapperXYCenter">
+                <div id="icon" class="rgAvatar wrapperXYCenter" {% if user.icon %} style="background-image: url({{'"'+user.icon|safe+'"'}})" {% endif %}>
+            </div>
+        </div>
+        <div class="wrapperFull wrapperYCenter wrapperItem">
+            <div class="auto_text" style="font-size: 20px;">昵称</div>
+            <div id="nick" onblur="nickOnblur(this)" class="auto_text" style="font-size: 20px;margin-bottom: 10px;margin-top: 10px" contenteditable="true">
+                {{user.nickname}}
+            </div>
+        </div>
+    </div>
+    <!---->
+    <div class="wrapperLR wrapperItem">
+        <div class="wrapperFlex wrapperXYCenter">
+            <div>博客背景</div>
+        </div>
+        <div class="wrapperFull">
+            <div id="bgBox" class="rgButton rgIcon"
+                 style="max-width: 120px;background-color: rgba(20,20,20,0.5); border: 0;">
+            </div>
+        </div>
+    </div>
+    <div class="wrapperLR wrapperItem">
+        <div class="wrapperFlex wrapperXYCenter">
+            <div>Tag</div>
+        </div>
+        <div class="wrapperFull">
+            <div class="auto_text rich" id="tag" style="font-size: 20px;margin-bottom: 10px;margin-top: 10px"
+                 contenteditable="true" onblur="configTags(this)">{{user.tag}}
+            </div>
+        </div>
+    </div>
+    <!---->
+    <div class="wrapperLR wrapperItem">
+        <div class="wrapperFull wrapperXCenter">
+            <div class="rgButton" style="padding: 5px 30px;" onclick="logout(function(result) {
+                if (result) {
+                    window.location.href = '/'
+                } else {
+                    alert('登出失败 请重试')
+                }
+            })">退出登陆</div>
+        </div>
+    </div>
+    <!---->
+</div>
+</div>
+
+<script>
+
+    this.ubg = "{{user.bgImage}}"
+    this.style = {{user.style|tojson}}
+
+    let bgFile
+    let iconFile
+    let nick
+    let rgba
+    let marginBottom
+    let marginTop
+
+    bindBox(
+        'bgBox',
+        'hina_bg',
+        null,
+        function () {
+            return true
+        },
+        function (e, file) {
+            bgFile = file
+        })
+
+    let icon = $('.rgAvatar')
+    bindBox(
+        'icon',
+        'rgAvatar',
+        '设置头像',
+        function () {
+            return icon.css('background-image') == "none"
+        },
+        function (e, file) {
+            iconFile = file
+        })
+
+    $(function () {
+        initTagsString(document.getElementById('tag').innerText)
+    })
+
+    function initTagsString(tags) {
+        $('#tag').html(nodeH5WithContent(tags) + placeHolderTag())
+        $("#placeHolderTag").bind("click", placeHolderOnfocus);
+    }
+
+    preventEnterEnable(true, function (e) {
+        if (e.target.id == 'nick') {
+            e.target.blur()
+            e.preventDefault()
+        }
+        if (e.target.id == 'title' || e.target.id == 'desc') {
+            e.target.blur()
+            e.preventDefault()
+        }
+    })
+
+    onSceenHeightChanged(function (h, pageLeft) {
+        // $('#marginTop').attr('max', ''+ h)
+        // configBottomMax()
+    })
+
+    function nickOnblur(e) {
+        nick = e.innerText.trim()
+    }
+
+    function configTags(target) {
+        let innerH5 = ''
+        for (let node of target.childNodes) {
+            if (node.id == 'placeHolderTag' && node.innerText == '+') {
+                continue
+            }
+            if (node.nodeType == 3 && node.textContent && node.textContent.length) { // text
+                innerH5 += nodeH5WithContent(node.textContent)
+            } else if (node.innerText) {
+                innerH5 += nodeH5WithContent(node.innerText)
+            }
+        }
+
+        innerH5 += placeHolderTag()
+        target.innerHTML = innerH5
+
+        $("#placeHolderTag").bind("click", placeHolderOnfocus);
+    }
+
+    function getTagString(target) {
+        let str = ''
+        for (let node of target.childNodes) {
+            if (node.id == 'placeHolderTag' && node.innerText == '+') {
+                continue
+            }
+            let text
+            if (node.nodeType == 3 && node.textContent && node.textContent.length) { // text
+                text = node.textContent.trim()
+            } else if (node.innerText) {
+                text = node.innerText.trim()
+            }
+            if (text && text.length) {
+                if (str.length)
+                    str += ';'
+                str += text
+            }
+        }
+        return str
+    }
+
+    function nodeH5WithContent(content) {
+        let tags = content.split(';')
+        if (tags.length >= 2) {
+            let innerH5 = ''
+            for (let tag of tags) {
+                innerH5 += nodeH5WithContent(tag)
+            }
+            return innerH5
+        }
+        if (content.trim().length)
+            return "<div class='auto_text toolBarItem tagWrapper wrapperXYCenter'>" + content + "</div>"
+        else
+            return ''
+    }
+
+    function placeHolderTag() {
+        let tag = '<div id="placeHolderTag" contenteditable="true" class="auto_text toolBarItem tagWrapper wrapperXYCenter">+</div>'
+        tag += '<div class="tagCover"></div>'
+        return tag
+    }
+
+    // 编辑框点击事件
+    document.getElementById('tag').onclick = function () {
+        let selection = getSelection()
+        let anchorNode = selection.anchorNode
+        if (anchorNode.className == 'tagCover' || anchorNode.id == 'placeHolderTag' || anchorNode.id == 'tag') {
+            placeHolderOnfocus()
+        }
+    }
+
+    // 编辑框按键弹起事件
+    document.getElementById('tag').onkeyup = function (e) {
+        let target = e.target
+        if (e.code == 'Backspace' || e.keyCode == 8 || e.keyCode == 91 || e.key==' ') {
+            formatTags(target, e)
+        } else if (e.keyCode == 27) {
+            target.blur()
+        } else if ((e.key == ';' || e.keyCode == 13)) { // 分号 回车
+            e.preventDefault()
+            configTags(e.target)
+            placeHolderOnfocus()
+        }
+    }
+
+    function formatTags(target, e) {
+        var innerHTML = target.innerHTML.replace(/<br>/g, "").trim()
+        if (!innerHTML.length) {
+            e.preventDefault()
+            configTags(target)
+            placeHolderOnfocus()
+            return
+        }
+
+        for (node of target.childNodes) {
+            if (node.nodeName == 'BR') {
+
+                target.innerHTML = innerHTML
+
+                if (target.childNodes.length <= 1 && target.lastChild.className == 'tagCover') {
+                    e.preventDefault()
+                    configTags(target)
+                } else {
+                    $("#placeHolderTag").bind("click", placeHolderOnfocus)
+                }
+                placeHolderOnfocus()
+                break;
+            } else if (node.nodeName == 'DIV' && node.classList.length == 0) {
+                node.className = 'auto_text toolBarItem tagWrapper wrapperXYCenter'
+                node.innerHTML = node.innerText
+                placeHolderOnfocus()
+            }
+        }
+    }
+
+    function placeHolderOnfocus() {
+
+        let node = $("#placeHolderTag")
+        node.empty()
+        node = node[0]
+
+        if (!node) {
+            let childNodes = document.getElementById('tag').childNodes
+            let tagCover
+            for (var i = childNodes.length - 1; i >= 0; i--) {
+                if (childNodes[i].className != 'tagCover') {
+                    node = childNodes[i]
+                    break
+                } else {
+                    tagCover = childNodes[i]
+                }
+            }
+            if (!node) {
+                node = tagCover
+            }
+        }
+
+        node.focus()
+
+        let selection = getSelection();
+        var range = document.createRange()
+        // 光标对象的范围界定为新建的表情节点
+        range.selectNodeContents(node)
+        // 光标位置定位在表情节点的最大长度
+        if (node.innerText.length)
+            range.setStart(node, 1)
+        else
+            range.setStart(node, 0)
+        // range.setStartAfter(node)
+        // 使光标开始和光标结束重叠
+        range.collapse(true)
+        // 清除选定对象的所有光标对象
+        selection.removeAllRanges()
+        // 插入新的光标对象
+        selection.addRange(range)
+    }
+    let color = $('.titleWrapper').css('color')
+    let ucolor = "{{user.style.mainColor}}"
+    $("#colorpicker").spectrum({
+        allowEmpty: true,
+        color: ucolor.length ? ucolor : color,
+        showInput: true,
+        containerClassName: "full-spectrum",
+        showInitial: true,
+        showPalette: !isPhoneView(),
+        showSelectionPalette: true,
+        showAlpha: true,
+        maxPaletteSize: 10,
+        preferredFormat: "hex",
+        // localStorageKey: "spectrum.demo",
+        move: function (color) {
+            updateBorders(color, false);
+        },
+        show: function () {
+
+        },
+        beforeShow: function () {
+
+        },
+        hide: function (color) {
+            updateBorders(color, true);
+        },
+
+        palette: [
+            ["rgb(0, 0, 0)", "rgb(67, 67, 67)", "rgb(102, 102, 102)", /*"rgb(153, 153, 153)","rgb(183, 183, 183)",*/
+                "rgb(204, 204, 204)", "rgb(217, 217, 217)", /*"rgb(239, 239, 239)", "rgb(243, 243, 243)",*/ "rgb(255, 255, 255)", color],
+            ["rgb(152, 0, 0)", "rgb(255, 0, 0)", "rgb(255, 153, 0)", "rgb(255, 255, 0)", "rgb(0, 255, 0)",
+                "rgb(0, 255, 255)", "rgb(74, 134, 232)", "rgb(0, 0, 255)", "rgb(153, 0, 255)", "rgb(255, 0, 255)"],
+            ["rgb(230, 184, 175)", "rgb(244, 204, 204)", "rgb(252, 229, 205)", "rgb(255, 242, 204)", "rgb(217, 234, 211)",
+                "rgb(208, 224, 227)", "rgb(201, 218, 248)", "rgb(207, 226, 243)", "rgb(217, 210, 233)", "rgb(234, 209, 220)",
+                "rgb(221, 126, 107)", "rgb(234, 153, 153)", "rgb(249, 203, 156)", "rgb(255, 229, 153)", "rgb(182, 215, 168)",
+                "rgb(162, 196, 201)", "rgb(164, 194, 244)", "rgb(159, 197, 232)", "rgb(180, 167, 214)", "rgb(213, 166, 189)",
+                "rgb(204, 65, 37)", "rgb(224, 102, 102)", "rgb(246, 178, 107)", "rgb(255, 217, 102)", "rgb(147, 196, 125)",
+                "rgb(118, 165, 175)", "rgb(109, 158, 235)", "rgb(111, 168, 220)", "rgb(142, 124, 195)", "rgb(194, 123, 160)",
+                "rgb(166, 28, 0)", "rgb(204, 0, 0)", "rgb(230, 145, 56)", "rgb(241, 194, 50)", "rgb(106, 168, 79)",
+                "rgb(69, 129, 142)", "rgb(60, 120, 216)", "rgb(61, 133, 198)", "rgb(103, 78, 167)", "rgb(166, 77, 121)",
+                /*"rgb(133, 32, 12)", "rgb(153, 0, 0)", "rgb(180, 95, 6)", "rgb(191, 144, 0)", "rgb(56, 118, 29)",
+                "rgb(19, 79, 92)", "rgb(17, 85, 204)", "rgb(11, 83, 148)", "rgb(53, 28, 117)", "rgb(116, 27, 71)",*/
+                "rgb(91, 15, 0)", "rgb(102, 0, 0)", "rgb(120, 63, 4)", "rgb(127, 96, 0)", "rgb(39, 78, 19)",
+                "rgb(12, 52, 61)", "rgb(28, 69, 135)", "rgb(7, 55, 99)", "rgb(32, 18, 77)", "rgb(76, 17, 48)"]
+        ]
+    })
+
+    function updateBorders(color, record) {
+        var rgbString = "";
+        if (color) {
+            // color.toRgbString()
+            rgbString = color.toRgbString()
+            if (record)
+                rgba = rgbString
+        }
+        $(".pageTitle").css("color", rgbString);
+    }
+
+    function adjustHeight(e) {
+        if (e.id == 'marginBottom') {
+            marginBottom = e.value
+            this.style.marginBottom = marginBottom
+            configMarginBottom()
+        } else if (e.id == 'onepage'){
+            if (!marginBottom) marginBottom = this.style.marginBottom
+
+            if (e.checked) {
+                this.style.marginBottom = 'onepage'
+                $('#marginBottom').attr('disabled', 'disabled')
+
+                let titleHeight = $(".titleWrapper").height()
+                let bottom = getCurrentTitleMarginBottom(titleHeight)
+
+                let top = $(".toolBarWrapper").offset().top
+
+                $(".titleWrapper").animate({marginBottom: bottom}, 500, function () {
+                    // configMarginBottom()
+                    $("html,body").animate({scrollTop: $(".toolBarWrapper").offset().top - top}, 500);
+                })
+            } else {
+                marginBottom = $('#marginBottom')[0].value
+                this.style.marginBottom = marginBottom
+                $('#marginBottom').attr('disabled', null)
+
+                let titleHeight = $(".titleWrapper").height()
+                let bottom = getCurrentTitleMarginBottom(titleHeight)
+
+
+                $("html,body").animate({scrollTop: 0}, 500, function () {
+                    // configMarginBottom()
+                    $(".titleWrapper").animate({marginBottom: bottom}, 500)
+                })
+            }
+
+        } else if (e.id == 'marginTop'){
+            marginTop = e.value
+            $('.titleWrapper').css('margin-top', e.value + 'px')
+        }
+    }
+
+    function save() {
+        let tags = getTagString($('#tag')[0])
+
+        var formData = new FormData();
+
+        if (iconFile)
+            formData.append('icon', iconFile, iconFile.filename)
+
+        if (bgFile)
+            formData.append('background', bgFile, bgFile.filename)
+
+        let json = this.style
+        if (rgba && rgba.length)
+            json['mainColor'] = rgba
+
+        if ($('#onepage').is(':checked')) {
+            json['marginBottom'] = 'onepage'
+        } else if (marginBottom && marginBottom.length) {
+            json['marginBottom'] = marginBottom
+        }
+
+        if (marginTop && marginTop.length) {
+            json['marginTop'] = marginTop
+        }
+
+        formData.append('style', JSON.stringify(json))
+
+        formData.append('tag', tags)
+
+        if (nick && nick.length)
+            formData.append('nickname', nick)
+
+        $.ajax({
+            url: '/user/setInfo',
+            processData: false,
+            contentType: false,
+            type: "POST",
+            data: formData,
+            success: function (res) {
+                if (res.code == 1000) {
+                    alert('修改成功')
+                    // window.location.href = '/'
+                }
+            },
+            error: function () {
+
+            }
+        })
+    }
+</script>
+</body>
+</html>

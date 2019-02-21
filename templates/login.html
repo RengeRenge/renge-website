@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<link href="/static/css/rg_base.css" rel="stylesheet" type="text/css">
+<link href="/static/css/login.css" rel="stylesheet" type="text/css">
+<link href="/static/css/weui-for-work.min.css" rel="stylesheet" type="text/css">
+
+<script type="text/javascript" src="/static/js/login.js"></script>
+<script type="text/javascript" src="/static/jquery/dist/jquery.min.js"></script>
+<script type="text/javascript" src="/static/js/rg_base.js"></script>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=1.0, user-scalable=yes"/>
+    <title>登陆</title>
+</head>
+<body>
+<div class="hina_bg"></div>
+<div class="page_wrapper">
+    <div class="page_center_wrapper">
+        <div style="width: 75%; min-width: 120px; max-width: 260px; background-color: rgba(0,0,0,0);">
+
+            <div style="font-size: 35px; color: azure;">BLOG</div>
+
+            <div class="weui-cells" style="border-radius: 8px">
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">
+                        <input class="weui-input login_input" placeholder="用户名" id="user" type="text"/>
+                    </div>
+                    <div class="weui-cell__ft">
+                        <div class="login_button" id="login_btn_user"></div>
+                    </div>
+                </div>
+
+                <div class="weui-cell" id="pwd_wapper">
+                    <div class="weui-cell__bd">
+                        <input class="weui-input login_input" placeholder="密码" id="pwd" type="password"/>
+                    </div>
+                    <div class="weui-cell__ft">
+                        <div class="login_button" id="login_btn_pwd"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="login_tip" class="login_tip"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    preventEnterEnable(true, function (e) {
+        if (e.target.id === 'user') {
+            check_user()
+        } else if (e.target.id === 'pwd') {
+            login_user()
+        }
+    })
+
+    var that = this
+    $(function () {
+
+        that.registMode = false
+
+        login_hidden('#pwd_wapper', true, 0, null)
+
+        $('#login_btn_user').click(check_user)
+        $('#login_btn_pwd').click(login_user)
+
+        $("#user").on("input", function (e) {
+            if (that.lastvalue === e.target.value) {
+                return
+            }
+            that.lastvalue = e.target.value
+
+            $('#login_btn_user').removeClass('weui-loading')
+            $('#login_btn_user').addClass('login_button')
+
+            $('#login_btn_pwd').removeClass('weui-loading')
+            $('#login_btn_pwd').addClass('login_button')
+
+
+            login_hidden('#pwd_wapper', true, 200, null)
+            show_tip('')
+            that.registMode = false
+        });
+    })
+
+    function check_user() {
+
+        let username = $('#user').val()
+        if (!username || username.length <= 0) {
+            show_tip('请输入用户名️')
+            return
+        }
+
+        $('#login_btn_user').removeClass('login_button')
+        $('#login_btn_user').addClass('weui-loading')
+
+        check(username, function (data) {
+
+            $('#login_btn_user').removeClass('weui-loading')
+
+            if (data.code == 1000) {
+
+                login_hidden('#login_btn_pwd', true, 0, null)
+
+                login_hidden('#pwd_wapper', false, 200, function () {
+                    $('#pwd').focus()
+                    login_hidden('#login_btn_pwd', false, 80, null)
+                })
+
+            } else if (data.code == 1001) {
+
+                login_hidden('#login_btn_pwd', true, 0, null)
+
+                login_hidden('#pwd_wapper', false, 200, function () {
+                    $('#pwd').focus()
+                    login_hidden('#login_btn_pwd', false, 80, function () {
+                        show_tip('未注册 请输入密码完成注册🙋🏿‍♀️')
+                        that.registMode = true
+                    })
+                })
+            }
+        })
+    }
+
+    function login_user() {
+        $('#login_btn_pwd').removeClass('login_button')
+        $('#login_btn_pwd').addClass('weui-loading')
+
+        if (that.registMode) {
+            regist($('#user').val(), $('#pwd').val(), function (data) {
+
+                $('#login_btn_pwd').removeClass('weui-loading')
+
+                code = data.code
+                if (code == 1000) {
+                    // login ok, redirt
+                    window.location.href = 'blog';
+                } else if (code == 1001) {
+                    $('#login_btn_pwd').addClass('login_button')
+                    show_tip('密码不正确🙆‍♀️')
+                }
+            })
+        } else {
+            login($('#user').val(), $('#pwd').val(), function (data) {
+
+                $('#login_btn_pwd').removeClass('weui-loading')
+
+                code = data.code
+                if (code == 1000) {
+                    // login ok, redirt
+                    window.location.href = 'blog';
+                } else if (code == 1001) {
+                    $('#login_btn_pwd').addClass('login_button')
+                    show_tip('密码不正确🙆‍♀️')
+                }
+            })
+        }
+    }
+
+    function login_hidden(id, hide, time, callback) {
+        if (hide) {
+            $(id).hide(time, callback)
+        } else {
+            $(id).show(time, callback)
+        }
+    }
+
+    function show_tip(tip) {
+        $('#login_tip').html(tip)
+    }
+</script>
+</body>
+</html>

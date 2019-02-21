@@ -1,0 +1,23 @@
+.fileInputP {
+    display: inline-block;
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+}
+
+.fileInput:hover {
+    cursor: pointer;
+}
+
+.vm {
+    vertical-align: middle;
+}
+
+.fileInput {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+}
