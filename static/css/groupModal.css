@@ -1,0 +1,219 @@
+.fullScreen {
+    background-color: rgba(255, 255, 255, 0.6);
+}
+
+.disblur {
+    -webkit-filter: blur(0px);
+    -moz-filter: blur(0px);
+    -ms-filter: blur(0px);
+    filter: blur(0px);
+    overflow: hidden;
+}
+
+.blur {
+    -webkit-filter: blur(10px);
+    -moz-filter: blur(10px);
+    -ms-filter: blur(10px);
+    filter: blur(10px);
+    overflow: hidden;
+}
+
+#groupWrapper {
+    width: auto;
+    height: auto;
+    max-width: 80%;
+    max-height: 70%;
+
+    margin: auto;
+    position: absolute;
+    top: 15%;
+    bottom: 15%;
+    left: 0;
+    right: 0;
+    overflow: auto;
+    /*text-align: center;*/
+}
+
+#groupWrapper::-webkit-scrollbar {
+    width: 10px;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+#groupWrapper::-webkit-scrollbar-thumb {
+    border-radius: 30px;
+    /*-webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);*/
+    background-color: gray;
+    text-align: center;
+}
+
+.toolIcon {
+    width: 5%;
+    max-width: 30px;
+    min-width: 18px;
+    position: fixed;
+    right: 70px;
+    margin-top: 20px;
+}
+
+.toolIconPoint {
+
+}
+
+.toolIconPoint:hover {
+    cursor: pointer;
+}
+
+.groupItem {
+    text-align: center;
+    color: black;
+    display: inline-block;
+    width: 38%;
+    margin: 5%;
+    opacity: 0;
+}
+
+.RGTransition {
+    -webkit-transition: all linear 0.20s;
+    -moz-transition: all linear 0.20s;
+    transition: all linear 0.20s;
+    -webkit-backface-visibility: hidden;
+    -moz-backface-visibility: hidden;
+    -ms-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+.hina_bg {
+    -webkit-transition: all linear 0.20s;
+    -moz-transition: all linear 0.20s;
+    transition: all linear 0.20s;
+    -webkit-backface-visibility: hidden;
+    -moz-backface-visibility: hidden;
+    -ms-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+.groupItemBorder {
+    border: solid grey 1px;
+    border-radius: 5px;
+}
+
+.groupItem:hover {
+    cursor: pointer;
+}
+
+.modal-wrapper {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 300px;
+    margin: 0 auto;
+    word-break: break-all;
+    line-height: 22px;
+    z-index: 1011;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .16);
+    border-radius: 4px;
+    transition: box-shadow .2s linear;
+}
+
+.modal-wrapper .modal-body {
+    padding: 30px 60px;
+    font-size: 14px;
+    text-align: center;
+    vertical-align: middle;
+    min-width: 9em;
+}
+
+.modal-wrapper .modal-header {
+    position: relative;
+    font: 12px/1.11 Microsoft Yahei, Tahoma, Arial, Helvetica, STHeiti;
+}
+
+.icon-ic_close:before {
+    content: "\e630";
+}
+
+.modal-wrapper .modal-header-close {
+    position: absolute;
+    text-decoration: none;
+    top: 13px;
+    right: 12px;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    cursor: pointer;
+    font-size: 16px;
+    text-align: center;
+}
+
+.iconfont {
+    font-family: "iconfont" !important;
+    font-size: 16px;
+    font-style: normal;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.modal-wrapper .modal-title {
+    display: block;
+    font-size: 16px;
+    line-height: 48px;
+    padding: 0 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+.be-input {
+    position: relative;
+    color: #222;
+    font-size: 14px;
+    border-radius: 4px;
+}
+
+.be-input_inner {
+    display: block;
+    width: 100%;
+    height: 30px;
+    padding: 5px 5px 5px 5px;
+    border-radius: 4px;
+    border: 1px solid #ccd0d7;
+    outline: none;
+    box-sizing: border-box;
+    transition: all .3s ease;
+    font-size: 14px;
+}
+
+.be-switch-container {
+    position: relative;
+    display: inline-block;
+    height: 20px;
+    /*cursor: pointer;*/
+    white-space: nowrap;
+
+    margin-top: 5px;
+}
+
+.be-switch-container input {
+    background-color: black;
+    border: black solid 1px;
+}
+
+.be-switch-label {
+    display: inline-block;
+    line-height: 20px;
+    font-size: 14px;
+    margin-left: 3px;
+    vertical-align: middle;
+    cursor: pointer;
+
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Chrome/Safari/Opera */
+    -khtml-user-select: none; /* Konqueror */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none;
+}
+
+.modal-wrapper .modal-footer {
+    padding: 0 0 30px;
+    text-align: center;
+}

@@ -1,0 +1,572 @@
+img {
+    max-width: 80%;
+    height: auto;
+}
+
+body {
+    margin: 0;
+    font-family: 微软雅黑, 宋体, Arial, Helvetica, Verdana, sans-serif;
+}
+
+.hina_bg {
+    /*margin: 0;*/
+    /*padding: 0;*/
+
+    background-image: url("../image/hina.jpg");
+
+    /* 让背景图基于容器大小伸缩 */
+    background-size: cover;
+
+    /* 背景图垂直、水平均居中 */
+    background-position: center center;
+
+    /* 背景图不平铺 */
+    background-repeat: no-repeat;
+
+    /* 当内容高度大于图片高度时，背景图像的位置相对于viewport固定 */
+    /* ios safari 不支持 */
+    /*background-attachment: fixed;*/
+
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    z-index: -100;
+}
+
+
+.page_wrapper {
+    /*display: flex;*/
+    padding: 10px 14px;
+    /*flex-wrap: wrap;*/
+    /*flex-direction: column;*/
+}
+
+.page_center_wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: center;
+}
+
+.wrapperLR {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.wrapperBg {
+    border-radius: 3px;
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+.wrapperPadding {
+    padding: 10px 20px;
+}
+
+.wrapperXYCenter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wrapperXCenter {
+    display: flex;
+    align-items: center;
+}
+
+.wrapperYCenter {
+    display: flex;
+    justify-content: center;
+}
+
+.wrapperFlex {
+    display: flex;
+    flex-direction: column;
+    /*width: 30%;*/
+    /*min-width: 86px;*/
+}
+
+.wrapperFull {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.wrapperItem {
+    padding: 20px 20px;
+    margin: 10px 0;
+    overflow: hidden;
+    border-radius: 3px;
+}
+
+.wrapperItemBg {
+    background-color: rgba(255, 255, 255, 0.7);
+}
+
+.toolBarWrapper {
+    color: black;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 10px 20px;
+    overflow: hidden;
+    border-radius: 3px;
+}
+
+.toolBarItem {
+    color: black;
+    padding: 10px 15px;
+    margin: 0 5px;
+    overflow: hidden;
+    text-align: center;
+    border-radius: 3px;
+    word-break: break-all;
+    white-space: normal;
+    text-overflow: ellipsis;
+    min-width: 40px;
+    position: relative;
+    float: left;
+    text-decoration: none;
+    font-family: "SF Pro Text", "SF Pro Icons", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+}
+
+.toolBarItem:hover {
+    cursor: pointer;
+    background-color: rgba(100, 100, 100, 0.5);
+}
+
+.toolBarItem-selected {
+    cursor: pointer;
+    background-color: rgba(100, 100, 100, 0.5);
+}
+
+.boprt, .boprt ul, .boprt li, .boprt a, .boprt em {
+    height: 23px;
+    line-height: 23px;
+}
+
+.boprt ul {
+    float: right;
+}
+
+.boprt li {
+    display: inline;
+    float: left;
+    margin: 0 5px 0 0;
+}
+
+.boprt a, .boprt em {
+    float: left;
+    background: url('/static/image/controls.png') no-repeat;
+}
+
+.boprt a {
+    padding: 0 2px 0 0;
+    cursor: pointer;
+    text-decoration: none;
+    background-position: right 0;
+}
+
+.boprt a:hover {
+    text-decoration: none;
+    background-position: right -870px;
+}
+
+.boprt em {
+    padding: 0 5px 0 26px;
+    white-space: nowrap;
+    font-weight: normal;
+    font-style: normal;
+    font-size: 12px;
+    font-family: "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", tahoma, arial, simsun, "宋体";
+}
+
+.boprt em,
+.boprt a:hover em {
+    color: #fff;
+}
+
+.boprt .notxt {
+    width: 24px;
+}
+
+.boprt .notxt em {
+    width: 100%;
+    padding: 0;
+    overflow: hidden;
+    text-indent: -2000px;
+}
+
+.boprt .boprt01 em {
+    background-position: 0 -30px;
+}
+
+.boprt .boprt01:hover em {
+    background-position: 0 -60px;
+}
+
+.boprt .boprt02 em {
+    background-position: 0 -90px;
+}
+
+.boprt .boprt02:hover em {
+    background-position: 0 -120px;
+}
+
+.boprt .boprt03 em {
+    background-position: 0 -150px;
+}
+
+.boprt .boprt03:hover em {
+    background-position: 0 -180px;
+}
+
+.boprt .boprt04 em {
+    background-position: 0 -270px;
+}
+
+.boprt .boprt04:hover em {
+    background-position: 0 -300px;
+}
+
+.boprt .boprt05 em {
+    background-position: 0 -330px;
+}
+
+.boprt .boprt05:hover em {
+    background-position: 0 -360px;
+}
+
+.boprt .boprt06 em {
+    background-position: 0 -390px;
+}
+
+.boprt .boprt06:hover em {
+    background-position: 0 -420px;
+}
+
+.boprt .boprt07 em {
+    background-position: 0 -450px;
+}
+
+.boprt .boprt07:hover em {
+    background-position: 0 -480px;
+}
+
+.boprt .boprt08 em {
+    background-position: 0 -510px;
+}
+
+.boprt .boprt08:hover em {
+    background-position: 0 -540px;
+}
+
+.boprt .boprt09 em {
+    background-position: 0 -570px;
+}
+
+.boprt .boprt09:hover em {
+    background-position: 0 -600px;
+}
+
+.boprt .boprt10 em {
+    background-position: 0 -630px;
+}
+
+.boprt .boprt10:hover em {
+    background-position: 0 -660px;
+}
+
+.boprt .boprt11 em {
+    background-position: 0 -690px;
+}
+
+.boprt .boprt11:hover em {
+    background-position: 0 -720px;
+}
+
+.boprt .boprt12 em {
+    background-position: 0 -210px;
+}
+
+.boprt .boprt12:hover em {
+    background-position: 0 -240px;
+}
+
+.boprt .boprt13 em {
+    background-position: 0 -750px;
+}
+
+.boprt .boprt13:hover em {
+    background-position: 0 -780px;
+}
+
+.boprt .boprt14 em {
+    background-position: 0 -871px;
+}
+
+.boprt .boprt14:hover em {
+    background-position: 0 -902px;
+}
+
+
+.boprt .boprt20 em {
+    background: url('/static/image/controls001.png') 0 0 no-repeat;
+}
+
+.boprt .boprt20:hover em {
+    background-position: 0 -30px;
+}
+
+.a-control {
+    position: fixed;
+    right: 20px;
+    z-index: 100;
+    transition: top 0.3s, opacity 0.8s;
+    -webkit-transition: top 0.3s, opacity 0.8s;
+    -moz-transition: top 0.3s, opacity 0.8s;
+    -o-transition: top 0.3s, opacity 0.8s;
+}
+
+.nothing {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    background-image: url("../image/gugugu.png");
+    background-repeat: no-repeat;
+    background-position: center center;
+    color: darkslategray;
+    font-size: 20px;
+    font-family: "SF Pro Text", "SF Pro Icons", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+}
+
+.titleWrapper {
+    color: azure;
+    background-color: rgba(0, 0, 0, 0);
+    padding-left: 5px;
+}
+
+.editEnableWrapper {
+    user-modify: read-write-plaintext-only;
+    -webkit-user-modify: read-write-plaintext-only;
+}
+
+.editEnableWrapper:empty:before {
+    content: attr(placeholder);
+    color: #bbb;
+}
+
+.pageTitle {
+
+}
+
+.pageTitle:empty:before {
+    /*content: attr(placeholder);*/
+    /*color: #bbb;*/
+}
+
+.titleWrapper h3 {
+    padding-left: 3px;
+}
+
+.articleWrapper {
+    color: black;
+    background-color: rgba(255, 255, 255, 0.92);
+    padding: 20px 20px;
+    margin: 10px 0;
+    overflow: hidden;
+    border-radius: 3px;
+}
+
+.articleTitle {
+    font-size: 20px;
+    font-family: 微软雅黑, 宋体, Arial, Helvetica, Verdana, sans-serif;
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+
+.articleTitle:hover {
+    cursor: pointer;
+}
+
+.artSubTitle {
+    font-size: 14px;
+    font-family: 微软雅黑, 宋体, Arial, Helvetica, Verdana, sans-serif;
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+
+.secondTextColor {
+    color: gray;
+}
+
+
+.auto_text {
+    word-break: break-all;
+    white-space: normal;
+    text-overflow: ellipsis;
+    /* 加上之后 div 在空时无法编辑 */
+    /*display: -webkit-box;*/
+    display: block;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 20px;
+}
+
+.rich.auto_text {
+    display: block;
+}
+
+.rgIcon {
+    width: 80%;
+    /*max-width: 60px;*/
+    min-width: 40px;
+    border-radius: 50%;
+    /*background-color: #6c7f93;*/
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+
+.rgIcon::before {
+    content: "";
+    padding-top: 100%;
+    display: block;
+}
+
+
+.rgHover {
+
+}
+
+.rgHover:hover {
+    cursor: pointer;
+}
+
+.rgButton {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    min-height: 30px;
+    min-width: 60px;
+
+    text-decoration: none;
+
+    background: dimgray;
+    color: #f2f2f2;
+
+    padding: 0 2px 0px 2px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 3px;
+    text-align: center;
+
+    -webkit-transition: all linear 0.30s;
+    -moz-transition: all linear 0.30s;
+    transition: all linear 0.30s;
+
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.rgButton:hover {
+    background: gray;
+    cursor: pointer;
+}
+
+.weui-cell {
+    min-height: 24px;
+}
+
+.rich {
+    user-modify: read-write-plaintext-only;
+    -webkit-user-modify: read-write-plaintext-only;
+}
+
+.rich:empty:before {
+    content: attr(placeholder);
+    color: #bbb;
+}
+
+.rich:focus:before {
+    content: none;
+}
+
+.nowrapText {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.fullScreen {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+
+    /*style="display: none"*/
+
+    top: 0;
+
+    z-index: 101;
+    background-color: rgba(0, 0, 0, 0.6);
+
+
+    -webkit-transition: all linear 0.60s;
+    -moz-transition: all linear 0.60s;
+    transition: all linear 0.60s;
+
+    -webkit-backface-visibility: hidden;
+    -moz-backface-visibility: hidden;
+    -ms-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+.fullScreen .weui-loading {
+
+    max-width: 80%;
+    max-height: 80%;
+
+    width: 50px;
+    height: 50px;
+
+    position: absolute;
+    margin: auto;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.fullScreen .close {
+    width: 5%;
+    max-width: 30px;
+    min-width: 18px;
+    position: absolute;
+    margin: auto;
+    top: 20px;
+    right: 20px;
+    bottom: unset;
+    left: unset;
+
+    -webkit-transition: all linear 0.30s;
+    -moz-transition: all linear 0.30s;
+    transition: all linear 0.30s;
+
+    -webkit-backface-visibility: hidden;
+    -moz-backface-visibility: hidden;
+    -ms-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+.fullScreen .close:hover {
+    -webkit-transform: rotate(90deg);
+    transform: rotate(90deg);
+}
+
+.overHidden {
+    overflow: hidden;
+    /*height: 100%;*/
+}

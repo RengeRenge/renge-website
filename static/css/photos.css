@@ -1,0 +1,202 @@
+.collectionView {
+    display: -webkit-flex; /* Safari */
+    display: flex;
+    flex-wrap: wrap;
+    /*justify-content: center;*/
+}
+
+.collectionCell {
+    padding: 10px;
+    width: 16%;
+    height: 100%;
+    max-width: 200px;
+    /*max-height: 250px;*/
+    min-width: 160px;
+    min-height: 160px;
+    display: -webkit-flex; /* Safari */
+    display: flex;
+}
+
+.collectionWrap {
+    display: -webkit-flex; /* Safari */
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+}
+
+.collectionCell::before {
+    /*padding-top: 100%;*/
+    /*padding-left: 100%;*/
+    /*display: block;*/
+}
+
+.collectionCell .p_title {
+    font-size: 20px;
+    font-family: 微软雅黑, 宋体, Arial, Helvetica, Verdana, sans-serif;
+    margin-top: 10px;
+    min-width: 100%;
+    min-height: 28px;
+}
+
+.collectionCell .p_desc {
+    font-size: 12px;
+    font-family: 微软雅黑, 宋体, Arial, Helvetica, Verdana, sans-serif;
+    margin-top: 8px;
+    min-height: 17px;
+}
+
+.bgNoRepeatImage {
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+
+.bgNoRepeatImage:hover {
+    cursor: pointer;
+}
+
+.bgNoRepeatImage::after {
+    content: "";
+    padding-top: 100%;
+    display: block;
+}
+
+.wrapperItemBg {
+    -webkit-transition: all linear 0.30s;
+    -moz-transition: all linear 0.30s;
+    transition: all linear 0.30s;
+    background-color: rgba(255, 255, 255, 0.7);
+
+    -webkit-backface-visibility: hidden;
+    -moz-backface-visibility: hidden;
+    -ms-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+.wrapperItemBg:hover {
+    background-color: rgba(255, 255, 255, 1.0);
+    box-shadow: 0 4px 6px 0 rgba(0, 0, 0, .22);
+
+    -webkit-transform: translateY(-2px);
+    transform: translateY(-2px);
+    /*transform: scale(1.005);*/
+    /*-ms-transform: scale(1.005); !* IE 9 *!*/
+    /*-moz-transform: scale(1.005); !* Firefox *!*/
+    /*-webkit-transform: scale(1.005); !* Safari 和 Chrome *!*/
+    /*-o-transform: scale(1.005);*/
+}
+
+.nav {
+    display: inline-block;
+    max-width: 600px;
+}
+
+/* 下拉菜单 */
+.nav span {
+    display: inline-block;
+    height: 36px;
+    width: 120px;
+    /*background: #ff9900;*/
+    line-height: 36px;
+    text-align: center;
+    position: relative;
+    font-weight: 700;
+    /*padding: 1em;*/
+}
+
+.nav span:hover {
+    color: black;
+    background: white;
+    cursor: default;
+}
+
+.nav ul {
+    list-style: none;
+    position: absolute;
+    width: 120px;
+    display: none;
+    background: white;
+
+    box-shadow: 0 6px 6px 0 rgba(0, 0, 0, .22);
+}
+
+.nav li:hover {
+    background: #f5f3ec;
+    cursor: pointer;
+}
+
+.fullScreen #display_img {
+
+    width: auto;
+    height: auto;
+    max-width: 80%;
+    max-height: 70%;
+
+    margin: auto;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    box-shadow: 0 4px 6px 0 rgba(0, 0, 0, .22);
+}
+
+.fullScreen .bgNoRepeatImage {
+    width: 10%;
+    max-width: 60px;
+    /*background-position: center center;*/
+    /*background-size: contain;*/
+    /*height: 100%;*/
+    height: auto;
+    position: absolute;
+    margin: auto;
+    top: 0;
+    bottom: 0;
+
+    -webkit-transition: all linear 0.30s;
+    -moz-transition: all linear 0.30s;
+    transition: all linear 0.30s;
+
+    -webkit-backface-visibility: hidden;
+    -moz-backface-visibility: hidden;
+    -ms-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+.fullScreen .bgNoRepeatImage:hover {
+    -webkit-transform: translateY(-2px);
+    transform: translateY(-2px);
+}
+
+.display_img_text_wrapper {
+    position: absolute;
+    margin: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 12%;
+    text-align: center;
+    padding: 0 10px;
+}
+
+.display_img_text_wrapper img_text {
+    -webkit-transition: all linear 0.30s;
+    -moz-transition: all linear 0.30s;
+    transition: all linear 0.30s;
+}
+
+.rich_white:empty:before {
+    color: gray;
+}
+
+.rich_black:empty:before {
+    color: dimgrey;
+}
+
+.white_class {
+    color: white;
+}
+
+.fullScreen .auto_text {
+    display: block;
+}

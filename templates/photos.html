@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+{%- macro selectIfNeed(selectedV)-%}{%- if album.level == selectedV -%}selected="selected"{%- endif -%}{%- endmacro -%}
+
+<script type="text/javascript" src="/static/jquery/dist/jquery.min.js"></script>
+
+<link href="/static/css/rg_base.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="/static/js/rg_base.js"></script>
+<script type="text/javascript" src="/static/js/bgLayout.js"></script>
+
+{%- if album -%}
+<link rel="stylesheet" type="text/css" href="/static/css/weui-for-work.min.css" />
+<link rel="stylesheet" type="text/css" href="/static/css/photos.css" />
+
+<script type="text/javascript" src="/static/js/timeUtil.js"></script>
+<script type="text/javascript" src="/static/js/rgbaster.min.js"></script>
+
+<!--select-->
+<link rel="stylesheet" type="text/css" href="/static/select/css/cs-select.css" />
+<link rel="stylesheet" type="text/css" href="/static/select/css/cs-skin-border.css" />
+<script type="text/javascript" src="/static/select/js/classie.js"></script>
+<script type="text/javascript" src="/static/select/js/selectFx.js"></script>
+
+<!--page-->
+<link href="/static/css/pagination.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="/static/js/pagination.js"></script>
+
+<script type="text/javascript" src="/static/js/photosPage.js" async="async"></script>
+
+{%- endif -%}
+
+<script>
+    this.ubg = "{{user.bgImage}}"
+    this.style = {{user.style|default('')|tojson}}
+    this.relation = {{relation}}
+    this.re_relation = {{re_relation}}
+    this.isHome = {{home|int}}
+    this.albumId = "{{album.id}}"
+    this.coverId = "{{album.cover}}"
+    this.iconId = "{{user.iconId}}"
+    this.bgId = "{{user.bgId}}"
+    this.recordABTitle = "{{album.title}}"
+    this.recordABDesc = "{{album.description}}"
+    this.albumLevel = "{{album.level}}"
+    this.picList = null
+
+    this.pageCount = {{pageCount}}
+    this.picSum = {{count}}
+    this.pageSize = {{pageSize}}
+    this.nowPage = {{nowPage}}
+</script>
+<style>
+    .wrapperBg a.back:any-link {
+        color: initial;
+        text-decoration: none;
+        cursor: pointer;
+    }
+</style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=1.0, user-scalable=yes"/>
+    <title>相册</title>
+</head>
+<body>
+<div class="boprt a-control" style="top: 20px; opacity: 1;">
+    <ul>
+        <li>
+            {%- if home -%}
+            <form><a href="/blog/edit" class="boprt09" target="_top"><em>写日志</em></a></form>
+            {%- elif user -%}
+            <form><a id="followItem" target="_top"><em></em></a></form>
+            {%- endif -%}
+        </li>
+        <li>
+            {%- if home -%}
+            <form><a href="/user/set" class="boprt05" target="_top"><em>设置</em></a></form>
+            {%- else -%}
+            <form><a href="/" class="boprt01" target="_top"><em>回家</em></a></form>
+            {%- endif -%}
+        </li>
+    </ul>
+</div>
+
+<div class="page_wrapper">
+
+    <div class="page_wrapper titleWrapper">
+        <h1 class="auto_text pageTitle {% if home %}editEnableWrapper{% endif %}"
+            contenteditable="{% if home %}true{%else%}false{%endif%}"
+            id='title'
+            onblur="editName(this)"
+            onfocus="recordName(this)"
+            placeholder="博客标题">
+            {{-user.title-}}
+        </h1>
+        <h3 class="auto_text pageTitle {% if home %}editEnableWrapper{% endif %}"
+            contenteditable="{% if home %}true{%else%}false{%endif%}"
+            id='desc'
+            onblur="editDesc(this)"
+            onfocus="recordDesc(this)"
+            placeholder="博客描述">
+            {{-user.desc-}}
+        </h3>
+    </div>
+
+
+    {%- if user -%}
+    <div style="margin-bottom: 20px;" class="toolBarWrapper">
+        <a href="/blog/{{user.ID}}/" class="toolBarItem">日志</a>
+        <a href="/photo/{{user.ID}}/" class="toolBarItem toolBarItem-selected">相册</a>
+        {%- if home -%}
+        <a href="/blog/view/{{user.ID}}/" class="toolBarItem">归档</a>
+        <a href="/user/friends" class="toolBarItem">好友</a>
+        <a class="toolBarItem">导入</a>
+        {%- endif -%}
+    </div>
+    {%- endif -%}
+
+    <div class="wrapperBg wrapperPadding">
+        <div style="margin-top: 20px;margin-bottom: 20px">
+            <a href="./" class="back">返回</a>
+        </div>
+
+         {%-if album-%}
+        <h2 class="auto_text"
+            contenteditable="{% if home %}true{% else %}false{% endif %}"
+            onblur="onBlurTitle(this)"
+            style="margin-bottom: 10px;">
+            {{-album.title-}}
+        </h2>
+        <a class="auto_text"
+           contenteditable="{% if home %}true{% else %}false{% endif %}"
+           onblur="onBlurDesc(this)"
+           style="margin-top: 20px;padding-left: 3px;display: block">
+            {{-album.description-}}
+        </a>
+
+        {%- if home and user -%}
+            <div class="rgButton" style="width: 200px;min-height: 40px; margin-top: 20px;">上传照片</div>
+
+            <div class="privacyWrapper" style="margin-top: 20px;">隐私设置 :
+                <select id="privacy" style="min-height: 40px" class="cs-select cs-skin-border">
+                    <option value="0" {{selectIfNeed(0)}}>所有人可见</option>
+                    <option value="1" {{selectIfNeed(1)}}>仅好友可见</option>
+                    <option value="2" {{selectIfNeed(2)}}>仅自己可见</option>
+                </select>
+            </div>
+
+            <div style="height: 1px;width: 100%; margin-top: 20px;background-color: rgba(255,255,255,0.6)">
+            </div>
+        {%- endif -%}
+
+        <div class="collectionView" style="margin-top: 30px">
+            {%- for item in list -%}
+            <div id={{item.id}} class="collectionCell collectionWrap wrapperItemBg" style="margin: 10px;">
+                <div id="{{item.o_url}}" name="{{item.url}}" onclick="show_oPic(this)" class="bgNoRepeatImage" style="background-image: url('{{item.url}}'); width: 100%;">
+
+                </div>
+                <div id={{item.id|string+'title'}} class="p_title nowrapText">
+                    {%- if item.title -%}
+                        {{- item.title -}}
+                    {%- else -%}
+                        {{- item.file_name -}}
+                    {%- endif -%}
+                </div>
+                <div id={{item.id|string+'description'}} class="p_desc nowrapText">
+                    {{-item.description-}}
+                </div>
+                <div class="p_desc nowrapText secondTextColor">
+                    <script>
+                        var timeStamp = {{item.exif_timestamp}}
+                        if (timeStamp) {
+                            timeStamp = (new Date(timeStamp)).Format("yyyy MM dd hh:mm:ss")
+                        } else {
+                            timeStamp = '未知'
+                        }
+                        var dom = document.getElementById('{{item.id}}').getElementsByClassName('p_desc nowrapText secondTextColor')[0]
+                        dom.innerText = '拍摄时间:' + timeStamp
+                    </script>
+                </div>
+                <div class="p_desc nowrapText secondTextColor" style="margin-top: 10px">
+                    上传时间:
+                    <script>
+                        var timeStamp = {{item.timestamp}}
+                        var time = (new Date(timeStamp)).Format("yyyy MM dd hh:mm:ss")
+                        var dom = document.getElementById('{{item.id}}').getElementsByClassName('p_desc nowrapText secondTextColor')[1]
+                        dom.innerText = time
+                    </script>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="ht-page"></div>
+        {%- else -%}
+            <div class="nothing">内容不见了</div>
+        {%- endif -%}
+    </div>
+</div>
+
+<div class="fullScreen" style="display: none;">
+    <img id="last_button" src="/static/image/last.png" class="bgNoRepeatImage" onclick="last_oPic()">
+    <img id="display_img" src="">
+
+    <i class="weui-loading"></i>
+
+    <img id="next_button" src="/static/image/next.png" class="bgNoRepeatImage" style="right: 0;"
+         onclick="next_oPic()">
+    <div class="display_img_text_wrapper">
+        <a id="display_img_title" class="auto_text img_text {%if home %}rich rich_black{%- endif -%}" placeholder="图片标题"
+           onblur="onBlurPicInfo(this)"></a>
+        <a id="display_img_desc" class="auto_text img_text {%if home %}rich rich_black{%- endif -%}" placeholder="图片描述" style="font-size: 12px"
+           onblur="onBlurPicInfo(this)"></a>
+    </div>
+    <img src="/static/image/close.png" class="close" onclick="dismiss_oPic()">
+
+    <div style="min-height: 40px;
+             margin-top:{%-if home -%}10px{%- else -%}20px{%- endif -%};
+             padding-right: 55px;
+             float: right">
+        <div id="display_img_privacy" style="display: inline-block;">
+        </div>
+
+        {%- if home and user -%}
+        <div class="nav">
+        <span>更多
+            <ul>
+                <li onclick="coverSet()">设为封面</li>
+                <li onclick="iconSet()">设为头像</li>
+                <li onclick="bgSet()">设为背景</li>
+                <li>移动到...</li>
+            </ul>
+        </span>
+        </div>
+        {%- endif -%}
+    </div>
+
+</div>
+</body>
+</html>

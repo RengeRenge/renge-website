@@ -1,0 +1,41 @@
+.login_input {
+    background-color: white;
+    /*border-radius: 8px;*/
+    border-color: rgba(0, 0, 0, 0);
+    height: 44px;
+    font-size: 17px;
+    line-height: 1.29412;
+    font-weight: 400;
+    letter-spacing: -.021em;
+    font-family: "SF Pro Text", "SF Pro Icons", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+}
+
+.login_button {
+    background-image: url(../image/enter.png);
+    background-size: cover;
+    width: 25px;
+    height: 25px;
+}
+
+.login_button:hover {
+    cursor: pointer;
+}
+
+.login_tip {
+    text-align: right;
+    color: black;
+    text-decoration-color: white;
+    padding-right: 5px;
+    padding-left: 5px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+
+    font-size: 13px;
+    font-family: "SF Pro Text", "SF Pro Icons", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+
+    display: inline-block;
+    float: right;
+
+    background-color: rgba(255,255,255,0.6);
+    border-radius: 4px;
+}

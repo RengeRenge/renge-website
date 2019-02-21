@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+{%- macro value(name)-%}{%- if art -%}{{art[name]}}{%- endif -%}{%- endmacro -%}
+{%- macro selectIfNeed(selectedV)-%}{%- if value('cate') == selectedV -%}selected="selected"{%- endif -%}{%- endmacro -%}
+<link href="/static/css/rg_base.css" rel="stylesheet" type="text/css">
+<link href="/static/css/edit_blog.css" rel="stylesheet" type="text/css">
+
+<script type="text/javascript" src="/static/jquery/dist/jquery.min.js"></script>
+<script type="text/javascript" src="/static/js/rg_base.js"></script>
+
+<link rel="stylesheet" type="text/css" href="/static/css/groupModal.css" />
+<script type="text/javascript" src="/static/js/groupModal.js"></script>
+
+<!--simditor-->
+<link rel="stylesheet" type="text/css" href="/static/simditor/styles/simditor.css"/>
+
+<script type="text/javascript" src="/static/simditor/scripts/mobilecheck.js"></script>
+<script type="text/javascript" src="/static/simditor/scripts/module.js"></script>
+<script type="text/javascript" src="/static/simditor/scripts/hotkeys.js"></script>
+<script type="text/javascript" src="/static/simditor/scripts/uploader.js"></script>
+<script type="text/javascript" src="/static/simditor/scripts/simditor.js"></script>
+<script type="text/javascript" src="/static/simditor/simditor-autosave.js"></script>
+
+<!--bg-->
+<script type="text/javascript" src="/static/js/bgLayout.js"></script>
+
+<!--select-->
+<link rel="stylesheet" type="text/css" href="/static/select/css/cs-select.css" />
+<link rel="stylesheet" type="text/css" href="/static/select/css/cs-skin-border.css" />
+<script type="text/javascript" src="/static/select/js/classie.js"></script>
+<script type="text/javascript" src="/static/select/js/selectFx.js"></script>
+
+<link rel="stylesheet" type="text/css" href="/static/css/weui-for-work.min.css" />
+
+<script>
+    this.ubg = "{{user.bgImage}}"
+    {%if art and art['group_id'] %}
+    that.submitArtGroupId = {{art['group_id']}}
+    {%endif%}
+</script>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=1.0, user-scalable=yes"/>
+    <title>
+        {%- if art -%}
+            编辑日志
+        {%- else -%}
+            写日志
+        {%- endif -%}
+    </title>
+</head>
+<body>
+<div class="boprt a-control RGTransition disblur" style="top: 20px; opacity: 1;">
+    <ul>
+        {%- if art -%}
+        <li>
+            <form><a href="{{'/blog/art/'~art.id}}" class="boprt10" target="_top"><em>返回</em></a></form>
+        </li>
+        {%- endif -%}
+        <li>
+            <form><a href="/" class="boprt01" target="_top"><em>主页</em></a></form>
+        </li>
+    </ul>
+</div>
+
+<div class="page_wrapper RGTransition disblur">
+    <div class="articleWrapper">
+        <div class="editorWapper">
+            <input id="title_input" class="editorTitleInput" style="margin-bottom: 10px;" type="text" maxlength="255" placeholder="在这里输入标题" value="{{value('title')}}">
+            <div class="privacyWrapper">
+                隐私设置 :
+                <select id="privacy" style="min-height: 40px;" class="cs-select cs-skin-border">
+                    <option value="0" {{selectIfNeed('0')}}>所有人可见</option>
+                    <option value="1" {{selectIfNeed('1')}}>仅好友可见</option>
+                    <option value="2" {{selectIfNeed('2')}}>仅自己可见</option>
+                </select>
+            </div>
+            <div class="privacyWrapper" style="margin-bottom: 40px;margin-top: 10px">
+                日志分类 :
+                <div id="groupNameButton" class="groupButton">
+                    {%- if art and art.group_id  -%}
+                        {{art.group_name}}
+                    {%-else-%}
+                        默认分类
+                    {%- endif -%}
+                </div>
+            </div>
+            <textarea id="editor" placeholder="在这里输入内容" autofocus="autofocus">
+                {%- if art -%}
+                    {{art.content|safe}}
+                {%- endif -%}
+            </textarea>
+            <div class="publish_button" id="{{value('id')}}">发布</div>
+        </div>
+    </div>
+</div>
+
+<!--<div id="GroupFullScreen" class="fullScreen" style="display: none;">-->
+    <!--<i class="weui-loading"></i>-->
+
+    <!--<img src="/static/image/add_group.png" class="toolIcon toolIconPoint RGTransition disblur" id="addGroupIcon" onclick="addGroup()" style="right: 170px">-->
+    <!--<img src="/static/image/rename.png" class="toolIcon toolIconPoint RGTransition disblur" id="renameIcon" onclick="rename()" style="right: 120px">-->
+    <!--<img src="/static/image/manager_order.png" class="toolIcon toolIconPoint RGTransition disblur" id="order_button" onclick="editOrder()">-->
+    <!--<img src="/static/image/close.png" class="close" onclick="hideGroup()">-->
+
+    <!--<div id="groupWrapper">-->
+
+    <!--</div>-->
+
+    <!--<div id="addGroupModal" class="fullScreen" style="display: none">-->
+        <!--<div class="modal-wrapper">-->
+        <!--<div class="modal">-->
+            <!--<div class="modal-header">-->
+                <!--&lt;!&ndash;<i class="modal-header-close iconfont icon-ic_close"></i>&ndash;&gt;-->
+                <!--<img onclick="hideAddGroupModal()" class="modal-header-close" src="/static/image/close.png" style="width: 15px; height: 15px;">-->
+                <!--<div class="modal-title">-->
+                    <!--新建分组-->
+                <!--</div>-->
+            <!--</div>-->
+            <!--<div class="modal-body">-->
+                <!--<div class="be-input be-input&#45;&#45;append">-->
+                    <!--<input type="input" placeholder="分组名称" class="be-input_inner" id="addGroupInput">-->
+                <!--</div>-->
+                <!--<div class="be-switch-container">-->
+                    <!--<input type="checkbox" checked="checked" id="groupAddCheck">-->
+                    <!--<label class="be-switch-label" for="groupAddCheck">-->
+                        <!--置顶-->
+                    <!--</label>-->
+                <!--</div>-->
+            <!--</div>-->
+            <!--<div class="modal-footer">-->
+                <!--<div style="display: inline-block; width: 50%">-->
+                    <!--<div class="rgButton" onclick="doAddGroup(this)">-->
+                        <!--确定-->
+                    <!--</div>-->
+                <!--</div>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
+    <!--</div>-->
+
+<!--</div>-->
+
+<script>
+
+    (function () {
+        [].slice.call(document.querySelectorAll('select.cs-select')).forEach(function (el) {
+            new SelectFx(el, {
+                stickyPlaceholder: true,
+                onChange: function (val) {
+                    // alert(val)
+                }
+            });
+        });
+    })();
+
+    let tools = new Array();//此处要注意不能用var tools=new Array("title","bold");定义,我这样做了，页面报错。
+    tools.push("title");
+    tools.push("bold");
+    tools.push("italic");
+    tools.push("underline");
+    tools.push("strikethrough");
+    tools.push("fontScale");
+    tools.push("color");
+    tools.push("ol");
+    tools.push("ul");
+    tools.push("blockquote");
+    tools.push("code");
+    tools.push("table");
+    tools.push("link");
+    tools.push("image");
+    tools.push("hr");
+    tools.push("indent");
+    tools.push("outdent");
+    tools.push("alignment");
+
+    let editor = new Simditor({
+        textarea: $('#editor'),
+        autosave: (window.location.pathname == '/blog/edit') ? 'editor-content': false,
+        toolbar: tools,
+        toolbarFloat: true,
+        toolbarFloatOffset: 0,
+        toolbarHidden: false,
+        upload: {
+            url: '/file/upload/',
+            params: {"simditor": true},
+            fileKey: 'file',
+            connectionCount: 1,
+            leaveConfirm: 'Uploading is in progress, are you sure to leave this page?'
+        }
+    });
+
+    this.editor = editor
+
+    $(function () {
+
+        initGroupModal(that.submitArtGroupId, 'groupNameButton', null, function (id, name) {
+            $('#groupNameButton').text(name)
+        })
+
+        $(".publish_button").click(function (e) {
+            var thisid = e.target.id
+            let summary = $('.simditor-body').text()
+
+            let imgs = $('.simditor-body img')
+            let cover = ''
+            if (imgs.length)
+                cover = imgs[0].src.getUrlRelativePath()
+
+            if (summary.length > 100)
+                summary = summary.substr(0, 100)
+            var data = {
+                "content": editor.getValue(),
+                "cate": $("#privacy").val(),
+                "title": $('#title_input').val(),
+                "group_id": that.submitArtGroupId,
+                "summary": summary,
+                "cover": cover
+            }
+            if (thisid.length) {
+                data['id'] = thisid
+            }
+            $.ajax({
+                type: 'POST',
+                dataType: "json",
+                url: "/blog/new",
+                data: data,
+                success:function (result) {
+                    if (result.code == 1000) {
+                        editor.autosave.storage.remove(window.location.pathname + '/autosave/editor-content/')
+                        window.location.href = '/blog/art/' + result.data.id;
+                    }
+                },
+                error: function () {
+                    
+                },
+            })
+        });
+    })
+</script>
+</body>
+</html>
