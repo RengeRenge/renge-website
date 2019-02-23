@@ -2,8 +2,6 @@
 import time
 from datetime import datetime, tzinfo, timedelta
 
-import pytz
-
 
 def timestamp(date=None):
     if date is None:
@@ -21,7 +19,6 @@ def date_with_format(date_string, date_format):
 
 
 def timestamp_with_month(year, month, timezone):
-
     local_tm = datetime.fromtimestamp(0)
     utc_tm = datetime.utcfromtimestamp(0)
     offset = local_tm - utc_tm

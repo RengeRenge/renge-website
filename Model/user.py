@@ -85,7 +85,7 @@ def new_user(username, pwd, title='Title', desc='Desc', nick='Nickname'):
         new_album_id = result[0]
 
         sql = "INSERT INTO user (username, pwd, addtime, title, description, nickname, default_album_id) VALUES \
-        ('%s', '%s', %ld, '%s', '%s', '%s', %ld)" % (
+        ('%s', '%s', %d, '%s', '%s', '%s', %d)" % (
             dao.escape_string(username),
             dao.escape_string(pwd),
             timestamp,
@@ -110,7 +110,7 @@ def new_user(username, pwd, title='Title', desc='Desc', nick='Nickname'):
 
 
 def get_user(user_id, needIcon=False, needBg=True):
-    user_id = long(user_id)
+    user_id = int(user_id)
 
     bgindex = -1
     if needIcon and needBg:
@@ -118,7 +118,7 @@ def get_user(user_id, needIcon=False, needBg=True):
               FROM user \
               left join file icFile on icFile.id = user.icon \
               left join file bgFIle on bgFIle.id = user.bg_image \
-              where user.id=%ld" % user_id
+              where user.id=%d" % user_id
         bgindex = -2
     elif needIcon:
         sql = "SELECT user.*, file.file_name as 'icon' FROM user \
@@ -140,7 +140,7 @@ def get_user(user_id, needIcon=False, needBg=True):
 
 
 def get_user_iconname(user_id):
-    user_id = long(user_id)
+    user_id = int(user_id)
     sql = "SELECT file.file_name FROM user \
         left join file on file.id = user.icon where user.id=%d" % user_id
 
@@ -155,7 +155,7 @@ def get_user_iconname(user_id):
 
 def get_user_with_name(username):
     sql = "SELECT * FROM user where username='%s'" % username
-    print sql
+    print(sql)
 
     result, count, new_id = dao.execute_sql(sql, needret=True)
 
@@ -177,7 +177,7 @@ def user_login(username, pwd):
     pwd = md5_key(str(pwd))
 
     sql = "SELECT * FROM user where username='%s' AND pwd='%s'" % (str(username), pwd)
-    print (sql)
+    print(sql)
 
     result, count, new_id = dao.execute_sql(sql)
 
@@ -204,13 +204,13 @@ def block(my_id, other_id):
 def change_relation(my_id, other_id, relation=0):
     timestamp = RGTimeUtil.timestamp()
 
-    my_id = long(my_id)
-    other_id = long(other_id)
+    my_id = int(my_id)
+    other_id = int(other_id)
 
     sql = "INSERT INTO user_relation (m_user_id, o_user_id, relation, addtime) \
-        VALUES (%ld, %ld, %d, %ld) ON DUPLICATE KEY UPDATE relation=%d, addtime=%ld" \
+        VALUES (%d, %d, %d, %d) ON DUPLICATE KEY UPDATE relation=%d, addtime=%d" \
           % (my_id, other_id, relation, timestamp, relation, timestamp)
-    print (sql)
+    print(sql)
 
     result, count, new_id = dao.execute_sql(sql, needret=False)
 
@@ -222,11 +222,11 @@ def change_relation(my_id, other_id, relation=0):
 
 def get_relation(my_id, other_id):
     # type: (long, long) -> int
-    my_id = long(my_id)
-    other_id = long(other_id)
+    my_id = int(my_id)
+    other_id = int(other_id)
     if my_id == other_id:
         return -1
-    sql = "SELECT * FROM user_relation where m_user_id =%ld AND o_user_id=%ld" % (my_id, other_id)
+    sql = "SELECT * FROM user_relation where m_user_id =%d AND o_user_id=%d" % (my_id, other_id)
     result, count, new_id = dao.execute_sql(sql, needdic=True)
     if count > 0:
         return result[0]['relation']
@@ -235,8 +235,8 @@ def get_relation(my_id, other_id):
 
 
 def update_name(user_id, name):
-    user_id = long(user_id)
-    sql = "UPDATE user SET nickname = '%s' where id=%ld" % (dao.escape_string(name), user_id)
+    user_id = int(user_id)
+    sql = "UPDATE user SET nickname = '%s' where id=%d" % (dao.escape_string(name), user_id)
     result, count, new_id = dao.execute_sql(sql, needret=False)
     if count > 0:
         return True
@@ -245,9 +245,9 @@ def update_name(user_id, name):
 
 
 def update_title(user_id, title):
-    user_id = long(user_id)
+    user_id = int(user_id)
     title = dao.escape_string(title)
-    sql = "UPDATE user SET title = '%s' where id=%ld" % (dao.escape_string(title), user_id)
+    sql = "UPDATE user SET title = '%s' where id=%d" % (dao.escape_string(title), user_id)
     result, count, new_id = dao.execute_sql(sql, needret=False)
     if count > 0:
         return True
@@ -256,8 +256,8 @@ def update_title(user_id, title):
 
 
 def update_desc(user_id, desc):
-    user_id = long(user_id)
-    sql = "UPDATE user SET description = '%s' where id=%ld" % (dao.escape_string(desc), user_id)
+    user_id = int(user_id)
+    sql = "UPDATE user SET description = '%s' where id=%d" % (dao.escape_string(desc), user_id)
     result, count, new_id = dao.execute_sql(sql, needret=False)
     if count > 0:
         return True
@@ -266,20 +266,20 @@ def update_desc(user_id, desc):
 
 
 def update_user_info(user_id, nickname=None, icon=None, background=None, tag=None, style=None):
-    user_id = long(user_id)
+    user_id = int(user_id)
 
-    sql = "UPDATE user SET %s where id=%ld" % ('%s', user_id)
+    sql = "UPDATE user SET %s where id=%d" % ('%s', user_id)
 
     data = []
     if nickname:
         nickname = dao.escape_string(nickname)
         data.append("nickname='%s'" % nickname)
     if icon:
-        icon = long(icon)
-        data.append("icon=%ld" % icon)
+        icon = int(icon)
+        data.append("icon=%d" % icon)
     if background:
-        background = long(background)
-        data.append("bg_image=%ld" % background)
+        background = int(background)
+        data.append("bg_image=%d" % background)
     if tag:
         tag = dao.escape_string(tag)
         data.append("tag='%s'" % tag)
@@ -304,19 +304,19 @@ def update_user_info(user_id, nickname=None, icon=None, background=None, tag=Non
 
 
 def friend_page_list(user_id, page=1, size=10):
-    user_id = long(user_id)
+    user_id = int(user_id)
     size = int(size)
     page = int(page)
     if page < 1:
         page = 1
 
     sql_temp = "SELECT %s FROM user_relation as re, user as u %s \
-    where re.relation=1 and re.m_user_id=%ld and re.o_user_id = u.id \
+    where re.relation=1 and re.m_user_id=%d and re.o_user_id = u.id \
     order by %s DESC " \
                % ('%s', '%s', user_id, '%s')
 
     sql = sql_temp % ('count(*)', '', 're.addtime')
-    print sql
+    print(sql)
     result, count, new_id = dao.execute_sql(sql, needret=True)
 
     if count > 0:
@@ -331,7 +331,7 @@ def friend_page_list(user_id, page=1, size=10):
 
     offset = (size, (page - 1) * size)
     sql += (' limit %d offset %d' % offset)
-    print sql
+    print(sql)
 
     result, this_page_count, new_id = dao.execute_sql(sql, needdic=True)
 

@@ -27,7 +27,7 @@ def auth_handler(page=False):
                     return make_response(jsonify({'error': 'Unauthorized access'}), 401) \
                         if page is False else redirect(url_for('login_page'))
             except Exception as ex:
-                print ex
+                print(ex)
                 return make_response(jsonify({'error': 'System Error'}), 500)
                 # return make_response(jsonify({'error': 'System Error'}), 500) \
                 #     if page is False else redirect(url_for('login_page'))

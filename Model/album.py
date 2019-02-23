@@ -30,7 +30,7 @@ def album_obj_with_result(result):
 
 
 def default_album(user_id):
-    user_id = long(user_id)
+    user_id = int(user_id)
     sql = "Select * from album where user_id=%ld order by id limit 1" % user_id
     result, count, new_id = dao.execute_sql(sql)
     if count is 0:
@@ -74,8 +74,8 @@ def new_album_sql(user_id, title='', desc='', level=0, default=False):
 
 def album_list(user_id, other_id):
     # type: (long, long) -> (list, int)
-    user_id = long(user_id)
-    other_id = long(other_id)
+    user_id = int(user_id)
+    other_id = int(other_id)
     relation = 0
 
     lastPicUrl = 'lastPicUrl'
@@ -106,7 +106,7 @@ def album_list(user_id, other_id):
             sql = sql % 'and level<=1'
         else:
             return None, relation
-    print sql
+    print (sql)
     result, count, new_id = dao.execute_sql(sql, needret=True, needdic=True)
 
     if count > 0:
@@ -119,7 +119,7 @@ def album_list(user_id, other_id):
 
 
 def album_detail(album_id, relation):
-    album_id = long(album_id)
+    album_id = int(album_id)
 
     sql = "SELECT * FROM album where id=%ld %s" % (album_id, '%s')
 
@@ -146,7 +146,7 @@ def update_info(album_id=None, user_id=None, title=None, desc=None, cover=None, 
     if album_id is None or user_id is None:
         return False
 
-    album_id = long(album_id)
+    album_id = int(album_id)
 
     sql = "UPDATE album SET %s where id=%ld and user_id=%ld" % ('%s', album_id, user_id)
 

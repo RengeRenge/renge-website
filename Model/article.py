@@ -3,8 +3,8 @@ import operator
 from datetime import datetime
 
 import pymysql
-from goose import Goose
-from goose.text import StopWordsChinese
+from goose3 import Goose
+from goose3.text import StopWordsChinese
 
 from DAO import rg_dao as dao
 from Model import user
@@ -79,8 +79,8 @@ def id_list(user_id, last_id=None, size=10, dic=True):
 def page_list(user_id, other_id=-1, page=1, size=10, dic=True):
     size = int(size)
 
-    user_id = long(user_id)
-    other_id = long(other_id)
+    user_id = int(user_id)
+    other_id = int(other_id)
     relation = 0
 
     page = int(page)
@@ -105,7 +105,7 @@ def page_list(user_id, other_id=-1, page=1, size=10, dic=True):
     page = min(page, page_count)
 
     sql += ' limit %d offset %d' % (size, (page - 1) * size)
-    print sql
+    print(sql)
 
     result, this_page_count, new_id = dao.execute_sql(sql)
 
@@ -184,7 +184,7 @@ def month_list(user_id, other_id, group_id, year, month, timezone=8):
         sql = sql % 'and (group_id is null or group_id not in (SELECT id from art_group))'
     else:
         sql = sql % ('and group_id=%ld' % group_id)
-    print sql
+    print(sql)
     result, count, new_id = dao.execute_sql(sql, needdic=True)
 
     return result
@@ -254,7 +254,7 @@ def add_or_update_art(user_id, title=None, content='', cate=0, group_id='', art_
              VALUES ('%s', '%s', %d, %ld, %s, '%s', '%s', %ld, %ld, from_unixtime(%ld))" % \
               (title, summary, cate, user_id, group_id, cover, content, timestamp, timestamp, timestamp / 1000)
     else:
-        art_id = long(art_id)
+        art_id = int(art_id)
         sql = "UPDATE art SET \
                 title = '%s', summary='%s', cate=%d, \
                 user_id=%ld, group_id=%s, cover='%s', \
@@ -277,7 +277,7 @@ def del_art(user_id, art_id=None):
     if art_id is None or art_id is '':
         return False, 0
 
-    art_id = long(art_id)
+    art_id = int(art_id)
     sql = "DELETE from art where id=%ld and user_id=%ld" \
           % (art_id, user_id)
 
@@ -290,8 +290,8 @@ def del_art(user_id, art_id=None):
 
 
 def art_detail(user_id, art_id):
-    user_id = long(user_id)
-    art_id = long(art_id)
+    user_id = int(user_id)
+    art_id = int(art_id)
 
     sql = \
         'SELECT art.id, art.title, art.summary, \
@@ -316,7 +316,7 @@ def art_detail(user_id, art_id):
 
 
 def new_group(user_id=None, name='', order=0, level=0):
-    user_id = long(user_id)
+    user_id = int(user_id)
     order = int(order)
     name = dao.escape_string(name)
 
@@ -330,8 +330,8 @@ def new_group(user_id=None, name='', order=0, level=0):
 
 
 def update_group_info(user_id=None, g_id=None, name=None, level=None):
-    user_id = long(user_id)
-    g_id = long(g_id)
+    user_id = int(user_id)
+    g_id = int(g_id)
 
     sql = "UPDATE art_group SET %s where id=%ld and user_id=%ld" % ('%s', g_id, user_id)
 
@@ -362,7 +362,7 @@ def update_group_info(user_id=None, g_id=None, name=None, level=None):
 
 def update_group_order(user_id=None, ids=None, orders=None):
     try:
-        user_id = long(user_id)
+        user_id = int(user_id)
 
         sql = "UPDATE art_group SET `order` = case id \
           %s where id in (%s) and user_id=%ld" % ('%s', '%s', user_id)
@@ -370,8 +370,8 @@ def update_group_order(user_id=None, ids=None, orders=None):
         case = ''
 
         for index in range(len(ids)):
-            gid = long(ids[index])
-            order = long(orders[index])
+            gid = int(ids[index])
+            order = int(orders[index])
             case += ('when %ld then %ld ' % (gid, order))
         case += 'end'
 
@@ -404,8 +404,8 @@ def group_list(other_id=None, relation=0):
 
 
 def delete_group(user_id=None, g_id=None):
-    user_id = long(user_id)
-    g_id = long(g_id)
+    user_id = int(user_id)
+    g_id = int(g_id)
 
     sql = 'delete from art_group where user_id=%ld and id=%ld' % (user_id, g_id)
     result, count, new_id = dao.execute_sql(sql)
