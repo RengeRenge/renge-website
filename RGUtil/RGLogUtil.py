@@ -14,6 +14,7 @@ class LogUtil:
     This utility contains functions for runtime information storing and notifying,
     and provides a common interface of logging the runtime state.
     """
+
     def __init__(self):
         pass
 
@@ -28,7 +29,7 @@ class LogUtil:
         :param dp: depth of exception stack
         """
         ct, ts = LogUtil.GetTimeStampString()
-        print "[%s](%s) %s - %s" % (level.upper(), label, ts, message)
+        print("[%s](%s) %s - %s" % (level.upper(), label, ts, message))
         if always_persist is True or level != "Notify":
             log.LogToSteady(label, level, message, ct, dp)
 
@@ -50,7 +51,7 @@ class LogUtil:
         """
         ct = time.time()
         data_head = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(ct))
-        return ct, "%s.%03d" % (data_head, (ct - long(ct)) * 1000)
+        return ct, "%s.%03d" % (data_head, (ct - int(ct)) * 1000)
 
     @staticmethod
     def GetTimeStampStringSimple():

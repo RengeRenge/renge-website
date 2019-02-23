@@ -63,7 +63,7 @@ def blog_view_page_render(user_id, other_id):
     re_relation = user.get_relation(other_id, user_id)
     t = {
         "user": user.get_user(other_id),
-        "home": long(other_id) == long(user_id),
+        "home": int(other_id) == int(user_id),
         "relation": relation,
         "re_relation": re_relation,
     }
@@ -339,12 +339,12 @@ def art_month_view(user_id):
     t = get_data_with_request(request)
 
     if 'user_id' in t:
-        art_user = long(t['user_id'])
+        art_user = int(t['user_id'])
     else:
         art_user = None
 
     if 'timezone' in t:
-        timezone = long(t['timezone'])
+        timezone = int(t['timezone'])
     else:
         timezone = 8
 
@@ -369,12 +369,12 @@ def art_month_list(user_id):
     t = get_data_with_request(request)
 
     if 'user_id' in t:
-        art_user = long(t['user_id'])
+        art_user = int(t['user_id'])
     else:
         art_user = None
 
     if 'timezone' in t:
-        timezone = long(t['timezone'])
+        timezone = int(t['timezone'])
     else:
         timezone = 8
 

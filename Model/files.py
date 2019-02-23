@@ -30,7 +30,7 @@ def file_name(file_id, needUrl=False):
     if file_id is None:
         return None
 
-    file_id = long(file_id)
+    file_id = int(file_id)
     sql = 'SELECT * FROM file where id=%ld' % file_id
     result, count, new_id = dao.execute_sql(sql, needdic=True)
     if count > 0:

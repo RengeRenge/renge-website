@@ -36,8 +36,8 @@ def page_list(other_id, album_id, page=1, size=10, relation=0):
 
     size = int(size)
 
-    other_id = long(other_id)
-    album_id = long(album_id)
+    other_id = int(other_id)
+    album_id = int(album_id)
 
     page = int(page)
     if page < 1:
@@ -63,7 +63,7 @@ def page_list(other_id, album_id, page=1, size=10, relation=0):
     page = min(page, page_count)
 
     sql += ' limit %d offset %d' % (size, (page - 1) * size)
-    print sql
+    print (sql)
 
     result, this_page_count, new_id = dao.execute_sql(sql, needdic=True)
 
@@ -79,9 +79,9 @@ def page_list(other_id, album_id, page=1, size=10, relation=0):
 def id_list(user_id, album_id, current_id=1, size=1, relation=0):
     # type: (long, long, long, int, int) -> (list, int, int, int, int)
 
-    user_id = long(user_id)
-    album_id = long(album_id)
-    current_id = long(current_id)
+    user_id = int(user_id)
+    album_id = int(album_id)
+    current_id = int(current_id)
 
     size = int(size)
     relation = int(relation)
@@ -105,7 +105,7 @@ def id_list(user_id, album_id, current_id=1, size=1, relation=0):
     sql += 'UNION'
     sql += (sql_format % (user_id, album_id, level_sql, 'pic.id >= %ld' % current_id, 'order by pic.id', size + 1))
 
-    print sql
+    print (sql)
 
     result, count, new_id = dao.execute_sql(sql, needdic=True)
 
@@ -129,7 +129,7 @@ def update_info(p_id=None, user_id=None, title=None, desc=None, level=None):
     if p_id is None or user_id is None:
         return False
 
-    p_id = long(p_id)
+    p_id = int(p_id)
 
     sql = "UPDATE pic SET %s where id=%ld and user_id=%ld" % ('%s', p_id, user_id)
 
@@ -162,8 +162,8 @@ def info(p_id=None, user_id=None):
     if p_id is None or user_id is None:
         return False, None
 
-    p_id = long(p_id)
-    user_id = long(user_id)
+    p_id = int(p_id)
+    user_id = int(user_id)
 
     sql = "select * from pic where id=%ld and user_id=%ld" % (p_id, user_id)
     result, count, new_id = dao.execute_sql(sql, needdic=True)

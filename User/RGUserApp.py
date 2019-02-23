@@ -129,7 +129,7 @@ def user_logout(user_id):
 def user_follow(user_id):
     t = get_data_with_request(request)
 
-    other_id = long(t['id'])
+    other_id = int(t['id'])
     flag, relation = user.follow(user_id, t['id'])
 
     if flag is True:
@@ -226,7 +226,7 @@ def user_set_info(user_id):
                         auth=request.authorization, cookies=request.cookies, hooks=None, json=request.json, stream=True)
 
     res_json = req.json()
-    print res_json
+    print(res_json)
 
     tag = None
     nickname = None

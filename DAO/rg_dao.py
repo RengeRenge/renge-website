@@ -83,8 +83,8 @@ def do_execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0):
                                __name__, dp=dp + 1)
         except:
             from traceback import format_exc
-            print 'ExecuteSQL Exception:'
-            print format_exc()
+            print('ExecuteSQL Exception:')
+            print(format_exc())
     finally:
         if cursor is not None:
             cursor.close()
@@ -146,8 +146,8 @@ def execute_sqls(sqls, needret=True, needdic=False, neednewid=False, dp=0):
                                __name__, dp=dp + 1)
         except:
             from traceback import format_exc
-            print 'ExecuteSQL Exception:'
-            print format_exc()
+            print('ExecuteSQL Exception:')
+            print(format_exc())
     finally:
         if cursor is not None:
             cursor.close()

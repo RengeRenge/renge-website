@@ -123,5 +123,5 @@ def handle_download_file(filename):
     remote_url = RemoteFileHost + '/' + FilePreFix + "download/" + filename
     req = requests.get(remote_url, stream=True)
     content_type = req.headers['content-type']
-    print remote_url
+    print (remote_url)
     return Response(stream_with_context(req.iter_content(chunk_size=1024)), content_type=content_type)
