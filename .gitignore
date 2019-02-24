@@ -1,4 +1,5 @@
 rg_database.json
+RGFileGlobalConfigContext.py
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
