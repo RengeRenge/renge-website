@@ -15,9 +15,14 @@ class RGFile:
 def new_file(file_name, file_type='', exif=0):
     timestamp = RGTimeUtil.timestamp()
 
-    sql = "INSERT INTO file (file_name, type, exif_timestamp, timestamp) VALUES ('%s', '%s', '%ld', %ld)" % \
-          (file_name, file_type, exif, timestamp)
-    result, count, new_id = dao.execute_sql(sql, neednewid=True)
+    sql = "INSERT INTO file (file_name, type, exif_timestamp, timestamp) VALUES \
+          (%(file_name)s, %(file_type)s, %(exif)s, %(timestamp)s)"
+    result, count, new_id = dao.execute_sql(sql, neednewid=True, args={
+        'file_name': file_name,
+        'file_type': file_type,
+        'exif': exif,
+        'timestamp': timestamp
+    })
     if count > 0:
         file_id = new_id
     else:
@@ -26,13 +31,13 @@ def new_file(file_name, file_type='', exif=0):
 
 
 def file_name(file_id, needUrl=False):
-
     if file_id is None:
         return None
 
-    file_id = int(file_id)
-    sql = 'SELECT * FROM file where id=%ld' % file_id
-    result, count, new_id = dao.execute_sql(sql, needdic=True)
+    sql = 'SELECT * FROM file where id=%(file_id)s'
+    result, count, new_id = dao.execute_sql(sql, needdic=True, args={
+        'file_id': file_id
+    })
     if count > 0:
         name = result[0]['file_name']
         if needUrl:

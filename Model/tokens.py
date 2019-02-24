@@ -7,13 +7,16 @@ def generate_token_ifneed(user_id, token_type):
     new_time = RGTimeUtil.timestamp()
     token_type = int(token_type)
     sql = "INSERT INTO tokens (user_id, type, token, timestamp) \
-    VALUES ('%ld', %d, '%s', %ld) ON DUPLICATE KEY UPDATE token='%s', timestamp=%ld" \
-          % (user_id, token_type, new_token, new_time, new_token, new_time)
-    print (sql)
+            VALUES (%(user_id)s, %(token_type)s, %(new_token)s, %(new_time)s) \
+            ON DUPLICATE KEY UPDATE token=%(new_token)s, timestamp=%(new_time)s"
+    result, count, new_id = dao.execute_sql(sql, neednewid=True, args={
+        'user_id': user_id,
+        'token_type': token_type,
+        'new_token': new_token,
+        'new_time': new_time,
+    })
 
-    result, count, new_id = dao.execute_sql(sql, neednewid=True)
-
-    print (count)
+    print(count)
 
     if count > 0:
         return new_token
@@ -22,18 +25,24 @@ def generate_token_ifneed(user_id, token_type):
 
 
 def destroy_token(user_id, token_type):
-    sql = 'delete from tokens where user_id=%ld and type=%d' % (user_id, token_type)
+    sql = 'delete from tokens where user_id=%(user_id)s and type=%(token_type)s'
     try:
-        dao.execute_sql(sql)
+        dao.execute_sql(sql, args={
+            'user_id': user_id,
+            'token_type': token_type
+        })
         return True
     except:
         return False
 
 
 def certify_token(token, token_type=0):
-    sql = "SELECT * FROM tokens where token='%s' AND type=%d" % (str(token), int(token_type))
+    sql = "SELECT * FROM tokens where token=%(token)s AND type=%(token_type)s"
 
-    result, count, new_id = dao.execute_sql(sql)
+    result, count, new_id = dao.execute_sql(sql, args={
+        'token': token,
+        'token_type': token_type
+    })
 
     if count:
         user_id = result[0][0]

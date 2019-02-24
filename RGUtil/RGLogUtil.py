@@ -7,6 +7,7 @@
 """
 import time
 from Model import log
+from Model.log import WebUILogModel
 
 
 class LogUtil:
@@ -31,7 +32,7 @@ class LogUtil:
         ct, ts = LogUtil.GetTimeStampString()
         print("[%s](%s) %s - %s" % (level.upper(), label, ts, message))
         if always_persist is True or level != "Notify":
-            log.LogToSteady(label, level, message, ct, dp)
+            WebUILogModel.LogToSteady(label, level, message, ct, dp)
 
     @staticmethod
     def ErrorLog(message, label, dp=0):

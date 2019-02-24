@@ -20,10 +20,16 @@ def new_pic(user_id, pic_file, album_id=None, title='', desc='', level=0, needFu
         album_id = de_album.ID
 
     sql = "INSERT INTO pic (user_id, album_id, file_id, title, description, level) VALUES \
-    (%ld, %ld, %ld, '%s', '%s', %d)" % \
-          (user_id, album_id, pic_file.ID, title, desc, level)
+    (%(user_id)s, %(album_id)s, %(file_id)s, %(title)s, %(desc)s, %(level)s)"
 
-    result, count, new_id = dao.execute_sql(sql, neednewid=True)
+    result, count, new_id = dao.execute_sql(sql, neednewid=True, args={
+        'user_id': user_id,
+        'album_id': album_id,
+        'file_id': pic_file.ID,
+        'title': title,
+        'desc': desc,
+        'level': level
+    })
 
     if count is 0:
         new_id = -1
@@ -32,7 +38,7 @@ def new_pic(user_id, pic_file, album_id=None, title='', desc='', level=0, needFu
 
 
 def page_list(other_id, album_id, page=1, size=10, relation=0):
-    # type: (long, long, int, int, int) -> (list, int, int, int, int)
+    # type: (int, int, int, int, int) -> (list, int, int, int, int)
 
     size = int(size)
 
@@ -46,26 +52,32 @@ def page_list(other_id, album_id, page=1, size=10, relation=0):
     sql = "SELECT pic.id, pic.title, pic.description, pic.level, file.timestamp, file.exif_timestamp, file.file_name\
             FROM pic\
             left join file on pic.file_id = file.id\
-          where user_id=%ld and album_id=%ld %s order by pic.id desc" % (other_id, album_id, '%s')
+          where user_id=%(other_id)s and album_id=%(album_id)s {} order by pic.id desc".format('{}')
 
     if relation == -1:
-        sql = sql % ''
+        sql = sql.format('')
     elif relation == 0:
-        sql = sql % 'and pic.level=0'
+        sql = sql.format('and pic.level=0')
     elif relation == 1:
-        sql = sql % 'and pic.level<=1'
+        sql = sql.format('and pic.level<=1')
     else:
         return None, 0, 0, 0, 0
 
-    result, count, new_id = dao.execute_sql(sql, needret=False)
+    result, count, new_id = dao.execute_sql(sql, needret=False, args={
+        'other_id': other_id,
+        'album_id': album_id
+    })
 
     page_count = int(operator.truediv(count - 1, size)) + 1
     page = min(page, page_count)
 
     sql += ' limit %d offset %d' % (size, (page - 1) * size)
-    print (sql)
+    print(sql)
 
-    result, this_page_count, new_id = dao.execute_sql(sql, needdic=True)
+    result, this_page_count, new_id = dao.execute_sql(sql, needdic=True, args={
+        'other_id': other_id,
+        'album_id': album_id
+    })
 
     page = page if this_page_count > 0 else page_count
 
@@ -77,7 +89,7 @@ def page_list(other_id, album_id, page=1, size=10, relation=0):
 
 
 def id_list(user_id, album_id, current_id=1, size=1, relation=0):
-    # type: (long, long, long, int, int) -> (list, int, int, int, int)
+    # type: (int, int, int, int, int) -> (list, int, int, int, int)
 
     user_id = int(user_id)
     album_id = int(album_id)
@@ -98,16 +110,19 @@ def id_list(user_id, album_id, current_id=1, size=1, relation=0):
     sql_format = \
         '(' + 'SELECT pic.id, pic.title, pic.description, pic.level, file.id as "fileId", file.file_name as "url" \
         FROM pic left join file on pic.file_id = file.id \
-        where pic.user_id=%ld and pic.album_id=%ld %s and %s  \
-        %s limit %d' + ')'
+        where pic.user_id=%(user_id)s and pic.album_id=%(album_id)s {} and {}  \
+        {} limit {}'.format('{}', '{}', '{}', '{}') + ')'
 
-    sql = sql_format % (user_id, album_id, level_sql, 'pic.id < %ld' % current_id, 'order by pic.id desc', size)
+    sql = sql_format.format(level_sql, 'pic.id < %ld' % current_id, 'order by pic.id desc', size)
     sql += 'UNION'
-    sql += (sql_format % (user_id, album_id, level_sql, 'pic.id >= %ld' % current_id, 'order by pic.id', size + 1))
+    sql += sql_format.format(level_sql, 'pic.id >= %ld' % current_id, 'order by pic.id', size + 1)
 
-    print (sql)
+    print(sql)
 
-    result, count, new_id = dao.execute_sql(sql, needdic=True)
+    result, count, new_id = dao.execute_sql(sql, needdic=True, args={
+        'user_id': user_id,
+        'album_id': album_id
+    })
 
     pre_id = []
     next_id = []
@@ -129,17 +144,15 @@ def update_info(p_id=None, user_id=None, title=None, desc=None, level=None):
     if p_id is None or user_id is None:
         return False
 
-    p_id = int(p_id)
-
-    sql = "UPDATE pic SET %s where id=%ld and user_id=%ld" % ('%s', p_id, user_id)
+    sql = "UPDATE pic SET {} where id=%(p_id)s and user_id=%(user_id)s".format('{}')
 
     data = []
     if title is not None:
-        data.append("title='%s'" % title)
+        data.append("title=%(title)s")
     if desc is not None:
-        data.append("description='%s'" % desc)
+        data.append("description=%(desc)s")
     if level is not None:
-        data.append("level=%d" % int(level))
+        data.append("level=%(level)s")
 
     if len(data) == 0:
         return False
@@ -150,8 +163,14 @@ def update_info(p_id=None, user_id=None, title=None, desc=None, level=None):
             params += ','
         params += item
 
-    sql = sql % params
-    result, count, new_id = dao.execute_sql(sql % data, needret=False)
+    sql = sql.format(params)
+    result, count, new_id = dao.execute_sql(sql, needret=False, args={
+        'p_id': p_id,
+        'user_id': user_id,
+        'title': title,
+        'desc': desc,
+        'level': level
+    })
     if count > 0:
         return True
     else:
@@ -162,11 +181,11 @@ def info(p_id=None, user_id=None):
     if p_id is None or user_id is None:
         return False, None
 
-    p_id = int(p_id)
-    user_id = int(user_id)
-
-    sql = "select * from pic where id=%ld and user_id=%ld" % (p_id, user_id)
-    result, count, new_id = dao.execute_sql(sql, needdic=True)
+    sql = "select * from pic where id=%(p_id)s and user_id=%(user_id)s"
+    result, count, new_id = dao.execute_sql(sql, needdic=True, args={
+        'p_id': p_id,
+        'user_id': user_id
+    })
     if count > 0:
         return True, result[0]
     else:

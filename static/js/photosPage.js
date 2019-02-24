@@ -400,10 +400,11 @@ function pageChange(i) {
     window.location.href = nextUrl
 }
 
-Pagination.init($(".ht-page"), pageChange);
-Pagination.Page($(".ht-page"), this.nowPage - 1, this.picSum, this.pageSize);
-
 $(function () {
+
+    Pagination.init($(".ht-page"), pageChange);
+    Pagination.Page($(".ht-page"), that.nowPage - 1, that.picSum, that.pageSize);
+
     if (!that.isHome) {
         return
     }

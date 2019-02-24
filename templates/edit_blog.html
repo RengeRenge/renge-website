@@ -223,6 +223,7 @@
             if (thisid.length) {
                 data['id'] = thisid
             }
+            show_loading()
             $.ajax({
                 type: 'POST',
                 dataType: "json",
@@ -234,8 +235,9 @@
                         window.location.href = '/blog/art/' + result.data.id;
                     }
                 },
-                error: function () {
-                    
+                error: function (e) {
+                    dismiss_loading()
+                    alert(e.errorText)
                 },
             })
         });

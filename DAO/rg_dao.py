@@ -4,10 +4,11 @@ import pymysql
 from flask import json
 from sqlalchemy.dialects import mysql
 
-from RGUtil import RGLogUtil
+from RGUtil.RGLogUtil import LogUtil
 
 with open('rg_database.json', 'r') as f:
     config = json.loads(f.read())
+    f.close()
 
 executeMutex = threading.RLock()
 
@@ -21,13 +22,21 @@ def get():
     return conn
 
 
-def escape_string(string):
-    if string and len(string) >= 0:
-        return pymysql.escape_string(string)
-    return string
+# def escape_string(string):
+#     if string and len(string) >= 0:
+#         return pymysql.escape_string(string)
+#     return string
+#
+#
+# def remove_none_key(args):
+#     for k in list(args.keys()):
+#         if args[k] is None:
+#             del args[k]
+#             continue
+#     return args
 
 
-def execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0):
+def execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0, args=None, commit=True):
     # type: (str, bool, bool, bool, int) -> (object, int, int)
     """
     Execute a specific SQL and update data version if need.
@@ -36,10 +45,10 @@ def execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0):
     :param dp: depth of exception stack
     :return: execution result table
     """
-    return do_execute_sql(sql, needret=needret, needdic=needdic, neednewid=neednewid, dp=dp)
+    return do_execute_sql(sql, needret=needret, needdic=needdic, neednewid=neednewid, dp=dp, args=args, commit=commit)
 
 
-def do_execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0):
+def do_execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0, args=None, commit=True):
     """
     Execute a specific SQL.
     :param sql: sql string
@@ -51,7 +60,7 @@ def do_execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0):
     cursor = None
     try:
         cursor = get().cursor()
-        count = cursor.execute(sql)
+        count = cursor.execute(query=sql, args=args)
         new_id = -1
         if needret is True:
             if needdic is True and cursor.description is not None:
@@ -63,7 +72,8 @@ def do_execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0):
                     result = cursor.fetchone()
                     new_id = result[0]
 
-                conn.commit()
+                if commit:
+                    conn.commit()
                 return [dict(zip(names, v)) for v in values], count, new_id
             else:
                 if count > 0 and neednewid:
@@ -71,20 +81,22 @@ def do_execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0):
                     result = cursor.fetchone()
                     new_id = result[0]
 
-                conn.commit()
+                if commit:
+                    conn.commit()
                 return cursor.fetchall(), count, new_id
         else:
             return None, count, -1
-    except mysql.connector.Error as e:
+    except Exception as e:
         try:
             if dp > 1:
                 return
-            RGLogUtil.ErrorLog("In ExecuteSQL, " + str(e) + " | Query: << " + (u"%s" % sql) + " >>",
+            LogUtil.ErrorLog("In ExecuteSQL, " + str(e) + " | Query: << " + (u"%s" % sql) + " >>",
                                __name__, dp=dp + 1)
         except:
             from traceback import format_exc
             print('ExecuteSQL Exception:')
             print(format_exc())
+        return None, 0, -1
     finally:
         if cursor is not None:
             cursor.close()
@@ -94,18 +106,26 @@ def do_execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0):
 def execute_sqls(sqls, needret=True, needdic=False, neednewid=False, dp=0):
     """
     Execute a specific SQLs.
-    :param sqls: sqls string Array
+    :param sqls: tuple or string Array like-> [(sql1, args1), (sql2, args2)] or [sql1, (sql2, args2)]
     :param needret: need return execution result
     :param dp: depth of exception stack
     :return: execution result table
     """
     executeMutex.acquire()
     cursor = None
+    sql = ''
     try:
         cursor = get().cursor()
         results = []
-        for sql in sqls:
-            count = cursor.execute(sql)
+        for index in range(len(sqls)):
+
+            sql = sqls[index]
+            args = None
+            if isinstance(sql, tuple):
+                sql, args = sqls[index]
+
+            count = cursor.execute(sql, args)
+            result = None
             new_id = -1
             if needret is True:
                 if needdic is True and cursor.description is not None:
@@ -124,17 +144,16 @@ def execute_sqls(sqls, needret=True, needdic=False, neednewid=False, dp=0):
                         cursor.execute('SELECT LAST_INSERT_ID();')
                         result = cursor.fetchone()
                         new_id = result[0]
-            else:
-                result = None
 
-            results.append({
+            item = {
                 'result': result,
                 'count': count,
                 'newId': new_id
-            })
-            conn.commit()
+            }
+            results.append(item)
+        conn.commit()
         return results
-    except mysql.connector.Error as e:
+    except Exception as e:
 
         conn.rollback()
         conn.commit()
@@ -142,12 +161,13 @@ def execute_sqls(sqls, needret=True, needdic=False, neednewid=False, dp=0):
         try:
             if dp > 1:
                 return
-            RGLogUtil.ErrorLog("In ExecuteSQL, " + str(e) + " | Query: << " + (u"%s" % sql) + " >>",
+            LogUtil.ErrorLog("In ExecuteSQL, " + str(e) + " | Query: << " + (u"%s" % sql) + " >>",
                                __name__, dp=dp + 1)
         except:
             from traceback import format_exc
             print('ExecuteSQL Exception:')
             print(format_exc())
+        return None
     finally:
         if cursor is not None:
             cursor.close()
