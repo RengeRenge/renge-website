@@ -4,7 +4,7 @@
 <link href="/static/css/rg_base.css" rel="stylesheet" type="text/css">
 <link href="/static/css/blog.css" rel="stylesheet" type="text/css">
 
-<script type="text/javascript" src="/static/jquery/dist/jquery.min.js"></script>
+<script type="text/javascript" src="/static/jquery/jquery.min.js"></script>
 
 <!--bg-->
 <script type="text/javascript" src="/static/js/rg_base.js"></script>
@@ -122,15 +122,9 @@
             </div>
             {% endfor %}
             {% if count == 0 %}
-                {% if home == false %}
                 <div class="nothing">
                     什么都没有
                 </div>
-                {% else %}
-                <div class="nothing">
-                    什么都没有
-                </div>
-                {% endif %}
             {% else %}
             <div class="ht-page"></div>
             <script>

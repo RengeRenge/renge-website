@@ -67,11 +67,11 @@ def new_user(username, pwd, title='Title', desc='Desc', nick='Nickname'):
     _user = None
 
     try:
-        sql = "SELECT auto_increment\
-                                FROM  information_schema.`TABLES`\
-                                WHERE TABLE_SCHEMA='rg_database'AND TABLE_NAME='user'"
-        cursor.execute(sql)
-        new_user_id = cursor.fetchone()[0]
+        # 某些时候获取到重复的ID
+        # sql = "SELECT auto_increment FROM  information_schema.`TABLES` \
+        #         WHERE TABLE_SCHEMA='rg_database'AND TABLE_NAME='user'"
+        # cursor.execute(sql)
+        new_user_id = -1
 
         from Model import album
         _album = album.new_album(user_id=new_user_id, title='日志相册', desc='默认相册', cover=None,
@@ -97,6 +97,10 @@ def new_user(username, pwd, title='Title', desc='Desc', nick='Nickname'):
 
         if count == 0:
             raise Exception
+
+        cursor.execute('SELECT LAST_INSERT_ID();')
+        new_user_id = cursor.fetchone()[0]
+        album.update_owner(album_id=new_album_id, user_id=new_user_id, commit=False)
 
         conn.commit()
         return get_user_with_name(username)

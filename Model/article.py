@@ -236,7 +236,7 @@ def add_or_update_art(user_id, title=None, content='', cate=0, group_id=None, ar
     if p_cover is not None and len(p_cover) is not 0:
         cover = p_cover
 
-    if group_id is not None and group_id < 0:
+    if group_id is not None and int(group_id) < 0:
         group_id = None
 
     if art_id is None:
