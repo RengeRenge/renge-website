@@ -192,7 +192,7 @@ def month_list(user_id, other_id, group_id, year, month, timezone=8):
     return result
 
 
-def add_or_update_art(user_id, title=None, content='', cate=0, group_id='', art_id=None, summary='', cover=''):
+def add_or_update_art(user_id, title=None, content='', cate=0, group_id=None, art_id=None, summary='', cover=''):
     timestamp = RGTimeUtil.timestamp()
 
     g = Goose(
@@ -236,10 +236,8 @@ def add_or_update_art(user_id, title=None, content='', cate=0, group_id='', art_
     if p_cover is not None and len(p_cover) is not 0:
         cover = p_cover
 
-    if len(group_id) <= 0:
-        group_id = 'null'
-    else:
-        group_id = str(group_id)
+    if group_id is not None and group_id < 0:
+        group_id = None
 
     if art_id is None:
         sql = "INSERT INTO art \

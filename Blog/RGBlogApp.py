@@ -193,8 +193,10 @@ def art_new(user_id):
 
     if 'group_id' in t:
         group_id = t['group_id']
+        if len(group_id) <= 0:
+            group_id = None
     else:
-        group_id = ''
+        group_id = None
     if 'cate' in t:
         cate = int(t['cate'])
     else:
