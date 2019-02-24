@@ -111,12 +111,13 @@ def page_list(user_id, other_id=-1, page=1, size=10, dic=True):
     page = page if this_page_count > 0 else page_count
     objects_list = []
 
-    for row in result:
-        d = art_obj_with_sqlresult(row)
-        if dic:
-            objects_list.append(d.__dict__)
-        else:
-            objects_list.append(d)
+    if result is not None:
+        for row in result:
+            d = art_obj_with_sqlresult(row)
+            if dic:
+                objects_list.append(d.__dict__)
+            else:
+                objects_list.append(d)
 
     return objects_list, page_count, page, size, count, relation
 
