@@ -31,8 +31,8 @@ def photo_page(other_id):
 
 
 def photo_page_render(user_id, other_id):
-    albums, relation = album.album_list(user_id, other_id)
-    re_relation = user.get_relation(other_id, user_id)
+    albums, re_relation = album.album_list(user_id, other_id)
+    relation = user.get_relation(user_id, other_id)
     t = {
         "list": albums,
         "user": user.get_user(other_id),
@@ -57,7 +57,7 @@ def photos_page_render(user_id, other_id, album_id):
     page = t['page'] if 'page' in t else 0
     size = t['size'] if 'size' in t else 10
 
-    relation = user.get_relation(other_id, user_id)
+    relation = user.get_relation(user_id, other_id)
     re_relation = user.get_relation(other_id, user_id)
 
     flag, album_detail = album.album_detail(album_id=album_id, relation=relation)
