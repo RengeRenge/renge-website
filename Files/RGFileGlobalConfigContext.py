@@ -38,4 +38,4 @@ def url_with_name(filename, thumb=False, gifThumb=False):
         else:
             filename = name + '_thumbnail' + extension
 
-    return RGFullHost + '/' + path_with_name(filename)
+    return 'https://renged.xyz' + '/' + path_with_name(filename)

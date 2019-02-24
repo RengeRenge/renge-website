@@ -2,7 +2,7 @@
     "host": "127.0.0.1",
     "port": 3306,
     "user": "root",
-    "passwd": "A_n20071214",
+    "passwd": "An20071214_",
     "database": "rg_database",
     "charset": "utf8mb4"
 }
