@@ -28,10 +28,15 @@ class WebUILogModel:
         :param dp: depth of exception stack
         """
         t = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timestamp))
-        sql = "INSERT INTO log(label, level, message, timestamp) VALUES ('%s', '%s', '%s', '%s')" \
-              % (label, level, message, t)
+        sql = "INSERT INTO log(label, level, message, timestamp) VALUES \
+        (%(label)s, %(level)s, %(message)s, %(t)s)"
         from DAO import rg_dao as dao
-        dao.execute_sql(sql, False, dp, updateVersion=False)
+        dao.execute_sql(sql=sql, dp=dp, args={
+            'label': label,
+            'level': level,
+            'message': message,
+            't': t
+        })
 
     @staticmethod
     def LogError(label, message, timestamp=None):

@@ -482,7 +482,7 @@ function recycleDrop() {
         this.parentNode.insertBefore(groupSelf.dragElement, groupSelf.nextDragElement)
 
         setTimeout(function () {
-            if (confirm('是否要删除' + groupSelf.dragElement.innerText)) {
+            if (confirm('是否要删除「' + groupSelf.dragElement.innerText + '」该分组下的日志都将归入默认分组')) {
                 $.ajax({
                     type: 'POST',
                     url: "/blog/group/delete",
@@ -495,7 +495,8 @@ function recycleDrop() {
                         } else {
                             let index = indexOfGroupId(id)
                             groupSelf.groupData.splice(index, 1)
-                            groupSelf.dragElement.parentNode.removeChild(groupSelf.dragElement);
+                            groupSelf.dragElement.parentNode.removeChild(groupSelf.dragElement)
+                            $('#defaultGroup').text
                         }
                     },
                     error: function (e) {

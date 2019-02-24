@@ -263,6 +263,21 @@ function rg_getTimezone() {
     return d
 }
 
+function show_loading() {
+    let h5string = '<i class="weui-loading"></i>'
+
+    let container = document.createElement('div')
+    container.className = 'fullScreen'
+    container.id = 'LoadingFullScreen'
+    container.innerHTML = h5string
+
+    document.body.appendChild(container)
+}
+
+function dismiss_loading() {
+    document.body.removeChild(document.getElementById('LoadingFullScreen'))
+}
+
 jQuery.fn.shake = function (intShakes /*Amount of shakes*/, intDistance /*Shake distance*/, intDuration /*Time duration*/) {
     this.each(function () {
         var jqNode = $(this);

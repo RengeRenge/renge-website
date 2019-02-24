@@ -6,15 +6,24 @@
 # @Software: PyCharm
 from datetime import datetime
 
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, json
+from sqlalchemy import create_engine, Column, BigInteger, String, Text, Integer, TIMESTAMP
 from sqlalchemy.databases import mysql
+from sqlalchemy.ext.declarative import declarative_base
+
+with open('rg_database.json', 'r') as f:
+    config = json.loads(f.read())
+    f.close()
+
+DB_URI = "mysql+pymysql://{user}:{passwd}@{host}:{port}/{database}?charset={charset}".format(**config)
+engine = create_engine(DB_URI)
+Base = declarative_base(engine)
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:A_n20071214@localhost:3306/rg_database"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
+# app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:A_n20071214@localhost:3306/rg_database"
+# app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 
-db = SQLAlchemy(app)
+# db = SQLAlchemy(app)
 
 """
 用户表：
@@ -25,43 +34,37 @@ db = SQLAlchemy(app)
 """
 
 
-class User(db.Model):
+class User(Base):
     __tablename__ = "user"
     __table_args__ = {'mysql_collate': 'utf8mb4_unicode_ci'}
 
-    id = db.Column(db.BigInteger, primary_key=True, comment='user id', autoincrement=True)
-    username = db.Column(db.String(30), nullable=False, default='', unique=True, comment='login id')
+    id = Column(BigInteger, primary_key=True, comment='user id', autoincrement=True)
+    username = Column(String(30), nullable=False, default='', unique=True, comment='login id')
 
-    pwd = db.Column(db.String(100), nullable=False, comment='MD5 32')
+    pwd = Column(String(100), nullable=False, comment='MD5 32')
 
-    nickname = db.Column(db.String(50), nullable=True, default='', comment='nickname')
-    title = db.Column(db.String(50), nullable=True, default='', comment='title')
-    description = db.Column(db.String(1000), nullable=True, default='', comment='user desc')
-    icon = db.Column(db.BigInteger, nullable=True, default='', comment='icon')
-    bg_image = db.Column(db.BigInteger, nullable=True, default='', comment='blog background image')
-    style = db.Column(db.Text, nullable=True, default='', comment='css style')
+    nickname = Column(String(50), nullable=True, default='', comment='nickname')
+    title = Column(String(50), nullable=True, default='', comment='title')
+    description = Column(String(1000), nullable=True, default='', comment='user desc')
+    icon = Column(BigInteger, nullable=True, default='', comment='icon')
+    bg_image = Column(BigInteger, nullable=True, default='', comment='blog background image')
+    style = Column(Text, nullable=True, default='', comment='css style')
 
-    tag = db.Column(db.String(20), nullable=True, default='', comment='tag')
-    default_album_id = db.Column(db.BigInteger, nullable=False, default='', comment='default album')
+    tag = Column(String(20), nullable=True, default='', comment='tag')
+    default_album_id = Column(BigInteger, nullable=False, default='', comment='default album')
 
-    addtime = db.Column(db.BigInteger, nullable=False, comment='ms')
-
-    def __repr__(self):
-        return "<User %r>" % self.name
+    addtime = Column(BigInteger, nullable=False, comment='ms')
 
 
-class user_relation(db.Model):
+class user_relation(Base):
     __tablename__ = "user_relation"
     __table_args__ = {'mysql_collate': 'utf8mb4_unicode_ci'}
 
-    m_user_id = db.Column(db.BigInteger, primary_key=True, comment='my id')
-    o_user_id = db.Column(db.BigInteger, primary_key=True, comment='other id')
+    m_user_id = Column(BigInteger, primary_key=True, comment='my id')
+    o_user_id = Column(BigInteger, primary_key=True, comment='other id')
 
-    relation = db.Column(db.Integer, nullable=False, comment='0 none, 1 follow, 100 friend, -100 block')
-    addtime = db.Column(db.BigInteger, nullable=False, comment='ms')
-
-    def __repr__(self):
-        return "<User %r>" % self.name
+    relation = Column(Integer, nullable=False, comment='0 none, 1 follow, 100 friend, -100 block')
+    addtime = Column(BigInteger, nullable=False, comment='ms')
 
 
 """
@@ -73,18 +76,15 @@ token表：
 """
 
 
-class tokens(db.Model):
+class tokens(Base):
     __tablename__ = "tokens"
     __table_args__ = {'mysql_collate': 'utf8mb4_unicode_ci'}
 
-    user_id = db.Column(db.BigInteger, primary_key=True, comment='user id')
-    type = db.Column(db.Integer, primary_key=True, comment='web, mobile, pad')
+    user_id = Column(BigInteger, primary_key=True, comment='user id')
+    type = Column(Integer, primary_key=True, comment='web, mobile, pad')
 
-    token = db.Column(db.String(100), nullable=False, comment='token')
-    timestamp = db.Column(db.BigInteger, nullable=False, comment='ms')
-
-    def __repr__(self):
-        return "<User %r>" % self.name
+    token = Column(String(100), nullable=False, comment='token')
+    timestamp = Column(BigInteger, nullable=False, comment='ms')
 
 
 """
@@ -99,31 +99,28 @@ class tokens(db.Model):
 """
 
 
-class Art(db.Model):
+class Art(Base):
     __tablename__ = "art"
     __table_args__ = {'mysql_collate': 'utf8mb4_unicode_ci'}
 
-    id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
 
-    title = db.Column(db.String(100), nullable=False)
-    summary = db.Column(db.String(100), nullable=False, comment='short view')
+    title = Column(String(100), nullable=False)
+    summary = Column(String(100), nullable=False, comment='short view')
 
-    cate = db.Column(db.Integer, nullable=False, comment='0 all people, 1 friend and self, 2 only self')
+    cate = Column(Integer, nullable=False, comment='0 all people, 1 friend and self, 2 only self')
 
-    user_id = db.Column(db.BigInteger, nullable=False)
+    user_id = Column(BigInteger, nullable=False)
 
-    group_id = db.Column(db.BigInteger, nullable=True)
+    group_id = Column(BigInteger, nullable=True)
 
-    cover = db.Column(mysql.TEXT, nullable=True)
+    cover = Column(mysql.TEXT, nullable=True)
 
-    content = db.Column(mysql.LONGTEXT, nullable=True)
+    content = Column(mysql.LONGTEXT, nullable=True)
 
-    addtime = db.Column(db.BigInteger, nullable=False, comment='ms')
-    updatetime = db.Column(db.BigInteger, nullable=False, comment='ms')
-    create_time = db.Column(db.TIMESTAMP, nullable=False, default=datetime.utcnow)
-
-    def __repr__(self):
-        return "<User %r>" % self.title
+    addtime = Column(BigInteger, nullable=False, comment='ms')
+    updatetime = Column(BigInteger, nullable=False, comment='ms')
+    create_time = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
 
 
 """
@@ -131,21 +128,18 @@ class Art(db.Model):
 """
 
 
-class ArtGroup(db.Model):
+class ArtGroup(Base):
     __tablename__ = "art_group"
     __table_args__ = {'mysql_collate': 'utf8mb4_unicode_ci'}
 
-    id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
 
-    name = db.Column(db.String(100), nullable=False)
+    name = Column(String(100), nullable=False)
 
-    user_id = db.Column(db.BigInteger)
+    user_id = Column(BigInteger)
 
-    level = db.Column(db.Integer, nullable=False)
-    order = db.Column(db.Integer, nullable=False, comment='order like: 0,1,2,3,4')
-
-    def __repr__(self):
-        return "<User %r>" % self.title
+    level = Column(Integer, nullable=False)
+    order = Column(Integer, nullable=False, comment='order like: 0,1,2,3,4')
 
 
 """
@@ -153,18 +147,15 @@ log表
 """
 
 
-class log(db.Model):
+class log(Base):
     __tablename__ = "log"
     __table_args__ = {'mysql_collate': 'utf8mb4_unicode_ci'}
 
-    id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
-    label = db.Column(db.String(100), nullable=False)
-    level = db.Column(db.String(100), nullable=False)
-    message = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.String(30), nullable=False)
-
-    def __repr__(self):
-        return "<User %r>" % self.title
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    label = Column(String(100), nullable=False)
+    level = Column(String(100), nullable=False)
+    message = Column(Text, nullable=False)
+    timestamp = Column(String(30), nullable=False)
 
 
 """
@@ -182,23 +173,20 @@ id
 """
 
 
-class pic(db.Model):
+class pic(Base):
     __tablename__ = "pic"
     __table_args__ = {'mysql_collate': 'utf8mb4_unicode_ci'}
 
-    id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
 
-    user_id = db.Column(db.BigInteger, nullable=False)
-    album_id = db.Column(db.BigInteger, default=0)
+    user_id = Column(BigInteger, nullable=False)
+    album_id = Column(BigInteger, default=0)
 
-    file_id = db.Column(db.BigInteger, primary_key=True)
+    file_id = Column(BigInteger, primary_key=True)
 
-    title = db.Column(db.Text, nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    level = db.Column(db.Integer, nullable=True, comment='0 all people, 1 friend and self, 2 only self')
-
-    def __repr__(self):
-        return "<User %r>" % self.title
+    title = Column(Text, nullable=False)
+    description = Column(Text, nullable=False)
+    level = Column(Integer, nullable=True, comment='0 all people, 1 friend and self, 2 only self')
 
 
 """
@@ -206,23 +194,20 @@ class pic(db.Model):
 """
 
 
-class album(db.Model):
+class album(Base):
     __tablename__ = "album"
     __table_args__ = {'mysql_collate': 'utf8mb4_unicode_ci'}
 
-    id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
 
-    user_id = db.Column(db.BigInteger, nullable=False)
+    user_id = Column(BigInteger, nullable=False)
 
-    title = db.Column(db.Text, nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    cover = db.Column(db.BigInteger, nullable=True, comment='cover')
-    level = db.Column(db.Integer, nullable=True, comment='0 all people, 1 friend and self, 2 only self')
+    title = Column(Text, nullable=False)
+    description = Column(Text, nullable=False)
+    cover = Column(BigInteger, nullable=True, comment='cover')
+    level = Column(Integer, nullable=True, comment='0 all people, 1 friend and self, 2 only self')
 
-    timestamp = db.Column(db.BigInteger, nullable=False)
-
-    def __repr__(self):
-        return "<User %r>" % self.title
+    timestamp = Column(BigInteger, nullable=False)
 
 
 """
@@ -230,20 +215,17 @@ class album(db.Model):
 """
 
 
-class file(db.Model):
+class file(Base):
     __tablename__ = "file"
     __table_args__ = {'mysql_collate': 'utf8mb4_unicode_ci'}
 
-    id = db.Column(db.BigInteger, primary_key=True)
-    file_name = db.Column(db.Text, nullable=False)
-    type = db.Column(db.String(20), comment='image/jpg')
+    id = Column(BigInteger, primary_key=True)
+    file_name = Column(Text, nullable=False)
+    type = Column(String(20), comment='image/jpg')
 
-    exif_timestamp = db.Column(db.BigInteger, nullable=True)
-    timestamp = db.Column(db.BigInteger, nullable=False)
-
-    def __repr__(self):
-        return "<User %r>" % self.title
+    exif_timestamp = Column(BigInteger, nullable=True)
+    timestamp = Column(BigInteger, nullable=False)
 
 
 if __name__ == "__main__":
-    db.create_all()
+    Base.metadata.create_all()
