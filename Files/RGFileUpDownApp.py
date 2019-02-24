@@ -43,10 +43,12 @@ def new_file(user_id):
     # file_stream = {
     #     file_stream.name: (file_stream.filename, file_stream.stream, file_stream.content_type),
     # }
+    print('will upload')
     req = requests.post(url=url, files=file_stream, data=request.form, params=None,
                         auth=request.authorization, cookies=request.cookies, hooks=None, json=request.json, stream=True)
 
     t = req.json()
+    print('end upload')
     if simditor:
         return handler_upload_res(user_id, t[0], simditor=True)
     else:
