@@ -75,7 +75,7 @@ def new_album(user_id, title='', desc='', cover=None, level=0, timestamp=None, c
 
 
 def new_album_sql(user_id_key, title_key, desc_key, cover_key, level_key, timestamp_key):
-    return "INSERT INTO album (user_id, title, description, level, cover, timestamp) VALUES \
+    return "INSERT INTO album (user_id, title, description, `level`, cover, timestamp) VALUES \
             (%({})s, %({})s, %({})s, %({})s, %({})s, %({})s)" \
         .format(user_id_key, title_key, desc_key, level_key, cover_key, timestamp_key)
 
