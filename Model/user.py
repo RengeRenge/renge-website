@@ -75,7 +75,7 @@ def new_user(username, pwd, title='Title', desc='Desc', nick='Nickname'):
 
         from Model import album
         _album = album.new_album(user_id=new_user_id, title='日志相册', desc='默认相册', cover=None,
-                                 level=4, timestamp=timestamp, commit=False)
+                                 level=2, timestamp=timestamp, commit=False)
 
         if _album is None:
             raise Exception
