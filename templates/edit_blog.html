@@ -3,7 +3,7 @@
 
 {%- macro value(name)-%}{%- if art -%}{{art[name]}}{%- endif -%}{%- endmacro -%}
 {%- macro selectIfNeed(selectedV)-%}{%- if value('cate') == selectedV -%}selected="selected"{%- endif -%}{%- endmacro -%}
-<link href="/static/css/rg_base.css" rel="stylesheet" type="text/css">
+<link href="/static/css/rg_base.css" rel="stylesheet" type="text/css" id="rg_base">
 <link href="/static/css/edit_blog.css" rel="stylesheet" type="text/css">
 
 <script type="text/javascript" src="/static/jquery/jquery.min.js"></script>
@@ -230,6 +230,7 @@
                 url: "/blog/new",
                 data: data,
                 success:function (result) {
+                    dismiss_loading()
                     if (result.code == 1000) {
                         editor.autosave.storage.remove(window.location.pathname + '/autosave/editor-content/')
                         window.location.href = '/blog/art/' + result.data.id;

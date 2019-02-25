@@ -8,12 +8,14 @@ groupSelf.submitArtGroupId = null
 
 function initGroupModal(defaultId, triggerDomId, customGroup, selectCallBack) {
 
+    let toolh5 =
+        '<img src="/static/image/add_group.png" class="toolIcon toolIconPoint RGTransition disblur" id="addGroupIcon" onclick="addGroup()" style="right: 170px">\n' +
+        '<img src="/static/image/rename.png" class="toolIcon toolIconPoint RGTransition disblur" id="renameIcon" onclick="rename()" style="right: 120px">\n' +
+        '<img src="/static/image/manager_order.png" class="toolIcon toolIconPoint RGTransition disblur" id="order_button" onclick="editOrder()">\n'
     let h5string =
         '    <i class="weui-loading"></i>\n' +
         '\n' +
-        '    <img src="/static/image/add_group.png" class="toolIcon toolIconPoint RGTransition disblur" id="addGroupIcon" onclick="addGroup()" style="right: 170px">\n' +
-        '    <img src="/static/image/rename.png" class="toolIcon toolIconPoint RGTransition disblur" id="renameIcon" onclick="rename()" style="right: 120px">\n' +
-        '    <img src="/static/image/manager_order.png" class="toolIcon toolIconPoint RGTransition disblur" id="order_button" onclick="editOrder()">\n' +
+        (that.relation < 0 ? toolh5 : '') +
         '    <img src="/static/image/close.png" class="close" onclick="hideGroup()">\n' +
         '\n' +
         '    <div id="groupWrapper">\n' +
@@ -81,7 +83,9 @@ function loadGroup() {
         type: 'GET',
         dataType: "json",
         url: "/blog/group/list",
-        // data: data,
+        data: {
+            userId: that.userId
+        },
         success: function (result) {
             if (!groupSelf.showGroup)
                 return
@@ -149,6 +153,9 @@ function showAddGroupModal() {
 
 function hideAddGroupModal() {
     isAddGroup = false
+    if (that.relation >= 0) {
+        return
+    }
     $('#addGroupModal').hide()
     $('#addGroupInput')[0].value = null
 }
@@ -260,6 +267,9 @@ function startRename() {
 
 function endRename() {
     isRename = false
+    if (that.relation >= 0) {
+        return
+    }
     clearInterval(groupSelf.flashTimer)
     $('#renameIcon')[0].style.opacity = 1
 
@@ -510,6 +520,9 @@ function recycleDrop() {
 
 function endDrag() {
     isEditOrder = false
+    if (that.relation >= 0) {
+        return
+    }
     $('.groupItem').css('width', '')
     $('.groupItem').css('margin', '')
     $('.groupItem').css('padding', '')

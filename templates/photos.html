@@ -5,7 +5,7 @@
 
 <script type="text/javascript" src="/static/jquery/jquery.min.js"></script>
 
-<link href="/static/css/rg_base.css" rel="stylesheet" type="text/css">
+<link href="/static/css/rg_base.css" rel="stylesheet" type="text/css" id="rg_base">
 <script type="text/javascript" src="/static/js/rg_base.js"></script>
 <script type="text/javascript" src="/static/js/bgLayout.js"></script>
 
@@ -109,8 +109,8 @@
     <div style="margin-bottom: 20px;" class="toolBarWrapper">
         <a href="/blog/{{user.ID}}/" class="toolBarItem">日志</a>
         <a href="/photo/{{user.ID}}/" class="toolBarItem toolBarItem-selected">相册</a>
-        {%- if home -%}
         <a href="/blog/view/{{user.ID}}/" class="toolBarItem">归档</a>
+        {%- if home -%}
         <a href="/user/friends" class="toolBarItem">好友</a>
         <a class="toolBarItem">导入</a>
         {%- endif -%}
@@ -154,7 +154,7 @@
         <div class="collectionView" style="margin-top: 30px">
             {%- for item in list -%}
             <div id={{item.id}} class="collectionCell collectionWrap wrapperItemBg" style="margin: 10px;">
-                <div id="{{item.o_url}}" name="{{item.url}}" onclick="show_oPic(this)" class="bgNoRepeatImage" style="background-image: url('{{item.url}}'); width: 100%;">
+                <div id="{{item.qUrl}}" name="{{item.url}}" onclick="show_oPic(this)" class="bgNoRepeatImage" style="background-image: url('{{item.url}}'); width: 100%;">
 
                 </div>
                 <div id={{item.id|string+'title'}} class="p_title nowrapText">
@@ -217,7 +217,7 @@
 
     <div style="min-height: 40px;
              margin-top:{%-if home -%}10px{%- else -%}20px{%- endif -%};
-             padding-right: 55px;
+             padding-right: {%-if home -%}55px{%- else -%}70px{%- endif -%};
              float: right">
         <div id="display_img_privacy" style="display: inline-block;">
         </div>
@@ -230,6 +230,8 @@
                 <li onclick="iconSet()">设为头像</li>
                 <li onclick="bgSet()">设为背景</li>
                 <li>移动到...</li>
+                <li onclick="delPic()">删除图片</li>
+                <li onclick="showOriginal()">查看原图</li>
             </ul>
         </span>
         </div>

@@ -14,7 +14,7 @@ class pic:
         self.timestamp = timestamp
 
 
-def new_pic(user_id, pic_file, album_id=None, title='', desc='', level=0, needFullUrl=True):
+def new_pic(user_id, pic_file, album_id=None, title='', desc='', level=0, needFullUrl=True, original=False):
     if album_id is None:
         de_album = album.default_album(user_id)
         album_id = de_album.ID
@@ -33,7 +33,7 @@ def new_pic(user_id, pic_file, album_id=None, title='', desc='', level=0, needFu
 
     if count is 0:
         new_id = -1
-    url = url_with_name(pic_file.name) if needFullUrl else '/' + path_with_name(pic_file.name)
+    url = url_with_name(pic_file.name, needhost=needFullUrl, original=original)
     return pic(new_id, album_id, url, pic_file.exif_timestamp, pic_file.timestamp)
 
 
@@ -83,7 +83,7 @@ def page_list(other_id, album_id, page=1, size=10, relation=0):
 
     for row in result:
         row['url'] = url_with_name(row['file_name'], thumb=True)
-        row['o_url'] = url_with_name(row['file_name'])
+        row['qUrl'] = url_with_name(row['file_name'])
 
     return result, page_count, page, size, count
 
@@ -133,7 +133,8 @@ def id_list(user_id, album_id, current_id=1, size=1, relation=0):
             pre_id.append(row)
         else:
             current = row
-        row['oUrl'] = url_with_name(row['url'])
+        row['oUrl'] = url_with_name(row['url'], original=True)
+        row['qUrl'] = url_with_name(row['url'])
         row['url'] = url_with_name(row['url'], thumb=True)
 
     # pre_id.reverse()
@@ -175,6 +176,14 @@ def update_info(p_id=None, user_id=None, title=None, desc=None, level=None):
         return True
     else:
         return False
+
+
+def delete(user_id, p_id):
+    sql = 'delete from pic where id=%(p_id)s and user_id=%(user_id)s'
+    dao.execute_sql(sql, args={
+        'user_id': user_id,
+        'p_id': p_id,
+    })
 
 
 def info(p_id=None, user_id=None):

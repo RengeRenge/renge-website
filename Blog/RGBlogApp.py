@@ -21,28 +21,28 @@ def auto_blog_page(user_id):
 
 @RestRouter.route('/<other_id>/', methods=["GET"])
 def blog_page(other_id):
-    auth, user_id = RGUIController.do_auth()
+    auth, view_user = RGUIController.do_auth()
     if auth is True:
-        return blog_page_render(user_id, other_id)
+        return blog_page_render(other_id, view_user)
     else:
         return redirect(url_for('login_page'))
 
 
-def blog_page_render(user_id, other_id):
+def blog_page_render(art_user_id, view_user_id):
     t = get_data_with_request(request)
     page = t['page'] if 'page' in t else 0
     size = t['size'] if 'size' in t else 10
 
-    arts, page_count, now_page, page_size, count, re_relation = article.page_list(user_id, other_id, page, size)
-    relation = user.get_relation(user_id, other_id)
+    arts, page_count, now_page, page_size, count, re_relation = article.page_list(view_user_id, art_user_id, page, size)
+    relation = user.get_relation(view_user_id, art_user_id)
     t = {
         "list": arts,
         "pageCount": page_count,
         "pageSize": page_size,
         "nowPage": now_page,
         "count": count,
-        "user": user.get_user(other_id),
-        "home": int(other_id) == int(user_id),
+        "user": user.get_user(art_user_id),
+        "home": int(view_user_id) == int(art_user_id),
         "relation": relation,
         "re_relation": re_relation,
     }
@@ -237,8 +237,8 @@ def art_group_list(user_id):
     else:
         other_id = user_id
 
-    relation = user.get_relation(user_id, other_id)
-    flag, result = article.group_list(other_id=user_id, relation=relation)
+    relation = user.get_relation(other_id, user_id)
+    flag, result = article.group_list(other_id=other_id, relation=relation)
 
     code = http_code.ok if flag is True else http_code.not_existed
     res = form_res(code, result)

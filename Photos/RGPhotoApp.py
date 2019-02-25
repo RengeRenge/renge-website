@@ -119,6 +119,19 @@ def pic_edit(user_id):
     return jsonify(form_res(code, None))
 
 
+@RestRouter.route('delete', methods=['POST'])
+@RGUIController.auth_handler(page=False)
+def pic_delete(user_id):
+    t = get_data_with_request(request)
+    if 'id' in t:
+        p_id = t['id']
+        pic.delete(user_id=user_id, p_id=p_id)
+        code = http_code.ok
+    else:
+        code = http_code.lack_param
+    return jsonify(form_res(code, None))
+
+
 @RestRouter.route('album/edit', methods=['POST'])
 @RGUIController.auth_handler(page=False)
 def album_edit(user_id):

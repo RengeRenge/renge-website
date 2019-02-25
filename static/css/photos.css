@@ -9,10 +9,10 @@
     padding: 10px;
     width: 16%;
     height: 100%;
-    max-width: 200px;
+    max-width: 180px;
     /*max-height: 250px;*/
-    min-width: 160px;
-    min-height: 160px;
+    min-width: 140px;
+    min-height: 140px;
     display: -webkit-flex; /* Safari */
     display: flex;
 }
@@ -111,6 +111,8 @@
 }
 
 .nav ul {
+    padding: 0 0;
+    margin: 0 0;
     list-style: none;
     position: absolute;
     width: 120px;
@@ -121,6 +123,7 @@
 }
 
 .nav li:hover {
+    margin: 0 0;
     background: #f5f3ec;
     cursor: pointer;
 }

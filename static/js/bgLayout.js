@@ -19,17 +19,55 @@ function autoHeight() {
     }
     var min = h * 0.7
     var last = $(".articleWrapper").css('min-height');
-    if (last != '' + min + 'px') {
+    if (last !== '' + min + 'px') {
         $(".articleWrapper").css('min-height', min);
     }
 
     min = h * 0.5
     last = $(".nothing").css('min-height');
-    if (last != '' + min + 'px') {
+    if (last !== '' + min + 'px') {
         $(".nothing").css('min-height', min);
+
+        let css = document.getElementById("rg_base");
+        let cssText = "max-width: 80%; height: auto; width: auto; max-height: {0};".format(min+'px')
+        modifyRule(css.sheet, '.simditor img', cssText)
     }
     configMarginBottom()
 }
+
+function modifyRule(sheet, selectorText, cssText) {
+
+    let rules = sheet.cssRules;
+
+    if (!rules.length) return;
+
+    for (let i = 0; i < rules.length; i++) {
+
+        let o = rules[i]
+        let patt = new RegExp("^" + selectorText + "\\s*{.*?}.*?$");
+        if (patt.test(o.cssText)) {
+            deleteRule(sheet, i);
+            insertRule(sheet, selectorText, cssText, i);
+        }
+    }
+}
+
+function insertRule(sheet, selectorText, cssText, position) {
+    if (sheet.insertRule) {
+        sheet.insertRule(selectorText + "{" + cssText + "}", position);
+    } else if (sheet.addRule) {
+        sheet.addRule(selectorText, cssText, poistion);
+    }
+}
+
+function deleteRule(sheet, index) {
+    if (sheet.deleteRule) {
+        sheet.deleteRule(index);
+    } else if (sheet.removeRule) {
+        sheet.removeRule(index);
+    }
+}
+
 
 function onSceenHeightChanged(callback) {
     this.sceenHeightCallback = callback

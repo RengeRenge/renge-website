@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="zh">
 
-<link href="/static/css/rg_base.css" rel="stylesheet" type="text/css">
+<link href="/static/css/rg_base.css" rel="stylesheet" type="text/css" id="rg_base">
 <link href="/static/css/dragEvent.css" rel="stylesheet" type="text/css">
 <link href="/static/color/spectrum.min.css" rel="stylesheet" type="text/css">
+<link href="/static/css/weui-for-work.min.css" rel="stylesheet" type="text/css">
 
 <script type="text/javascript" src="/static/jquery/jquery.min.js"></script>
 <!--bg-->
@@ -15,6 +16,9 @@
 
 <script type="text/javascript" src="/static/js/login.js"></script>
 <style>
+    .fullScreen {
+        background-color: rgba(255, 255, 255, 0.6);
+    }
     .wrapperFlex {
         width: 30%;
         min-width: 64px;
@@ -627,6 +631,8 @@
         if (nick && nick.length)
             formData.append('nickname', nick)
 
+        show_loading()
+
         $.ajax({
             url: '/user/setInfo',
             processData: false,
@@ -634,13 +640,15 @@
             type: "POST",
             data: formData,
             success: function (res) {
+                dismiss_loading()
                 if (res.code == 1000) {
                     alert('修改成功')
                     // window.location.href = '/'
                 }
             },
-            error: function () {
-
+            error: function (e) {
+                alert(e.errorText)
+                dismiss_loading()
             }
         })
     }
