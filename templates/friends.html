@@ -2,7 +2,7 @@
 <html lang="zh">
 
 <script type="text/javascript" src="/static/jquery/jquery.min.js"></script>
-<link href="/static/css/rg_base.css" rel="stylesheet" type="text/css">
+<link href="/static/css/rg_base.css" rel="stylesheet" type="text/css" id="rg_base">
 
 <!--bg-->
 <script type="text/javascript" src="/static/js/rg_base.js"></script>
@@ -99,6 +99,7 @@
     </div>
     {% endif %}
 
+    {%- if list -%}
     <div class="wrapperLR wrapperPadding wrapperBg">
         <div class="wrapperFull">
             {% for item in list %}
@@ -142,6 +143,7 @@
             {% endif %}
         </div>
     </div>
+    {% endif %}
 </div>
 </body>
 </html>

@@ -35,7 +35,7 @@ def user_with_dbResult(result=None, needpwd=False, needusername=False, needIcon=
         icon = None
 
     if needBg:
-        bg = files.file_name(result[7], needUrl=True) if bgName is None else url_with_name(bgName)
+        bg = files.file_name(result[7], needUrl=True) if bgName is None else url_with_name(bgName, original=True)
     else:
         bg = None
 

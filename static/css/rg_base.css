@@ -1,6 +1,7 @@
-img {
+.simditor img {
     max-width: 80%;
     height: auto;
+    width: auto;
 }
 
 body {
@@ -145,6 +146,7 @@ body {
 
 .boprt ul {
     float: right;
+    margin: 0;
 }
 
 .boprt li {

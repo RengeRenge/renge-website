@@ -171,9 +171,10 @@ def month_list(user_id, other_id, group_id, year, month, timezone=8):
                 user_id=%(user_id)s and \
                 addtime >= {} and addtime < {} and \
                 ( \
-                cate <= (select relation from user_relation where m_user_id = %(user_id)s and o_user_id = %(other_id)s \
-                or \
-                cate <= 0 \
+                    cate <= \
+                    (select relation from user_relation where m_user_id = %(user_id)s and o_user_id = %(other_id)s) \
+                    or \
+                    cate <= 0 \
                 ) \
                 {} \
                 order by addtime desc'.format(s_time, e_time, '{}')
@@ -385,9 +386,9 @@ def update_group_order(user_id=None, ids=None, orders=None):
 def group_list(other_id=None, relation=0):
     if relation != -1:
         if relation == 0:
-            sql = 'SELECT * FROM art_group where user_id=%(other_id)s and level=0'
+            sql = 'SELECT * FROM art_group where user_id=%(other_id)s and `level`=0'
         elif relation == 1:
-            sql = 'SELECT * FROM art_group where user_id=%(other_id)s and level<=1'
+            sql = 'SELECT * FROM art_group where user_id=%(other_id)s and `level`<=1'
         else:
             return True, None
     else:

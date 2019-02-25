@@ -15,14 +15,15 @@ onKeyupEnable(function (e) {
 function show_oPic(e) {
 
     $(".fullScreen").show()
+    $('html,body').addClass('overHidden'); //使网页不可滚动
 
     let thumbUrl = e.getAttribute('name')
-    let oUrl = e.id
+    let qUrl = e.id
     let pid = e.parentNode.id
-    doLoadPic(thumbUrl, oUrl, pid)
+    doLoadPic(thumbUrl, qUrl, pid)
 }
 
-function doLoadPic(thumb_url, o_url, pid) {
+function doLoadPic(thumb_url, qUrl, pid) {
     if (that.currentPid === pid) {
         return
     }
@@ -50,7 +51,7 @@ function doLoadPic(thumb_url, o_url, pid) {
                 alert('获取列表失败')
             } else {
                 $(".img_text").show()
-                $("#display_img")[0].src = o_url
+                $("#display_img")[0].src = qUrl
 
                 RGBaster.colors(thumb_url, {
                     paletteSize: 1,
@@ -168,6 +169,7 @@ function selectString(level, c_level) {
 function dismiss_oPic() {
     $(".fullScreen").hide()
     $(".fullScreen").css("background-color", '');
+    $('html,body').removeClass('overHidden'); //使网页恢复可滚动
     $("#display_img")[0].src = ''
     $(".fullScreen .bgNoRepeatImage").css('filter', '')
     $(".fullScreen .close").css('filter', '')
@@ -182,20 +184,22 @@ function dismiss_oPic() {
 
 function next_oPic() {
     if (!that.picList)
-        return
+        return false
     if (!that.picList['next'].length)
-        return
+        return false
     let next = that.picList['next'][0]
-    doLoadPic(next.url, next.oUrl, next.id)
+    doLoadPic(next.url, next.qUrl, next.id)
+    return true
 }
 
 function last_oPic() {
     if (!that.picList)
-        return
+        return false
     if (!that.picList['pre'].length)
-        return
+        return false
     let pre = that.picList['pre'][0]
-    doLoadPic(pre.url, pre.oUrl, pre.id)
+    doLoadPic(pre.url, pre.qUrl, pre.id)
+    return true
 }
 
 function onBlurPicInfo(e) {
@@ -371,7 +375,7 @@ function iconSet() {
 
 function bgSet() {
     let fileId = '' + that.picList['current']['fileId']
-    let bgUrl = that.picList['current']['oUrl']
+    let bgUrl = that.picList['current']['qUrl']
     if (that.bgId === fileId)
         return
     $.ajax({
@@ -393,6 +397,41 @@ function bgSet() {
         error: function () {
         },
     })
+}
+
+function delPic() {
+    if (!confirm('删除此图片？')) {
+        return
+    }
+    let pid = '' + that.picList['current']['id']
+    $.ajax({
+        type: 'POST',
+        dataType: "json",
+        url: "/photo/delete",
+        data: {
+            'id': pid,
+        },
+        success: function (result) {
+            if (result.code !== 1000) {
+                alert('删除失败')
+            } else {
+                if (next_oPic()) {
+
+                } else if (last_oPic()) {
+
+                } else {
+                    alert('没有图片了👋')
+                }
+            }
+        },
+        error: function () {
+        },
+    })
+}
+
+function showOriginal() {
+    let oUrl = that.picList['current']['oUrl']
+    $("#display_img")[0].src = oUrl
 }
 
 function pageChange(i) {
