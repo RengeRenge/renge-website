@@ -237,17 +237,41 @@ String.prototype.trimRGBAToFull = function (defaultcolor) {
     return 'rgba({0},{1},{2},{3})'.format(item[0], item[1], item[2], a)
 }
 
-String.prototype.getUrlRelativePath = function () {
-    var url = this
-    var arrUrl = url.split("//");
+String.prototype.getImageUrlRelativePath = function () {
+    if (this.isRGImage()) {
+        let arrUrl = this.split("//");
+        let start = arrUrl[1].indexOf("/");
+        let relUrl = arrUrl[1].substring(start);//stop省略，截取从start开始到结尾的所有字符
 
-    var start = arrUrl[1].indexOf("/");
-    var relUrl = arrUrl[1].substring(start);//stop省略，截取从start开始到结尾的所有字符
+        // if (relUrl.indexOf("?") != -1) {
+        //     relUrl = relUrl.split("?")[0];
+        // }
+        return relUrl;
+    } else {
+        return this;
+    }
+}
 
-    // if (relUrl.indexOf("?") != -1) {
-    //     relUrl = relUrl.split("?")[0];
-    // }
-    return relUrl;
+String.prototype.isRGImage = function () {
+    let url = this
+    let arrUrl = url.split("//");
+    if (arrUrl.length === 0)
+        return true
+    let start = arrUrl[1].indexOf("/");
+    let host = arrUrl[1].substr(0, start)
+    return document.location.host === host
+}
+
+String.prototype.originalRGSrc = function () {
+    if (this.isRGImage()) {
+        let index = this.lastIndexOf('.')
+        let ext = this.substring(index)
+        let filename = this.substr(0, index)
+
+        index = filename.lastIndexOf('_')
+        return filename.substr(0, index) + ext
+    }
+    return this
 }
 
 function styleSafeGet(k) {
@@ -277,6 +301,39 @@ function show_loading() {
 function dismiss_loading() {
     document.body.removeChild(document.getElementById('LoadingFullScreen'))
 }
+
+that.REGX_HTML_ENCODE = /“|&|’|<|>|[\x00-\x20]|[\x7F-\xFF]|[\u0100-\u2700]/g;
+that.REGX_HTML_DECODE = /&\w+;|&#(\d+);/g;
+
+String.prototype.encodeHtml = function () {
+    let s = this
+    return s.replace(that.REGX_HTML_ENCODE,
+        function ($0) {
+            var c = $0.charCodeAt(0), r = ["&#"];
+            c = (c == 0x20) ? 0xA0 : c;
+            r.push(c);
+            r.push(";");
+            return r.join("");
+        });
+};
+
+String.prototype.decodeHtml = function () {
+    let s = this
+    return s.replace(that.REGX_HTML_DECODE,
+        function ($0, $1) {
+            var c = this.HTML_ENCODE[$0]; // 尝试查表
+            if (c === undefined) {
+                // Maybe is Entity Number
+                if (!isNaN($1)) {
+                    c = String.fromCharCode(($1 == 160) ? 32 : $1);
+                } else {
+                    // Not Entity Number
+                    c = $0;
+                }
+            }
+            return c;
+        });
+};
 
 jQuery.fn.shake = function (intShakes /*Amount of shakes*/, intDistance /*Shake distance*/, intDuration /*Time duration*/) {
     this.each(function () {

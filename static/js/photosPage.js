@@ -431,7 +431,8 @@ function delPic() {
 
 function showOriginal() {
     let oUrl = that.picList['current']['oUrl']
-    $("#display_img")[0].src = oUrl
+    window.open('/photo/original?src=' + oUrl.originalRGSrc())
+    // $("#display_img")[0].src = oUrl
 }
 
 function pageChange(i) {

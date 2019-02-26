@@ -52,6 +52,12 @@ def photos_page(other_id, album_id):
         return redirect(url_for('login_page'))
 
 
+@RestRouter.route('/original', methods=["GET"])
+def photos_original_page():
+    t = get_data_with_request(request)
+    return render_template("picOriginalView.html", **t)
+
+
 def photos_page_render(user_id, other_id, album_id):
     t = get_data_with_request(request)
     page = t['page'] if 'page' in t else 0

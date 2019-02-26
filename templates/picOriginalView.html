@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>查看原图</title>
+</head>
+<body>
+<img id="oImg" src="{{src}}" style="max-width: 100%; max-height: 100%">
+
+<script>
+    function getImgNaturalDimensions(oImg, callback) {
+        if (!oImg.naturalWidth) { // 现代浏览器
+            callback({w: oImg.naturalWidth, h: oImg.naturalHeight});
+        } else { // IE6/7/8
+            let nImg = new Image();
+
+            nImg.onload = function () {
+                if (!oImg.naturalWidth) {
+                    callback({w: nImg.width, h: nImg.height});
+                } else {
+                    callback({w: nImg.naturalWidth, h: nImg.naturalHeight});
+                }
+            }
+            nImg.src = oImg.src;
+        }
+    }
+
+    document.body.onload = function () {
+        let img = document.getElementById("oImg");
+        getImgNaturalDimensions(img, function (dimensions) {
+            let div = document.createElement('div')
+            div.className = 'info'
+            div.innerText = (dimensions.w + '*' + dimensions.h)
+            document.body.appendChild(div)
+        });
+    }
+</script>
+<style>
+    .info {
+        font-family: "SF Pro Text", "SF Pro Icons", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+    }
+</style>
+</body>
+</html>
