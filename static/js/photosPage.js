@@ -93,7 +93,7 @@ function doLoadPic(thumb_url, qUrl, pid) {
                     $.ajax({
                         type: 'GET',
                         dataType: "jsonp",
-                        url: "http://api.map.baidu.com/geocoder/v2/",
+                        url: "https://api.map.baidu.com/geocoder/v2/",
                         data: {
                             'location': exif_lalo,
                             'output': 'json',
