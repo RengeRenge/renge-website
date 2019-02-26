@@ -225,6 +225,8 @@ class file(Base):
 
     exif_timestamp = Column(BigInteger, nullable=True)
     timestamp = Column(BigInteger, nullable=False)
+    exif_info = Column(Text, nullable=True, comment='EXIF original json info')
+    exif_lalo = Column(String(50), nullable=True, comment='EXIF gps position')
 
 
 if __name__ == "__main__":

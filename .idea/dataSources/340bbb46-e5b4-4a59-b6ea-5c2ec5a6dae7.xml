@@ -4355,130 +4355,140 @@
       <NotNull>1</NotNull>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <key id="999" parent="342" name="PRIMARY">
+    <column id="999" parent="342" name="exif_info">
+      <Position>6</Position>
+      <DataType>text|0s</DataType>
+      <ColumnKind>normal</ColumnKind>
+    </column>
+    <column id="1000" parent="342" name="exif_lalo">
+      <Position>7</Position>
+      <DataType>varchar(50)|0s</DataType>
+      <ColumnKind>normal</ColumnKind>
+    </column>
+    <key id="1001" parent="342" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>id</ColNames>
       <Primary>1</Primary>
     </key>
-    <column id="1000" parent="343" name="id">
+    <column id="1002" parent="343" name="id">
       <Position>1</Position>
       <DataType>bigint(20)|0s</DataType>
       <NotNull>1</NotNull>
       <SequenceIdentity>1</SequenceIdentity>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1001" parent="343" name="label">
+    <column id="1003" parent="343" name="label">
       <Position>2</Position>
       <DataType>varchar(100)|0s</DataType>
       <NotNull>1</NotNull>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1002" parent="343" name="level">
+    <column id="1004" parent="343" name="level">
       <Position>3</Position>
       <DataType>varchar(100)|0s</DataType>
       <NotNull>1</NotNull>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1003" parent="343" name="message">
+    <column id="1005" parent="343" name="message">
       <Position>4</Position>
       <DataType>text|0s</DataType>
       <NotNull>1</NotNull>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1004" parent="343" name="timestamp">
+    <column id="1006" parent="343" name="timestamp">
       <Position>5</Position>
       <DataType>varchar(30)|0s</DataType>
       <NotNull>1</NotNull>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <key id="1005" parent="343" name="PRIMARY">
+    <key id="1007" parent="343" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>id</ColNames>
       <Primary>1</Primary>
     </key>
-    <column id="1006" parent="344" name="id">
+    <column id="1008" parent="344" name="id">
       <Position>1</Position>
       <DataType>bigint(20)|0s</DataType>
       <NotNull>1</NotNull>
       <SequenceIdentity>1</SequenceIdentity>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1007" parent="344" name="user_id">
+    <column id="1009" parent="344" name="user_id">
       <Position>2</Position>
       <DataType>bigint(20)|0s</DataType>
       <NotNull>1</NotNull>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1008" parent="344" name="album_id">
+    <column id="1010" parent="344" name="album_id">
       <Position>3</Position>
       <DataType>bigint(20)|0s</DataType>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1009" parent="344" name="file_id">
+    <column id="1011" parent="344" name="file_id">
       <Position>4</Position>
       <DataType>bigint(20)|0s</DataType>
       <NotNull>1</NotNull>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1010" parent="344" name="title">
+    <column id="1012" parent="344" name="title">
       <Position>5</Position>
       <DataType>text|0s</DataType>
       <NotNull>1</NotNull>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1011" parent="344" name="description">
+    <column id="1013" parent="344" name="description">
       <Position>6</Position>
       <DataType>text|0s</DataType>
       <NotNull>1</NotNull>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1012" parent="344" name="level">
+    <column id="1014" parent="344" name="level">
       <Position>7</Position>
       <Comment>0 all people, 1 friend and self, 2 only self</Comment>
       <DataType>int(11)|0s</DataType>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <key id="1013" parent="344" name="PRIMARY">
+    <key id="1015" parent="344" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>id
 file_id</ColNames>
       <Primary>1</Primary>
     </key>
-    <column id="1014" parent="345" name="user_id">
+    <column id="1016" parent="345" name="user_id">
       <Position>1</Position>
       <Comment>user id</Comment>
       <DataType>bigint(20)|0s</DataType>
       <NotNull>1</NotNull>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1015" parent="345" name="type">
+    <column id="1017" parent="345" name="type">
       <Position>2</Position>
       <Comment>web, mobile, pad</Comment>
       <DataType>int(11)|0s</DataType>
       <NotNull>1</NotNull>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1016" parent="345" name="token">
+    <column id="1018" parent="345" name="token">
       <Position>3</Position>
       <Comment>token</Comment>
       <DataType>varchar(100)|0s</DataType>
       <NotNull>1</NotNull>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1017" parent="345" name="timestamp">
+    <column id="1019" parent="345" name="timestamp">
       <Position>4</Position>
       <Comment>ms</Comment>
       <DataType>bigint(20)|0s</DataType>
       <NotNull>1</NotNull>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <key id="1018" parent="345" name="PRIMARY">
+    <key id="1020" parent="345" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>user_id
 type</ColNames>
       <Primary>1</Primary>
     </key>
-    <column id="1019" parent="346" name="id">
+    <column id="1021" parent="346" name="id">
       <Position>1</Position>
       <Comment>user id</Comment>
       <DataType>bigint(20)|0s</DataType>
@@ -4486,117 +4496,117 @@ type</ColNames>
       <SequenceIdentity>1</SequenceIdentity>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1020" parent="346" name="username">
+    <column id="1022" parent="346" name="username">
       <Position>2</Position>
       <Comment>login id</Comment>
       <DataType>varchar(30)|0s</DataType>
       <NotNull>1</NotNull>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1021" parent="346" name="pwd">
+    <column id="1023" parent="346" name="pwd">
       <Position>3</Position>
       <Comment>MD5 32</Comment>
       <DataType>varchar(100)|0s</DataType>
       <NotNull>1</NotNull>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1022" parent="346" name="nickname">
+    <column id="1024" parent="346" name="nickname">
       <Position>4</Position>
       <Comment>nickname</Comment>
       <DataType>varchar(50)|0s</DataType>
       <DefaultExpression>&apos;&apos;</DefaultExpression>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1023" parent="346" name="title">
+    <column id="1025" parent="346" name="title">
       <Position>5</Position>
       <DataType>varchar(50)|0s</DataType>
       <DefaultExpression>&apos;&apos;</DefaultExpression>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1024" parent="346" name="description">
+    <column id="1026" parent="346" name="description">
       <Position>6</Position>
       <Comment>user desc</Comment>
       <DataType>varchar(1000)|0s</DataType>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1025" parent="346" name="icon">
+    <column id="1027" parent="346" name="icon">
       <Position>7</Position>
       <DataType>bigint(20)|0s</DataType>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1026" parent="346" name="bg_image">
+    <column id="1028" parent="346" name="bg_image">
       <Position>8</Position>
       <DataType>bigint(20)|0s</DataType>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1027" parent="346" name="style">
+    <column id="1029" parent="346" name="style">
       <Position>9</Position>
       <DataType>text|0s</DataType>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1028" parent="346" name="tag">
+    <column id="1030" parent="346" name="tag">
       <Position>10</Position>
       <Comment>tag</Comment>
       <DataType>varchar(20)|0s</DataType>
       <DefaultExpression>&apos;&apos;</DefaultExpression>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1029" parent="346" name="default_album_id">
+    <column id="1031" parent="346" name="default_album_id">
       <Position>11</Position>
       <DataType>bigint(20)|0s</DataType>
       <NotNull>1</NotNull>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1030" parent="346" name="addtime">
+    <column id="1032" parent="346" name="addtime">
       <Position>12</Position>
       <Comment>ms</Comment>
       <DataType>bigint(20)|0s</DataType>
       <NotNull>1</NotNull>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <index id="1031" parent="346" name="username">
+    <index id="1033" parent="346" name="username">
       <ColNames>username</ColNames>
       <Unique>1</Unique>
       <Type>btree</Type>
     </index>
-    <key id="1032" parent="346" name="PRIMARY">
+    <key id="1034" parent="346" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>id</ColNames>
       <Primary>1</Primary>
     </key>
-    <key id="1033" parent="346" name="username">
+    <key id="1035" parent="346" name="username">
       <ColNames>username</ColNames>
       <UnderlyingIndexName>username</UnderlyingIndexName>
     </key>
-    <column id="1034" parent="347" name="m_user_id">
+    <column id="1036" parent="347" name="m_user_id">
       <Position>1</Position>
       <Comment>my id</Comment>
       <DataType>bigint(20)|0s</DataType>
       <NotNull>1</NotNull>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1035" parent="347" name="o_user_id">
+    <column id="1037" parent="347" name="o_user_id">
       <Position>2</Position>
       <Comment>other id</Comment>
       <DataType>bigint(20)|0s</DataType>
       <NotNull>1</NotNull>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1036" parent="347" name="relation">
+    <column id="1038" parent="347" name="relation">
       <Position>3</Position>
       <Comment>0 none, 1 follow, 100 block</Comment>
       <DataType>int(11)|0s</DataType>
       <NotNull>1</NotNull>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <column id="1037" parent="347" name="addtime">
+    <column id="1039" parent="347" name="addtime">
       <Position>4</Position>
       <Comment>ms</Comment>
       <DataType>bigint(20)|0s</DataType>
       <NotNull>1</NotNull>
       <ColumnKind>normal</ColumnKind>
     </column>
-    <key id="1038" parent="347" name="PRIMARY">
+    <key id="1040" parent="347" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>m_user_id
 o_user_id</ColNames>

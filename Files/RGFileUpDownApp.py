@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 import requests
-from flask import Blueprint, request, jsonify, stream_with_context, Response
+from flask import Blueprint, request, jsonify, stream_with_context, Response, json
 
 import RGUIController
 from Files.RGFileGlobalConfigContext import RemoteFileHost, FilePreFix
@@ -72,6 +72,14 @@ def handler_upload_res(user_id, t, simditor=False):
     :return: 如果是simditor, 返回对应的response， 其他则返回 flag 和 RGFile的__dict__
     """
     file_info = None
+
+    exif_info = None
+    exif_time = 0
+    exif_gps_lalo = ''
+
+    file_type = ''
+    file_name = ''
+
     if 'err_msg' in t:
         err_msg = t['err_msg']
         if len(err_msg) <= 0:
@@ -82,9 +90,20 @@ def handler_upload_res(user_id, t, simditor=False):
             if 'path' in t:
                 file_name = t['path']
             if 'exif' in t:
-                exif = t['exif']
+                exif = t.get('exif', None)
+                exif_time = exif.get('timestamp', None)
+                exif_gps_lalo = exif.get('gps_lalo', None)
+                exif_info = exif.get('original', None)
+                if exif_info:
+                    exif_info = json.dumps(exif_info)
 
-            file_info = files.new_file(file_name, file_type, exif)
+            file_info = files.new_file(
+                file_name=file_name,
+                file_type=file_type,
+                exif_time=exif_time,
+                exif_info=exif_info,
+                exif_lalo=exif_gps_lalo,
+            )
 
     if file_info is not None and file_info.ID >= 0:
 
@@ -125,5 +144,5 @@ def handle_download_file(filename):
     remote_url = RemoteFileHost + '/' + FilePreFix + "download/" + filename
     req = requests.get(remote_url, stream=True)
     content_type = req.headers['content-type']
-    print (remote_url)
+    print(remote_url)
     return Response(stream_with_context(req.iter_content(chunk_size=1024)), content_type=content_type)

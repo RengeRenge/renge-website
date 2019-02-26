@@ -85,6 +85,41 @@ function doLoadPic(thumb_url, qUrl, pid) {
 
                 that.picList = result.data
 
+                let exif_lalo = that.picList['current']['exif_lalo']
+                let exif_timestamp = that.picList['current']['exif_timestamp']
+
+                $('#display_img_exif').css('opacity', 0)
+                if (exif_lalo) {
+                    $.ajax({
+                        type: 'GET',
+                        dataType: "jsonp",
+                        url: "http://api.map.baidu.com/geocoder/v2/",
+                        data: {
+                            'location': exif_lalo,
+                            'output': 'json',
+                            'ak': that.bdapi,
+                            'pois': 1,
+                            'coordtype': 'wgs84ll',
+                        },
+                        success: function (res) {
+                            if (!res.status && that.picList['current']['exif_lalo'] === exif_lalo) {
+                                res = res.result
+                                exif_timestamp = (new Date(exif_timestamp)).Format(" 拍摄于:yyyy-MM-dd hh:mm:ss")
+                                let desc = ' 「' + res.formatted_address + '」 ' + res.sematic_description + exif_timestamp
+                                $('#display_img_exif').text(desc)
+                                $('#display_img_exif').css('opacity', 1)
+                            }
+                        },
+                        error: function (err) {
+
+                        }
+                    })    
+                } else if (exif_timestamp) {
+                    $('#display_img_exif').css('opacity', 1)
+                    exif_timestamp = (new Date(exif_timestamp)).Format("拍摄于:yyyy-MM-dd hh:mm:ss")
+                    $('#display_img_exif').text(exif_timestamp)
+                }
+
                 $('#display_img_title').text(that.picList['current']['title'])
                 $('#display_img_desc').text(that.picList['current']['description'])
                 let level = that.picList['current']['level']
