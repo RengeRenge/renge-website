@@ -1,8 +1,9 @@
 from functools import wraps
 
-from flask import session, request, jsonify, make_response, redirect, url_for
+from flask import session, request, jsonify, make_response, redirect, url_for, json
 
 from Model import tokens
+from RGUtil.RGRequestHelp import get_data_with_request
 
 
 class RGUIController(object):
@@ -22,6 +23,8 @@ def auth_handler(page=False):
             try:
                 auth, user_id = do_auth()
                 if auth:
+                    t = get_data_with_request(request)
+                    print('userid:%d\n%s' % (user_id, json.dumps(t, sort_keys=True, indent=4, separators=(', ', ': '))))
                     return func(user_id, *args, **kwargs)
                 else:
                     return make_response(jsonify({'error': 'Unauthorized access'}), 401) \

@@ -2,7 +2,6 @@ import threading
 
 import pymysql
 from flask import json
-from sqlalchemy.dialects import mysql
 
 from RGUtil.RGLogUtil import LogUtil
 
@@ -37,7 +36,6 @@ def get():
 
 
 def execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0, args=None, commit=True):
-    # type: (str, bool, bool, bool, int) -> (object, int, int)
     """
     Execute a specific SQL and update data version if need.
     :param sql: sql string
@@ -87,11 +85,12 @@ def do_execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0, args
         else:
             return None, count, -1
     except Exception as e:
+        print(e)
         try:
             if dp > 1:
                 return
             LogUtil.ErrorLog("In ExecuteSQL, " + str(e) + " | Query: << " + (u"%s" % sql) + " >>",
-                               __name__, dp=dp + 1)
+                             __name__, dp=dp + 1)
         except:
             from traceback import format_exc
             print('ExecuteSQL Exception:')
@@ -154,7 +153,7 @@ def execute_sqls(sqls, needret=True, needdic=False, neednewid=False, dp=0):
         conn.commit()
         return results
     except Exception as e:
-
+        print(e)
         conn.rollback()
         conn.commit()
 
@@ -162,7 +161,7 @@ def execute_sqls(sqls, needret=True, needdic=False, neednewid=False, dp=0):
             if dp > 1:
                 return
             LogUtil.ErrorLog("In ExecuteSQL, " + str(e) + " | Query: << " + (u"%s" % sql) + " >>",
-                               __name__, dp=dp + 1)
+                             __name__, dp=dp + 1)
         except:
             from traceback import format_exc
             print('ExecuteSQL Exception:')
