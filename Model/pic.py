@@ -108,7 +108,9 @@ def id_list(user_id, album_id, current_id=1, size=1, relation=0):
         return False, [], []
 
     sql_format = \
-        '(' + 'SELECT pic.id, pic.title, pic.description, pic.level, file.id as "fileId", file.file_name as "url" \
+        '(' + 'SELECT pic.id, pic.title, pic.description, pic.level, \
+        file.id as "fileId", file.file_name as "url", \
+        file.exif_timestamp as `exif_timestamp`, file.exif_lalo as `exif_lalo` \
         FROM pic left join file on pic.file_id = file.id \
         where pic.user_id=%(user_id)s and pic.album_id=%(album_id)s {} and {}  \
         {} limit {}'.format('{}', '{}', '{}', '{}') + ')'

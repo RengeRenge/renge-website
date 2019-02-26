@@ -6,6 +6,7 @@
 <script type="text/javascript" src="/static/jquery/jquery.min.js"></script>
 
 <link href="/static/css/rg_base.css" rel="stylesheet" type="text/css" id="rg_base">
+<link href="/static/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 <script type="text/javascript" src="/static/js/rg_base.js"></script>
 <script type="text/javascript" src="/static/js/bgLayout.js"></script>
 
@@ -26,7 +27,7 @@
 <link href="/static/css/pagination.css" rel="stylesheet" type="text/css">
 <script type="text/javascript" src="/static/js/pagination.js"></script>
 
-<script type="text/javascript" src="/static/js/photosPage.js" async="async"></script>
+<script type="text/javascript" src="/static/js/photosPage.js?ver=1" async="async"></script>
 
 {%- endif -%}
 
@@ -212,6 +213,9 @@
            onblur="onBlurPicInfo(this)"></a>
         <a id="display_img_desc" class="auto_text img_text {%if home %}rich rich_black{%- endif -%}" placeholder="图片描述" style="font-size: 12px"
            onblur="onBlurPicInfo(this)"></a>
+        <a class="auto_text img_text" style="font-size: 7px; margin-top: 15px; text-align: right; padding-right: 2%">
+            <i class="fa fa-location-arrow fa-lg" id="display_img_exif" style="line-height: 1.25em;padding: 5px"> </i>
+        </a>
     </div>
     <img src="/static/image/close.png" class="close" onclick="dismiss_oPic()">
 

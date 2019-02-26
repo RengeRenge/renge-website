@@ -4,30 +4,33 @@ from RGUtil import RGTimeUtil
 
 
 class RGFile:
-    def __init__(self, ID, name, type, exif_timestamp, timestamp):
+    def __init__(self, ID, name, type, exif_timestamp, timestamp, exif_lalo, exif_info):
         self.ID = ID
         self.name = name
         self.type = type
         self.exif_timestamp = exif_timestamp
         self.timestamp = timestamp
+        self.exif_info = exif_info
 
 
-def new_file(file_name, file_type='', exif=0):
+def new_file(file_name, file_type='', exif_time=0, exif_info=None, exif_lalo=None):
     timestamp = RGTimeUtil.timestamp()
 
-    sql = "INSERT INTO file (file_name, type, exif_timestamp, timestamp) VALUES \
-          (%(file_name)s, %(file_type)s, %(exif)s, %(timestamp)s)"
+    sql = "INSERT INTO `file` (file_name, type, exif_timestamp, `timestamp`, `exif_info`, `exif_lalo`) VALUES \
+          (%(file_name)s, %(file_type)s, %(exif_time)s, %(timestamp)s, %(exif_info)s, %(exif_lalo)s)"
     result, count, new_id = dao.execute_sql(sql, neednewid=True, args={
         'file_name': file_name,
         'file_type': file_type,
-        'exif': exif,
-        'timestamp': timestamp
+        'exif_time': exif_time,
+        'timestamp': timestamp,
+        'exif_info': exif_info,
+        'exif_lalo': exif_lalo,
     })
     if count > 0:
         file_id = new_id
     else:
         file_id = -1
-    return RGFile(file_id, file_name, file_type, exif, timestamp)
+    return RGFile(file_id, file_name, file_type, exif_time, timestamp, exif_lalo, exif_info)
 
 
 def file_name(file_id, needUrl=False):

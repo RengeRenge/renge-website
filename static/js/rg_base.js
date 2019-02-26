@@ -1,5 +1,6 @@
 that = this
 that.isEditing = false
+that.bdapi = 'QU2tzWyb5MoEcgv54sijXzruRKLTy5gL'
 
 window.onload = function () {
     document.body.onkeypress =
