@@ -269,7 +269,9 @@ String.prototype.originalRGSrc = function () {
         let filename = this.substr(0, index)
 
         index = filename.lastIndexOf('_')
-        return filename.substr(0, index) + ext
+        if (index >= 0) {
+            return filename.substr(0, index) + ext
+        } 
     }
     return this
 }
