@@ -3,7 +3,7 @@ from flask import Blueprint, request, jsonify, render_template, url_for, redirec
 import RGUIController
 from Model import article, user
 from RGUtil.RGCodeUtil import http_code
-from RGUtil.RGRequestHelp import get_data_with_request, form_res
+from RGUtil.RGRequestHelp import get_data_with_request, form_res, is_int_number
 
 RestRouter = Blueprint('RGBlog', __name__, url_prefix='/blog', static_folder='../static')
 
@@ -21,11 +21,11 @@ def auto_blog_page(user_id):
 
 @RestRouter.route('/<other_id>/', methods=["GET"])
 def blog_page(other_id):
-    auth, view_user = RGUIController.do_auth()
-    if auth is True:
-        return blog_page_render(other_id, view_user)
-    else:
-        return redirect(url_for('login_page'))
+    if is_int_number(other_id):
+        auth, view_user = RGUIController.do_auth()
+        if auth is True:
+            return blog_page_render(other_id, view_user)
+    return redirect(url_for('login_page'))
 
 
 def blog_page_render(art_user_id, view_user_id):
@@ -49,13 +49,23 @@ def blog_page_render(art_user_id, view_user_id):
     return render_template("index.html", **t)
 
 
+@RestRouter.route('/view/', methods=["GET"])
+@RGUIController.auth_handler(page=True)
+def auto_blog_view_page(other_id):
+    url = '/blog/view/%ld/' % other_id
+    return redirect(url)
+
+
 @RestRouter.route('/view/<other_id>/', methods=["GET"])
 def blog_view_page(other_id):
-    auth, user_id = RGUIController.do_auth()
-    if auth is True:
-        return blog_view_page_render(user_id, other_id)
+    if is_int_number(other_id):
+        auth, user_id = RGUIController.do_auth()
+        if auth is True:
+            return blog_view_page_render(user_id, other_id)
+        else:
+            return redirect(url_for('login_page'))
     else:
-        return redirect(url_for('login_page'))
+        return redirect(url_for('RGBlog.auto_blog_view_page'))
 
 
 def blog_view_page_render(user_id, other_id):
@@ -399,7 +409,8 @@ def art_month_list(user_id):
     else:
         group_id = None
 
-    result = article.month_list(user_id=art_user, other_id=user_id, group_id=group_id, year=year, month=month, timezone=timezone)
+    result = article.month_list(user_id=art_user, other_id=user_id, group_id=group_id, year=year, month=month,
+                                timezone=timezone)
 
     res = form_res(1000, result)
     return jsonify(res)

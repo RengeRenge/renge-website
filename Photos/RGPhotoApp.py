@@ -1,11 +1,9 @@
-import requests
-from flask import Blueprint, request, jsonify, render_template, url_for, redirect, session, json
+from flask import Blueprint, request, jsonify, render_template, url_for, redirect
 
 import RGUIController
-from Model import article, user, tokens, album, pic
-from RGGlobalConfigContext import RGHost, RGFullThisServerHost
+from Model import user, album, pic
 from RGUtil.RGCodeUtil import http_code
-from RGUtil.RGRequestHelp import get_data_with_request, form_res
+from RGUtil.RGRequestHelp import get_data_with_request, form_res, is_int_number
 
 RestRouter = Blueprint('RGPhoto', __name__, url_prefix='/photo', static_folder='../static')
 
@@ -23,11 +21,14 @@ def auto_photo_page(user_id):
 
 @RestRouter.route('/<other_id>/', methods=["GET"])
 def photo_page(other_id):
-    auth, user_id = RGUIController.do_auth()
-    if auth is True:
-        return photo_page_render(user_id, other_id)
+    if is_int_number(other_id):
+        auth, user_id = RGUIController.do_auth()
+        if auth is True:
+            return photo_page_render(user_id, other_id)
+        else:
+            return redirect(url_for('login_page'))
     else:
-        return redirect(url_for('login_page'))
+        return redirect(url_for('RGPhoto.auto_photo_page'))
 
 
 def photo_page_render(user_id, other_id):
@@ -45,11 +46,11 @@ def photo_page_render(user_id, other_id):
 
 @RestRouter.route('/<other_id>/<album_id>', methods=["GET"])
 def photos_page(other_id, album_id):
-    auth, user_id = RGUIController.do_auth()
-    if auth is True:
-        return photos_page_render(user_id, other_id, album_id)
-    else:
-        return redirect(url_for('login_page'))
+    if is_int_number(other_id) and is_int_number(album_id):
+        auth, user_id = RGUIController.do_auth()
+        if auth is True:
+            return photos_page_render(user_id, other_id, album_id)
+    return redirect(url_for('login_page'))
 
 
 @RestRouter.route('/original', methods=["GET"])

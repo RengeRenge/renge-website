@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh">
 
-<link href="/static/css/rg_base.css" rel="stylesheet" type="text/css" id="rg_base">
+<link href="/static/css/rg_base.css?ver=1" rel="stylesheet" type="text/css" id="rg_base">
 <link href="/static/css/blog.css" rel="stylesheet" type="text/css">
 
 <script type="text/javascript" src="/static/jquery/jquery.min.js"></script>
@@ -114,7 +114,7 @@
                 <div class="auto_text artSubTitle secondTextColor" style="margin-top: 10px">
                     <script>
                         var timeStamp = {{item.addTime}}
-                        var time = (new Date(timeStamp)).Format("yyyy MM dd hh:mm:ss")
+                        var time = (new Date(timeStamp)).Format("yyyy-MM-dd hh:mm:ss")
                         var dom = document.getElementById('{{item.ID}}').parentElement.getElementsByClassName('auto_text artSubTitle secondTextColor')[0]
                         dom.innerText = time
                     </script>
