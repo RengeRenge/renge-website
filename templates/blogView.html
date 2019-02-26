@@ -294,7 +294,7 @@
                                         <div class="auto_text {5}">{3}</div> \
                                     </div> \
                                 </div> \
-                            </div>'.format(art.id, art.cover ? art.cover : '', title, art.summary, time, art.cover ? 'three_line' : 'preview_text_many')
+                            </div>'.format(art.id, art.cover ? art.cover : '', title, art.summary.encodeHtml(), time, art.cover ? 'three_line' : 'preview_text_many')
                         artsH5String += artItemString
                     }
 

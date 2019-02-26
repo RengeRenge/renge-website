@@ -21,6 +21,7 @@
 <script type="text/javascript" src="/static/simditor/scripts/uploader.js"></script>
 <script type="text/javascript" src="/static/simditor/scripts/simditor.js"></script>
 <script type="text/javascript" src="/static/simditor/simditor-autosave.js"></script>
+<script type="text/javascript" src="/static/simditor/simditor-dropzone.js"></script>
 
 <!--bg-->
 <script type="text/javascript" src="/static/js/bgLayout.js"></script>
@@ -90,7 +91,7 @@
             </div>
             <textarea id="editor" placeholder="在这里输入内容" autofocus="autofocus">
                 {%- if art -%}
-                    {{art.content|safe}}
+                    {{art.content}}
                 {%- endif -%}
             </textarea>
             <div class="publish_button" id="{{value('id')}}">发布</div>
@@ -143,9 +144,7 @@
     <!--</div>-->
 
 <!--</div>-->
-
 <script>
-
     (function () {
         [].slice.call(document.querySelectorAll('select.cs-select')).forEach(function (el) {
             new SelectFx(el, {
@@ -207,8 +206,10 @@
 
             let imgs = $('.simditor-body img')
             let cover = ''
-            if (imgs.length)
-                cover = imgs[0].src.getUrlRelativePath()
+            if (imgs.length) {
+                cover = imgs[0].src.getImageUrlRelativePath()
+            }
+                
 
             if (summary.length > 100)
                 summary = summary.substr(0, 100)

@@ -23,8 +23,6 @@ def auth_handler(page=False):
             try:
                 auth, user_id = do_auth()
                 if auth:
-                    t = get_data_with_request(request)
-                    print('userid:%d\n%s' % (user_id, json.dumps(t, sort_keys=True, indent=4, separators=(', ', ': '))))
                     return func(user_id, *args, **kwargs)
                 else:
                     return make_response(jsonify({'error': 'Unauthorized access'}), 401) \
@@ -45,6 +43,13 @@ def do_auth():
         if 'user_id' in session:
             user_id = session['user_id']
             auth = True
+
+            t = get_data_with_request(request)
+            params = json.dumps(t, sort_keys=True, indent=4, separators=(', ', ': '))
+            print(
+                '>>>>\nauth:%s\nuserid:%d\n%s\n<<<<' %
+                (request.path, user_id, params)
+            )
         else:
             user_id = None
             auth = False
