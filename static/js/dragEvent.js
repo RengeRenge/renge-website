@@ -73,13 +73,12 @@ function bindBox(id, backgroundClass, tip, autoTitleCallback, callback) {
         reader.readAsDataURL(file)
         reader.onload = function (e) {
             $('.' + backgroundClass).css('background-image', "url('" + e.target.result + "')")
+            if (autoTitleCallback())
+                box.innerHTML = ''
             configOriginalButton(box)
 
             if (callback)
                 callback(e, file)
-
-            if (!autoTitleCallback())
-                box.innerHTML = ''
         }
     }
 
