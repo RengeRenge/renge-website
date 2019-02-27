@@ -6,10 +6,12 @@ onKeyupEnable(function (e) {
     if ($(':focus').length !== 0) {
         return
     }
-    if (e.keyCode === 39)
+    if (e.keyCode === 39 || e.keyCode === 40)
         next_oPic()
-    else if (e.keyCode === 37)
+    else if (e.keyCode === 37 || e.keyCode === 38)
         last_oPic()
+    else if (e.keyCode === 27)
+        dismiss_oPic()
 })
 
 function show_oPic(e) {
@@ -32,7 +34,6 @@ function doLoadPic(thumb_url, qUrl, pid) {
     $("#display_img")[0].src = ''
     $('.weui-loading').show()
     $(".img_text").hide()
-    $('.nav span').removeClass('white_class')
 
     $.ajax({
         type: 'POST',
@@ -56,6 +57,7 @@ function doLoadPic(thumb_url, qUrl, pid) {
                 RGBaster.colors(thumb_url, {
                     paletteSize: 1,
                     success: function (payload) {
+                        if (pid !== that.currentPid) return
                         let rgb = payload.dominant
                         let a = rgb.rbgaTrim().split(',')
 
@@ -67,6 +69,8 @@ function doLoadPic(thumb_url, qUrl, pid) {
                             titleRgb = 'rgb(0,0,0)'
                             $(".img_text").removeClass('rich_white')
                             $(".img_text").addClass('rich_black')
+
+                            $('.nav span').removeClass('white_class')
 
                         } else {
                             $(".fullScreen .bgNoRepeatImage").css('filter', 'invert(100%)')
@@ -80,6 +84,7 @@ function doLoadPic(thumb_url, qUrl, pid) {
                         }
                         $(".fullScreen").css("background-color", rgb);
                         $(".img_text").css("color", titleRgb);
+                        $("#display_img_privacy").css("color", titleRgb);
                     }
                 })
 
