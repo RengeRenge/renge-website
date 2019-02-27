@@ -6,7 +6,7 @@ groupSelf.customGroup = null
 groupSelf.selectCallBack = null
 groupSelf.submitArtGroupId = null
 
-function initGroupModal(defaultId, triggerDomId, customGroup, selectCallBack) {
+function initGroupModal(defaultId, triggerDomId, customGroup, showTool, selectCallBack) {
 
     let toolh5 =
         '<img src="/static/image/add_group.png" class="toolIcon toolIconPoint RGTransition disblur" id="addGroupIcon" onclick="addGroup()" style="right: 170px">\n' +
@@ -15,7 +15,7 @@ function initGroupModal(defaultId, triggerDomId, customGroup, selectCallBack) {
     let h5string =
         '    <i class="weui-loading"></i>\n' +
         '\n' +
-        (that.relation < 0 ? toolh5 : '') +
+        (showTool ? toolh5 : '') +
         '    <img src="/static/image/close.png" class="close" onclick="hideGroup()">\n' +
         '\n' +
         '    <div id="groupWrapper">\n' +

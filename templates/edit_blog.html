@@ -7,10 +7,10 @@
 <link href="/static/css/edit_blog.css" rel="stylesheet" type="text/css">
 
 <script type="text/javascript" src="/static/jquery/jquery.min.js"></script>
-<script type="text/javascript" src="/static/js/rg_base.js"></script>
+<script type="text/javascript" src="/static/js/rg_base.js?ver=1"></script>
 
 <link rel="stylesheet" type="text/css" href="/static/css/groupModal.css" />
-<script type="text/javascript" src="/static/js/groupModal.js"></script>
+<script type="text/javascript" src="/static/js/groupModal.js?ver=1"></script>
 
 <!--simditor-->
 <link rel="stylesheet" type="text/css" href="/static/simditor/styles/simditor.css"/>
@@ -98,52 +98,6 @@
         </div>
     </div>
 </div>
-
-<!--<div id="GroupFullScreen" class="fullScreen" style="display: none;">-->
-    <!--<i class="weui-loading"></i>-->
-
-    <!--<img src="/static/image/add_group.png" class="toolIcon toolIconPoint RGTransition disblur" id="addGroupIcon" onclick="addGroup()" style="right: 170px">-->
-    <!--<img src="/static/image/rename.png" class="toolIcon toolIconPoint RGTransition disblur" id="renameIcon" onclick="rename()" style="right: 120px">-->
-    <!--<img src="/static/image/manager_order.png" class="toolIcon toolIconPoint RGTransition disblur" id="order_button" onclick="editOrder()">-->
-    <!--<img src="/static/image/close.png" class="close" onclick="hideGroup()">-->
-
-    <!--<div id="groupWrapper">-->
-
-    <!--</div>-->
-
-    <!--<div id="addGroupModal" class="fullScreen" style="display: none">-->
-        <!--<div class="modal-wrapper">-->
-        <!--<div class="modal">-->
-            <!--<div class="modal-header">-->
-                <!--&lt;!&ndash;<i class="modal-header-close iconfont icon-ic_close"></i>&ndash;&gt;-->
-                <!--<img onclick="hideAddGroupModal()" class="modal-header-close" src="/static/image/close.png" style="width: 15px; height: 15px;">-->
-                <!--<div class="modal-title">-->
-                    <!--新建分组-->
-                <!--</div>-->
-            <!--</div>-->
-            <!--<div class="modal-body">-->
-                <!--<div class="be-input be-input&#45;&#45;append">-->
-                    <!--<input type="input" placeholder="分组名称" class="be-input_inner" id="addGroupInput">-->
-                <!--</div>-->
-                <!--<div class="be-switch-container">-->
-                    <!--<input type="checkbox" checked="checked" id="groupAddCheck">-->
-                    <!--<label class="be-switch-label" for="groupAddCheck">-->
-                        <!--置顶-->
-                    <!--</label>-->
-                <!--</div>-->
-            <!--</div>-->
-            <!--<div class="modal-footer">-->
-                <!--<div style="display: inline-block; width: 50%">-->
-                    <!--<div class="rgButton" onclick="doAddGroup(this)">-->
-                        <!--确定-->
-                    <!--</div>-->
-                <!--</div>-->
-            <!--</div>-->
-        <!--</div>-->
-    <!--</div>-->
-    <!--</div>-->
-
-<!--</div>-->
 <script>
     (function () {
         [].slice.call(document.querySelectorAll('select.cs-select')).forEach(function (el) {
@@ -196,7 +150,7 @@
 
     $(function () {
 
-        initGroupModal(that.submitArtGroupId, 'groupNameButton', null, function (id, name) {
+        initGroupModal(that.submitArtGroupId, 'groupNameButton', null, true, function (id, name) {
             $('#groupNameButton').text(name)
         })
 
