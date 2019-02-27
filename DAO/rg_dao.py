@@ -106,6 +106,8 @@ def do_execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0, args
                     conn.commit()
                 return cursor.fetchall(), count, new_id, None
         else:
+            if commit:
+                conn.commit()
             return None, count, -1, None
     except Exception as e:
         print(e)
