@@ -11,7 +11,7 @@
 <script type="text/javascript" src="/static/js/rg_base.js"></script>
 <script type="text/javascript" src="/static/js/bgLayout.js"></script>
 
-<script type="text/javascript" src="/static/js/dragEvent.js"></script>
+<script type="text/javascript" src="/static/js/dragEvent.js?ver=1"></script>
 <script type="text/javascript" src="/static/color/spectrum.min.js"></script>
 
 <script type="text/javascript" src="/static/js/login.js"></script>
@@ -233,7 +233,9 @@
         <!---->
         <div class="wrapperLR wrapperItem">
             <div class="wrapperFlex wrapperXYCenter">
-                <div id="icon" class="rgAvatar wrapperXYCenter" {% if user.icon %} style="background-image: url({{'"'+user.icon|safe+'"'}})" {% endif %}>
+                <div id="icon"
+                     class="rgAvatar wrapperXYCenter"
+                     {%- if user.icon -%} style="background-image: url({{'"'+user.icon|safe+'"'}})" {%- endif -%}>
             </div>
         </div>
         <div class="wrapperFull wrapperYCenter wrapperItem">
@@ -642,8 +644,12 @@
             success: function (res) {
                 dismiss_loading()
                 if (res.code == 1000) {
+                    iconFile = null
+                    bgFile = null
                     alert('修改成功')
                     // window.location.href = '/'
+                } else {
+                    alert('修改失败 请重试')
                 }
             },
             error: function (e) {

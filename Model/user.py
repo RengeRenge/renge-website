@@ -30,7 +30,7 @@ class user:
 def user_with_dbResult(result=None, needpwd=False, needusername=False, needIcon=False, iconName=None, needBg=True,
                        bgName=None):
     if needIcon:
-        icon = files.file_name(result[6], needUrl=True) if iconName is None else url_with_name(iconName)
+        icon = files.file_name(result[6], needUrl=True) if iconName is None else url_with_name(iconName, thumb=True)
     else:
         icon = None
 
