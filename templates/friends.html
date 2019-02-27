@@ -1,12 +1,20 @@
 <!DOCTYPE html>
 <html lang="zh">
 
+<script>
+    this.pageCount = {{pageCount}}
+    this.artSum = {{count}}
+    this.pageSize = {{pageSize}}
+    this.nowPage = {{nowPage}}
+    this.ubg = "{{user.bgImage}}"
+    this.style = {{user.style|tojson}}
+</script>
 <script type="text/javascript" src="/static/jquery/jquery.min.js"></script>
 <link href="/static/css/rg_base.css" rel="stylesheet" type="text/css" id="rg_base">
 
 <!--bg-->
 <script type="text/javascript" src="/static/js/rg_base.js?ver=1"></script>
-<script type="text/javascript" src="/static/js/bgLayout.js"></script>
+<script type="text/javascript" src="/static/js/bgLayout.js?ver=1"></script>
 <!--page-->
 <link href="/static/css/pagination.css" rel="stylesheet" type="text/css">
 <script type="text/javascript" src="/static/js/pagination.js"></script>
@@ -15,15 +23,6 @@
 
 <head>
     <script type="text/javascript">
-        this.pageCount = {{pageCount}}
-        this.artSum = {{count}}
-        this.pageSize = {{pageSize}}
-        this.nowPage = {{nowPage}}
-        this.ubg = "{{user.bgImage}}"
-        this.style = {{user.style|tojson}}
-
-        autoTitleEnable("{{user.title}}", "{{user.desc}}")
-
         function goto_blog(e) {
             var url = '/blog/' + e.attributes.name.value
             window.open(url)

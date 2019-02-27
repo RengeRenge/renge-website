@@ -1,5 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh">
+
+<script>
+    this.userId = {{user.ID}}
+    this.relation = {{relation}}
+    this.re_relation = {{re_relation}}
+    this.ubg = "{{user.bgImage}}"
+    this.style = {{user.style|default('')|tojson}}
+</script>
 <link href="/static/css/rg_base.css" rel="stylesheet" type="text/css" id="rg_base">
 <link href="/static/css/photos.css" rel="stylesheet" type="text/css">
 <link href="/static/css/timeline.css" rel="stylesheet" type="text/css">
@@ -8,7 +16,7 @@
 
 <!--bg-->
 <script type="text/javascript" src="/static/js/rg_base.js?ver=1"></script>
-<script type="text/javascript" src="/static/js/bgLayout.js"></script>
+<script type="text/javascript" src="/static/js/bgLayout.js?ver=1"></script>
 <script type="text/javascript" src="/static/js/timeUtil.js"></script>
 
 <link rel="stylesheet" type="text/css" href="/static/css/groupModal.css" />
@@ -129,13 +137,6 @@
     }
 </style>
 <script>
-
-    that.userId = {{user.ID}}
-    that.relation = {{relation}}
-    that.re_relation = {{re_relation}}
-    that.ubg = "{{user.bgImage}}"
-    that.style = {{user.style|default('')|tojson}}
-
     let d = rg_getTimezone()
 
     preventEnterEnable(true, function (e) {
@@ -294,7 +295,7 @@
                                         <div class="auto_text {5}">{3}</div> \
                                     </div> \
                                 </div> \
-                            </div>'.format(art.id, art.cover ? art.cover : '', title, art.summary.encodeHtml(), time, art.cover ? 'three_line' : 'preview_text_many')
+                            </div>'.format(art.id, art.cover ? art.cover : '', title.encodeHtml(), art.summary.encodeHtml(), time, art.cover ? 'three_line' : 'preview_text_many')
                         artsH5String += artItemString
                     }
 

@@ -201,10 +201,10 @@ function configTitle() {
         return
     var title
     if (this.title && this.title.length)
-        title = this.title + ' ' + this.desc
+        title = this.title.decodeHtml() + ' ' + this.desc.decodeHtml()
     else
         title = "My Blog" + ' ' + this.desc
-    $("title").html(title)
+    $("title").text(title)
 }
 
 String.prototype.format = function () {
@@ -272,7 +272,7 @@ String.prototype.originalRGSrc = function () {
         index = filename.lastIndexOf('_')
         if (index >= 0) {
             return filename.substr(0, index) + ext
-        } 
+        }
     }
     return this
 }
@@ -307,6 +307,16 @@ function dismiss_loading() {
 
 that.REGX_HTML_ENCODE = /“|&|’|<|>|[\x00-\x20]|[\x7F-\xFF]|[\u0100-\u2700]/g;
 that.REGX_HTML_DECODE = /&\w+;|&#(\d+);/g;
+that.HTML_DECODE = {
+    "&lt;": "<",
+    "&gt;": ">",
+    "&amp;": "&",
+    "&nbsp;": " ",
+    "&quot;": "\"",
+    "&copy;": ""
+
+    // Add more
+};
 
 String.prototype.encodeHtml = function () {
     let s = this
@@ -322,15 +332,15 @@ String.prototype.encodeHtml = function () {
 
 String.prototype.decodeHtml = function () {
     let s = this
+    let HTML_DECODE = that.HTML_DECODE;
     return s.replace(that.REGX_HTML_DECODE,
         function ($0, $1) {
-            var c = this.HTML_ENCODE[$0]; // 尝试查表
+            let c = HTML_DECODE[$0];
             if (c === undefined) {
                 // Maybe is Entity Number
                 if (!isNaN($1)) {
-                    c = String.fromCharCode(($1 == 160) ? 32 : $1);
+                    c = String.fromCharCode(($1 === 160) ? 32 : $1);
                 } else {
-                    // Not Entity Number
                     c = $0;
                 }
             }

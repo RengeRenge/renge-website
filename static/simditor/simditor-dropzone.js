@@ -41,13 +41,13 @@ Dropzone = (function(_super) {
       throw new Error("Can't work without 'simple-uploader' module");
       return;
     }
-    $(document.body).on("dragover", function(e) {
-      e.originalEvent.dataTransfer.dropEffect = "none";
-      return e.preventDefault();
-    });
-    $(document.body).on('drop', function(e) {
-      return e.preventDefault();
-    });
+      $('.simditor').on("dragover", function (e) {
+          e.originalEvent.dataTransfer.dropEffect = "none";
+          return e.preventDefault();
+      });
+      $('.simditor').on('drop', function (e) {
+          return e.preventDefault();
+      });
     this.imageBtn = this.editor.toolbar.findButton("image");
     return this.editor.body.on("dragover", function(e) {
       e.originalEvent.dataTransfer.dropEffect = "copy";

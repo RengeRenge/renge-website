@@ -3,6 +3,14 @@
 
 {%- macro value(name)-%}{%- if art -%}{{art[name]}}{%- endif -%}{%- endmacro -%}
 {%- macro selectIfNeed(selectedV)-%}{%- if value('cate') == selectedV -%}selected="selected"{%- endif -%}{%- endmacro -%}
+
+<script>
+    this.ubg = "{{user.bgImage}}"
+    {%if art and art['group_id'] %}
+    that.submitArtGroupId = {{art['group_id']}}
+    {%endif%}
+</script>
+
 <link href="/static/css/rg_base.css" rel="stylesheet" type="text/css" id="rg_base">
 <link href="/static/css/edit_blog.css" rel="stylesheet" type="text/css">
 
@@ -21,10 +29,10 @@
 <script type="text/javascript" src="/static/simditor/scripts/uploader.js"></script>
 <script type="text/javascript" src="/static/simditor/scripts/simditor.js"></script>
 <script type="text/javascript" src="/static/simditor/simditor-autosave.js"></script>
-<script type="text/javascript" src="/static/simditor/simditor-dropzone.js"></script>
+<script type="text/javascript" src="/static/simditor/simditor-dropzone.js?ver=1"></script>
 
 <!--bg-->
-<script type="text/javascript" src="/static/js/bgLayout.js"></script>
+<script type="text/javascript" src="/static/js/bgLayout.js?ver=1"></script>
 
 <!--select-->
 <link rel="stylesheet" type="text/css" href="/static/select/css/cs-select.css" />
@@ -33,13 +41,6 @@
 <script type="text/javascript" src="/static/select/js/selectFx.js"></script>
 
 <link rel="stylesheet" type="text/css" href="/static/css/weui-for-work.min.css" />
-
-<script>
-    this.ubg = "{{user.bgImage}}"
-    {%if art and art['group_id'] %}
-    that.submitArtGroupId = {{art['group_id']}}
-    {%endif%}
-</script>
 
 <head>
     <meta charset="UTF-8">

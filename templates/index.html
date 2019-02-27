@@ -1,22 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh">
 
-<link href="/static/css/rg_base.css?ver=1" rel="stylesheet" type="text/css" id="rg_base">
-<link href="/static/css/blog.css" rel="stylesheet" type="text/css">
-
-<script type="text/javascript" src="/static/jquery/jquery.min.js"></script>
-
-<!--bg-->
-<script type="text/javascript" src="/static/js/rg_base.js?ver=1"></script>
-<script type="text/javascript" src="/static/js/bgLayout.js"></script>
-<!--page-->
-<link href="/static/css/pagination.css" rel="stylesheet" type="text/css">
-<script type="text/javascript" src="/static/js/pagination.js"></script>
-
-<script type="text/javascript" src="/static/js/timeUtil.js"></script>
-
-<head>
-    <script type="text/javascript">
+<script type="text/javascript">
         this.pageCount = {{pageCount}}
         this.artSum = {{count}}
         this.pageSize = {{pageSize}}
@@ -27,19 +12,45 @@
         this.ubg = "{{user.bgImage}}"
         this.style = {{user.style|default('')|tojson}}
 
-        autoTitleEnable("{{user.title}}", "{{user.desc}}")
-
         function goto_blog(e) {
-            var url = '/blog/art/' + e.id
+            let url = e.id
+            if (!url) {
+                url = e.attributes.name.value
+            }
+            url = '/blog/art/' + url
             window.open(url)
         }
-    </script>
+</script>
+
+<link href="/static/css/rg_base.css?ver=1" rel="stylesheet" type="text/css" id="rg_base">
+<link href="/static/css/blog.css" rel="stylesheet" type="text/css">
+
+<script type="text/javascript" src="/static/jquery/jquery.min.js"></script>
+
+<!--bg-->
+<script type="text/javascript" src="/static/js/rg_base.js?ver=1"></script>
+<script type="text/javascript" src="/static/js/bgLayout.js?ver=1"></script>
+<!--page-->
+<link href="/static/css/pagination.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="/static/js/pagination.js"></script>
+
+<script type="text/javascript" src="/static/js/timeUtil.js"></script>
+<script>
+    autoTitleEnable('{{user.title}}', '{{user.desc}}')
+</script>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=1.0, user-scalable=yes"/>
     <title></title>
 </head>
 <body>
+<script>
+    if (isPhoneView()) {
+        let css = document.getElementById("rg_base");
+        editRule(css.sheet, '.blogListCoverWrapper', 'display:none')
+    }
+</script>
 <div class="boprt a-control" style="top: 20px; opacity: 1;">
     <ul>
         <li>
@@ -96,22 +107,22 @@
     <div class="wrapperLR wrapperBg wrapperPadding">
         <div class="wrapperFull">
             {%- for item in list -%}
-            <div class="wrapperItem wrapperItemBg">
-                <!--color: azure-->
-                <div class="articleTitle auto_text" id={{item.ID}} onclick="goto_blog(this)">
-                    {%- if item.title -%}
-                        {{ item.title }}
-                    {%- else -%}
-                        <script>
-                        var timeStamp = {{item.addTime}}
-                        var time = (new Date(timeStamp)).Format("yyyy年 MM月 dd日")
-                        var dom = document.getElementById('{{item.ID}}')
-                        dom.innerText = time
-                        </script>
-                    {%- endif -%}
-                </div>
-                <div class="auto_text artSubTitle"> {{ item.summary }}</div>
-                <div class="auto_text artSubTitle secondTextColor" style="margin-top: 10px">
+            <div class="wrapperLR wrapperItem wrapperItemBg">
+                <div class="">
+                    <div class="articleTitle auto_text" id="{{item.ID}}" onclick="goto_blog(this)">
+                        {%- if item.title -%}
+                            {{ item.title }}
+                        {%- else -%}
+                            <script>
+                            var timeStamp = {{item.addTime}}
+                            var time = (new Date(timeStamp)).Format("yyyy年 MM月 dd日")
+                            var dom = document.getElementById('{{item.ID}}')
+                            dom.innerText = time
+                            </script>
+                        {%- endif -%}
+                    </div>
+                    <div class="auto_text artSubTitle"> {{ item.summary }}</div>
+                    <div class="auto_text artSubTitle secondTextColor" style="margin-top: 10px">
                     <script>
                         var timeStamp = {{item.addTime}}
                         var time = (new Date(timeStamp)).Format("yyyy-MM-dd hh:mm:ss")
@@ -119,7 +130,17 @@
                         dom.innerText = time
                     </script>
                 </div>
+                </div>
+                <div class="blogListCoverWrapper">
+                    <div class="bgNoRepeatImage blogListCover"
+                         style='background-image: url("{{item.cover|safe}}");'
+                         onclick="goto_blog(this)"
+                         name="{{item.ID}}"
+                    >
+                    </div>
+                </div>
             </div>
+
             {% endfor %}
             {% if count == 0 %}
                 <div class="nothing">
