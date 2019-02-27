@@ -61,12 +61,13 @@ def new_user(username, pwd, title='Title', desc='Desc', nick='Nickname'):
     timestamp = RGTimeUtil.timestamp()
     pwd = md5_key(pwd)
 
-    conn = dao.get()
-    cursor = conn.cursor()
-
     _user = None
 
+    conn = None
+    cursor = None
     try:
+        conn = dao.get()
+        cursor = conn.cursor()
         # 某些时候获取到重复的ID
         # sql = "SELECT auto_increment FROM  information_schema.`TABLES` \
         #         WHERE TABLE_SCHEMA='rg_database'AND TABLE_NAME='user'"
@@ -108,7 +109,7 @@ def new_user(username, pwd, title='Title', desc='Desc', nick='Nickname'):
         conn.rollback()
         conn.commit()
     finally:
-        cursor.close()
+        dao.close(conn, cursor)
 
 
 def get_user(user_id, needIcon=False, needBg=True):
@@ -293,11 +294,8 @@ def update_user_info(user_id, nickname=None, icon=None, background=None, tag=Non
         'style': style,
         'user_id': user_id
     }
-    try:
-        dao.execute_sql(sql, needret=False, args=args)
-        return True
-    except:
-        return False
+    result, count, new_id, error = dao.execute_sql_err(sql, needret=False, args=args)
+    return True if error is None else False
 
 
 def friend_page_list(user_id, page=1, size=10):

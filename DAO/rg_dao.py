@@ -11,14 +11,22 @@ with open('rg_database.json', 'r') as f:
 
 executeMutex = threading.RLock()
 
-conn = pymysql.connect(**config)
+
+# conn = pymysql.connect(**config)
 
 
 # conn.autocommit(True)
 
 
 def get():
-    return conn
+    return pymysql.connect(**config)
+
+
+def close(conn, cursor):
+    if cursor is not None:
+        cursor.close()
+    if conn is not None:
+        conn.close()
 
 
 # def escape_string(string):
@@ -43,6 +51,19 @@ def execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0, args=No
     :param dp: depth of exception stack
     :return: execution result table
     """
+    res, count, new_id, err = do_execute_sql(sql, needret=needret, needdic=needdic, neednewid=neednewid, dp=dp,
+                                             args=args, commit=commit)
+    return res, count, new_id
+
+
+def execute_sql_err(sql, needret=True, needdic=False, neednewid=False, dp=0, args=None, commit=True):
+    """
+    Execute a specific SQL and update data version if need.
+    :param sql: sql string
+    :param needret: need return execution result
+    :param dp: depth of exception stack
+    :return: execution result table
+    """
     return do_execute_sql(sql, needret=needret, needdic=needdic, neednewid=neednewid, dp=dp, args=args, commit=commit)
 
 
@@ -56,8 +77,10 @@ def do_execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0, args
     """
     executeMutex.acquire()
     cursor = None
+    conn = None
     try:
-        cursor = get().cursor()
+        conn = get()
+        cursor = conn.cursor()
         count = cursor.execute(query=sql, args=args)
         new_id = -1
         if needret is True:
@@ -72,7 +95,7 @@ def do_execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0, args
 
                 if commit:
                     conn.commit()
-                return [dict(zip(names, v)) for v in values], count, new_id
+                return [dict(zip(names, v)) for v in values], count, new_id, None
             else:
                 if count > 0 and neednewid:
                     cursor.execute('SELECT LAST_INSERT_ID();')
@@ -81,9 +104,9 @@ def do_execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0, args
 
                 if commit:
                     conn.commit()
-                return cursor.fetchall(), count, new_id
+                return cursor.fetchall(), count, new_id, None
         else:
-            return None, count, -1
+            return None, count, -1, None
     except Exception as e:
         print(e)
         try:
@@ -95,10 +118,9 @@ def do_execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0, args
             from traceback import format_exc
             print('ExecuteSQL Exception:')
             print(format_exc())
-        return None, 0, -1
+        return None, 0, -1, e
     finally:
-        if cursor is not None:
-            cursor.close()
+        close(conn, cursor)
         executeMutex.release()
 
 
@@ -112,9 +134,11 @@ def execute_sqls(sqls, needret=True, needdic=False, neednewid=False, dp=0):
     """
     executeMutex.acquire()
     cursor = None
+    conn = None
     sql = ''
     try:
-        cursor = get().cursor()
+        conn = get()
+        cursor = conn.cursor()
         results = []
         for index in range(len(sqls)):
 
@@ -168,6 +192,5 @@ def execute_sqls(sqls, needret=True, needdic=False, neednewid=False, dp=0):
             print(format_exc())
         return None
     finally:
-        if cursor is not None:
-            cursor.close()
+        close(conn, cursor)
         executeMutex.release()
