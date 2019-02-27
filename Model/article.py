@@ -46,6 +46,8 @@ def art_obj_with_sqlresult(result, needContent=False):
 
 
 def id_list(user_id, last_id=None, size=10, dic=True):
+    conn = None
+    cursor = None
     try:
         conn = dao.get()
         cursor = conn.cursor()
@@ -55,9 +57,11 @@ def id_list(user_id, last_id=None, size=10, dic=True):
             last_id = result[0][0] + 1
         conn.commit()
     except Exception as ex:
+        conn.rollback()
+        conn.commit()
         return None, 0, 0
     finally:
-        cursor.close()
+        dao.close(conn, cursor)
 
     sql = 'SELECT * FROM art where user_id=%(user_id)s AND id < %(last_id)s order by id desc limit %(size)s'
     result, count, new_id = dao.execute_sql(sql, args={'user_id': user_id, 'last_id': last_id, 'size': size})
