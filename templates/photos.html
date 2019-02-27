@@ -3,12 +3,33 @@
 
 {%- macro selectIfNeed(selectedV)-%}{%- if album.level == selectedV -%}selected="selected"{%- endif -%}{%- endmacro -%}
 
+<script>
+    this.ubg = "{{user.bgImage}}"
+    this.style = {{user.style|default('')|tojson}}
+    this.relation = {{relation}}
+    this.re_relation = {{re_relation}}
+    this.isHome = {{home|int}}
+    this.albumId = "{{album.id}}"
+    this.coverId = "{{album.cover}}"
+    this.iconId = "{{user.iconId}}"
+    this.bgId = "{{user.bgId}}"
+    this.recordABTitle = "{{album.title}}"
+    this.recordABDesc = "{{album.description}}"
+    this.albumLevel = "{{album.level}}"
+    this.picList = null
+
+    this.pageCount = {{pageCount}}
+    this.picSum = {{count}}
+    this.pageSize = {{pageSize}}
+    this.nowPage = {{nowPage}}
+</script>
+
 <script type="text/javascript" src="/static/jquery/jquery.min.js"></script>
 
 <link href="/static/css/rg_base.css" rel="stylesheet" type="text/css" id="rg_base">
 <link href="/static/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 <script type="text/javascript" src="/static/js/rg_base.js?ver=1"></script>
-<script type="text/javascript" src="/static/js/bgLayout.js"></script>
+<script type="text/javascript" src="/static/js/bgLayout.js?ver=1"></script>
 
 {%- if album -%}
 <link rel="stylesheet" type="text/css" href="/static/css/weui-for-work.min.css" />
@@ -30,27 +51,6 @@
 <script type="text/javascript" src="/static/js/photosPage.js?ver=1" async="async"></script>
 
 {%- endif -%}
-
-<script>
-    this.ubg = "{{user.bgImage}}"
-    this.style = {{user.style|default('')|tojson}}
-    this.relation = {{relation}}
-    this.re_relation = {{re_relation}}
-    this.isHome = {{home|int}}
-    this.albumId = "{{album.id}}"
-    this.coverId = "{{album.cover}}"
-    this.iconId = "{{user.iconId}}"
-    this.bgId = "{{user.bgId}}"
-    this.recordABTitle = "{{album.title}}"
-    this.recordABDesc = "{{album.description}}"
-    this.albumLevel = "{{album.level}}"
-    this.picList = null
-
-    this.pageCount = {{pageCount}}
-    this.picSum = {{count}}
-    this.pageSize = {{pageSize}}
-    this.nowPage = {{nowPage}}
-</script>
 <style>
     .wrapperBg a.back:any-link {
         color: initial;

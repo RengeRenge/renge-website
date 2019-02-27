@@ -2,37 +2,72 @@
 // loadjscssfile("../static/css/rg_base.css", "css")
 
 var scH
+
 function autoHeight() {
-    var h = window.screen.availHeight
-    // console.log(h)
-    scH = h
+    let css = document.getElementById("rg_base");
+    let h = window.screen.availHeight
+
     if (isPhoneView()) {
-        var vertical = document.documentElement.clientHeight > document.documentElement.clientWidth
+        let vertical = document.documentElement.clientHeight > document.documentElement.clientWidth
         h = vertical ? window.screen.availHeight : window.screen.availWidth;
-        var last = $(".hina_bg").css('height');
-        if (last != '' + h + 'px') {
-            $(".hina_bg").css('height', h);
+        let last = $(".hina_bg").css('height');
+        if (last !== '' + h + 'px') {
+
+            editRule(css.sheet, '.hina_bg', 'height:{0}'.format(h + 'px'))
+
+            // $(".hina_bg").css('height', h);
 
             let w = vertical ? window.screen.availWidth : window.screen.availHeight;
-            $(".hina_bg").css('width', '' + w + 'px');
+            editRule(css.sheet, '.hina_bg', 'width:{0}'.format(w + 'px'))
+            // $(".hina_bg").css('width', '' + w + 'px');
         }
     }
-    var min = h * 0.7
-    var last = $(".articleWrapper").css('min-height');
-    if (last !== '' + min + 'px') {
-        $(".articleWrapper").css('min-height', min);
-    }
-
-    min = h * 0.5
-    last = $(".nothing").css('min-height');
-    if (last !== '' + min + 'px') {
-        $(".nothing").css('min-height', min);
-
-        let css = document.getElementById("rg_base");
-        let cssText = "max-width: 80%; height: auto; width: auto; max-height: {0};".format(min+'px')
-        modifyRule(css.sheet, '.simditor img', cssText)
+    if (scH !== h) {
+        editRule(css.sheet, '.articleWrapper', 'min-height:{0}'.format(h * 0.7 + 'px'))
+        editRule(css.sheet, '.nothing', 'min-height: {0}'.format(h * 0.5 + 'px'))
+        editRule(css.sheet, '.simditor img', 'max-height: {0}'.format(h * 0.5 + 'px'))
     }
     configMarginBottom()
+    scH = h
+}
+
+/*cssText 暂时只支持一种属性 'margin-top:80px'*/
+function editRule(sheet, selectorText, cssText) {
+
+    let rules = sheet.cssRules;
+
+    if (!rules.length) return;
+
+    for (let i = 0; i < rules.length; i++) {
+
+        let o = rules[i]
+        let patt = new RegExp("^" + selectorText + "\\s*{.*?}.*?$");
+        if (patt.test(o.cssText)) {
+            let ocssText = o.cssText
+            ocssText = ocssText.substring(ocssText.indexOf('{') + 1, ocssText.lastIndexOf('}') - 1)
+
+            let styles = ocssText.split(';')
+            let splitIndex = cssText.indexOf(':')
+            let changeSelector = cssText.substring(0, splitIndex)
+            let newCSSText = ''
+
+            let found = false
+            for (let j = 0; j < styles.length; j++) {
+                if (!styles[j]) {
+                } else if (!found && styles[j].indexOf(changeSelector) >= 0) {
+                    found = true
+                    newCSSText += "{0}:{1};".format(changeSelector, cssText.substring(splitIndex + 1))
+                } else {
+                    newCSSText += "{0};".format(styles[j])
+                }
+            }
+            if (!found) {
+                newCSSText += "{0}:{1};".format(changeSelector, cssText.substring(splitIndex + 1))
+            }
+            deleteRule(sheet, i);
+            insertRule(sheet, selectorText, newCSSText, i);
+        }
+    }
 }
 
 function modifyRule(sheet, selectorText, cssText) {
@@ -94,22 +129,26 @@ function loadjscssfile(filename, filetype) {
 }
 
 function init() {
-    if (!rgSetBgUrl(this.ubg)) {
-        return
-    }
+    let css = document.getElementById("rg_base")
 
     if (this.style) {
         this.style.styleSafeGet = styleSafeGet
+
+        let cssText
         if (this.style.mainColor) {
             let color = this.style.mainColor
-            if (color && color.length)
-                $(".pageTitle").css("color", color)
+            if (color && color.length) {
+                cssText = "color:{0}".format(color)
+                editRule(css.sheet, '.pageTitle', cssText)
+            }
         }
         if (this.style.marginTop) {
-            $(".titleWrapper").css("margin-top", this.style.marginTop + 'px')
+            cssText = "margin-top:{0}".format(this.style.marginTop + 'px')
+            editRule(css.sheet, '.pageTitle', cssText)
+            // $(".titleWrapper").css("margin-top", this.style.marginTop + 'px')
         }
+        autoHeight()
     }
-    autoHeight()
 }
 
 function rgSetBgUrl(url) {
@@ -126,7 +165,7 @@ function rgSetBgUrl(url) {
     }
 
     let first = body.firstChild
-    if (first.className == 'hina_bg') {
+    if (first.className === 'hina_bg') {
         return false
     }
 
@@ -140,16 +179,18 @@ function rgSetBgUrl(url) {
     return true
 }
 
-function configMarginBottom () {
+function configMarginBottom() {
+    let css = document.getElementById("rg_base");
     let height = $(".titleWrapper").height()
     let bottom = getCurrentTitleMarginBottom(height)
-    $(".titleWrapper").css("margin-bottom", '' + bottom + 'px')
+    editRule(css.sheet, '.titleWrapper', 'margin-bottom:{0}'.format(bottom + 'px'))
+    // $(".titleWrapper").css("margin-bottom", '' + bottom + 'px')
 
     if (this.sceenHeightCallback)
         this.sceenHeightCallback(scH, parseInt(scH - height))
 }
 
-function getCurrentTitleMarginBottom (height) {
+function getCurrentTitleMarginBottom(height) {
     if (this.style && this.style.marginBottom) {
         if (this.style.marginBottom == 'onepage') {
             // full screen
@@ -163,8 +204,12 @@ function getCurrentTitleMarginBottom (height) {
     }
 }
 
+init()
+
 $(function () {
-    init()
+    if (!rgSetBgUrl(that.ubg)) {
+        // return
+    }
     autoHeight()
     $(window).resize(autoHeight);
 })

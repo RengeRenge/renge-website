@@ -102,7 +102,7 @@ function loadGroup() {
                 h5str += '<div id="defaultGroup" name="{1}" class="groupItem RGTransition nowrapText staticGroup" onclick="onGroupClick(this)">{0}</div>'.format('默认分类', -1)
                 for (let index in result.data) {
                     let group = result.data[index]
-                    h5str += '<div name="{1}" class="groupItem RGTransition nowrapText" oninput="onGroupInput(this)" onclick="onGroupClick(this)" onblur="onGroupItemBlur(this)">{0}</div>'.format(group.name, group.id)
+                    h5str += '<div name="{1}" class="groupItem RGTransition nowrapText" oninput="onGroupInput(this)" onclick="onGroupClick(this)" onblur="onGroupItemBlur(this)">{0}</div>'.format(group.name.encodeHtml(), group.id)
                 }
                 $('#groupWrapper').html(h5str)
 

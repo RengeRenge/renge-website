@@ -83,7 +83,7 @@ function do_new_album(e) {
 
                 let timeStamp = album.timestamp
                 let time = (new Date(timeStamp)).Format("yyyy MM dd hh:mm:ss")
-                text = text.format(album.title, album.desc, time)
+                text = text.format(album.title.encodeHtml(), album.desc.encodeHtml(), time)
                 $('#new_album_temp').html(text)
                 $('#new_album_temp')[0].id = album.ID
                 if (_that.managing) {

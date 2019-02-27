@@ -361,7 +361,7 @@ def update_group_info(user_id=None, g_id=None, name=None, level=None):
 
 def update_group_order(user_id=None, ids=None, orders=None):
     try:
-        sql = "UPDATE art_group SET 'order' = case id \
+        sql = "UPDATE art_group SET `order` = case id \
           {} where id in ({}) and user_id=%(user_id)s".format('{}', '{}')
 
         case = ''
