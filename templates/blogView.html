@@ -7,12 +7,12 @@
 <script type="text/javascript" src="/static/jquery/jquery.min.js"></script>
 
 <!--bg-->
-<script type="text/javascript" src="/static/js/rg_base.js"></script>
+<script type="text/javascript" src="/static/js/rg_base.js?ver=1"></script>
 <script type="text/javascript" src="/static/js/bgLayout.js"></script>
 <script type="text/javascript" src="/static/js/timeUtil.js"></script>
 
 <link rel="stylesheet" type="text/css" href="/static/css/groupModal.css" />
-<script type="text/javascript" src="/static/js/groupModal.js"></script>
+<script type="text/javascript" src="/static/js/groupModal.js?ver=1"></script>
 
 <head>
     <meta charset="UTF-8">
@@ -130,11 +130,11 @@
 </style>
 <script>
 
-    this.userId = {{user.ID}}
-    this.relation = {{relation}}
-    this.re_relation = {{re_relation}}
-    this.ubg = "{{user.bgImage}}"
-    this.style = {{user.style|default('')|tojson}}
+    that.userId = {{user.ID}}
+    that.relation = {{relation}}
+    that.re_relation = {{re_relation}}
+    that.ubg = "{{user.bgImage}}"
+    that.style = {{user.style|default('')|tojson}}
 
     let d = rg_getTimezone()
 
@@ -143,7 +143,7 @@
     })
 
     $(function () {
-        initGroupModal(that.submitArtGroupId, 'groupNameButton', '全部分类', function (id, name) {
+        initGroupModal(that.submitArtGroupId, 'groupNameButton', '全部分类', that.relation < 0, function (id, name) {
             $('#groupNameButton').text(name)
             loadTimeLine(id)
         })
@@ -157,7 +157,7 @@
             type: 'GET',
             url: "/blog/month/view",
             data: {
-                'user_id': this.userId,
+                'user_id': that.userId,
                 'timezone': d,
                 'group_id': groupId,
             },
