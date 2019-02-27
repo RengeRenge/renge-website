@@ -341,7 +341,7 @@ def friend_page_list(user_id, page=1, size=10):
     for row in result:
         icon = row['icon']
         if icon is not None and len(icon):
-            row['icon'] = url_with_name(icon)
+            row['icon'] = url_with_name(icon, thumb=True)
 
     return result, page_count, page, size, count
 
