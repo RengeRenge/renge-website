@@ -293,10 +293,10 @@ def update_user_info(user_id, nickname=None, icon=None, background=None, tag=Non
         'style': style,
         'user_id': user_id
     }
-    result, count, new_id = dao.execute_sql(sql, needret=False, args=args)
-    if count > 0:
+    try:
+        dao.execute_sql(sql, needret=False, args=args)
         return True
-    else:
+    except:
         return False
 
 
