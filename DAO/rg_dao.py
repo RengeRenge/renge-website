@@ -43,7 +43,7 @@ def close(conn, cursor):
 #     return args
 
 
-def execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0, args=None, commit=True):
+def execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0, args=None):
     """
     Execute a specific SQL and update data version if need.
     :param sql: sql string
@@ -52,11 +52,11 @@ def execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0, args=No
     :return: execution result table
     """
     res, count, new_id, err = do_execute_sql(sql, needret=needret, needdic=needdic, neednewid=neednewid, dp=dp,
-                                             args=args, commit=commit)
+                                             args=args, commit=True)
     return res, count, new_id
 
 
-def execute_sql_err(sql, needret=True, needdic=False, neednewid=False, dp=0, args=None, commit=True):
+def execute_sql_err(sql, needret=True, needdic=False, neednewid=False, dp=0, args=None):
     """
     Execute a specific SQL and update data version if need.
     :param sql: sql string
@@ -64,22 +64,36 @@ def execute_sql_err(sql, needret=True, needdic=False, neednewid=False, dp=0, arg
     :param dp: depth of exception stack
     :return: execution result table
     """
-    return do_execute_sql(sql, needret=needret, needdic=needdic, neednewid=neednewid, dp=dp, args=args, commit=commit)
+    return do_execute_sql(sql, needret=needret, needdic=needdic, neednewid=neednewid, dp=dp, args=args, commit=True)
 
 
 def do_execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0, args=None, commit=True):
-    """
-    Execute a specific SQL.
-    :param sql: sql string
-    :param needret: need return execution result
-    :param dp: depth of exception stack
-    :return: execution result table
-    """
-    executeMutex.acquire()
-    cursor = None
     conn = None
     try:
         conn = get()
+        return \
+            do_execute_sql_with_connect(sql=sql, needret=needret, needdic=needdic, neednewid=neednewid, dp=dp,
+                                        args=args,
+                                        conn=conn, commit=commit)
+    except Exception as e:
+        return None, 0, -1, e
+    finally:
+        if conn:
+            conn.close()
+
+
+def do_execute_sql_with_connect(sql, needret=True, needdic=False, neednewid=False, dp=0, args=None, conn=None,
+                                commit=True):
+    """
+        Execute a specific SQL.
+        :param sql: sql string
+        :param needret: need return execution result
+        :param dp: depth of exception stack
+        :return: execution result table
+        """
+    executeMutex.acquire()
+    cursor = None
+    try:
         cursor = conn.cursor()
         count = cursor.execute(query=sql, args=args)
         new_id = -1
@@ -122,7 +136,8 @@ def do_execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0, args
             print(format_exc())
         return None, 0, -1, e
     finally:
-        close(conn, cursor)
+        if cursor:
+            cursor.close()
         executeMutex.release()
 
 
