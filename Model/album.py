@@ -193,7 +193,7 @@ def update_info(album_id=None, user_id=None, title=None, desc=None, cover=None, 
 
 def update_owner(album_id=None, user_id=None, commit=True):
     sql = "UPDATE album SET user_id=%(user_id)s where id=%(album_id)s"
-    result, count, new_id = dao.do_execute_sql(sql=sql, args={
+    result, count, new_id, error = dao.do_execute_sql(sql=sql, args={
         'user_id': user_id,
         'album_id': album_id,
     }, commit=commit)
