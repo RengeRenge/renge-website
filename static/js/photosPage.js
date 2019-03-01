@@ -84,7 +84,8 @@ function doLoadPic(thumb_url, qUrl, pid) {
                         }
                         $(".fullScreen").css("background-color", rgb);
                         $(".img_text").css("color", titleRgb);
-                        $("#display_img_privacy").css("color", titleRgb);
+                        if (!that.isHome)
+                            $("#display_img_privacy").css("color", titleRgb);
                     }
                 })
 
