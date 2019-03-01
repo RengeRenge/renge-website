@@ -76,7 +76,7 @@ def new_user(username, pwd, title='Title', desc='Desc', nick='Nickname'):
 
         from Model import album
         _album = album.new_album(user_id=new_user_id, title='日志相册', desc='默认相册', cover=None,
-                                 level=2, timestamp=timestamp, commit=False)
+                                 level=2, timestamp=timestamp, conn=conn, commit=False)
 
         if _album is None:
             raise Exception
@@ -101,7 +101,9 @@ def new_user(username, pwd, title='Title', desc='Desc', nick='Nickname'):
 
         cursor.execute('SELECT LAST_INSERT_ID();')
         new_user_id = cursor.fetchone()[0]
-        album.update_owner(album_id=new_album_id, user_id=new_user_id, commit=False)
+        flag = album.update_owner(album_id=new_album_id, user_id=new_user_id, conn=conn, commit=False)
+        if not flag:
+            raise Exception
 
         conn.commit()
         return get_user_with_name(username)

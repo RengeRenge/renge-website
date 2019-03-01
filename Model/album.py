@@ -52,21 +52,25 @@ def del_albums(user_id, ids=[]):
         return False
 
 
-def new_album(user_id, title='', desc='', cover=None, level=0, timestamp=None, commit=True):
+def new_album(user_id, title='', desc='', cover=None, level=0, timestamp=None, conn=None, commit=True):
     if timestamp is None:
         timestamp = RGTimeUtil.timestamp()
 
     sql = new_album_sql(user_id_key='user_id', title_key='title', desc_key='desc', cover_key='cover', level_key='level',
                         timestamp_key='timestamp')
-
-    result, count, new_id = dao.execute_sql(sql, neednewid=True, commit=commit, args={
+    args = {
         'desc': desc,
         'title': title,
         'user_id': user_id,
         'cover': cover,
         'level': level,
         'timestamp': timestamp
-    })
+    }
+
+    if conn:
+        result, count, new_id, error = dao.do_execute_sql_with_connect(sql, neednewid=True, conn=conn, commit=commit, args=args)
+    else:
+        result, count, new_id, error = dao.do_execute_sql(sql, neednewid=True, commit=commit, args=args)
 
     if count > 0:
         return album(new_id, user_id, title, desc, cover, level, timestamp)
@@ -191,12 +195,17 @@ def update_info(album_id=None, user_id=None, title=None, desc=None, cover=None, 
         return False
 
 
-def update_owner(album_id=None, user_id=None, commit=True):
+def update_owner(album_id=None, user_id=None, conn=None, commit=True):
     sql = "UPDATE album SET user_id=%(user_id)s where id=%(album_id)s"
-    result, count, new_id, error = dao.do_execute_sql(sql=sql, args={
+    args = {
         'user_id': user_id,
         'album_id': album_id,
-    }, commit=commit)
+    }
+    if conn:
+        result, count, new_id, error = dao.do_execute_sql_with_connect(sql=sql, conn=conn, args=args, commit=commit)
+    else:
+        result, count, new_id, error = dao.do_execute_sql(sql=sql, args=args, commit=commit)
+
     if count:
         return True
     else:
