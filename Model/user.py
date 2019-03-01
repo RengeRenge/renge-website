@@ -105,7 +105,8 @@ def new_user(username, pwd, title='Title', desc='Desc', nick='Nickname'):
 
         conn.commit()
         return get_user_with_name(username)
-    except:
+    except Exception as e:
+        print(e)
         conn.rollback()
         conn.commit()
     finally:
