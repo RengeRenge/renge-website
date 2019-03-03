@@ -79,30 +79,29 @@ def id_list(user_id, last_id=None, size=10, dic=True):
     return objects_list, count, last_id if count > 0 else 0
 
 
-def page_list(user_id, other_id=-1, page=1, size=10, dic=True):
+def page_list(user_id=None, art_user_id=-1, page=1, size=10, dic=True):
     size = int(size)
 
-    user_id = int(user_id)
-    other_id = int(other_id)
     relation = 0
 
     page = int(page)
     if page < 1:
         page = 1
 
-    if user_id != other_id:
-        relation = user.get_relation(other_id, user_id)
+    if user.isHome(user_id, art_user_id):
+        sql = 'SELECT * FROM art where user_id=%(art_user_id)s order by id desc'
+    else:
+        if user_id is not None:
+            relation = user.get_relation(art_user_id, user_id)
 
         if relation == 0:
-            sql = 'SELECT * FROM art where user_id=%(other_id)s and cate=0 order by id desc'
+            sql = 'SELECT * FROM art where user_id=%(art_user_id)s and cate=0 order by id desc'
         elif relation == 1:
-            sql = 'SELECT * FROM art where user_id=%(other_id)s and cate<=1 order by id desc'
+            sql = 'SELECT * FROM art where user_id=%(art_user_id)s and cate<=1 order by id desc'
         else:
             return None, 0, 0, 0, 0, relation
-    else:
-        sql = 'SELECT * FROM art where user_id=%(other_id)s order by id desc'
 
-    result, count, new_id = dao.execute_sql(sql, needret=False, args={'other_id': other_id})
+    result, count, new_id = dao.execute_sql(sql, needret=False, args={'art_user_id': art_user_id})
 
     page_count = int(operator.truediv(count - 1, size)) + 1
     page = min(page, page_count)
@@ -110,7 +109,7 @@ def page_list(user_id, other_id=-1, page=1, size=10, dic=True):
     sql += ' limit %d offset %d' % (size, (page - 1) * size)
     print(sql)
 
-    result, this_page_count, new_id = dao.execute_sql(sql, args={'other_id': other_id})
+    result, this_page_count, new_id = dao.execute_sql(sql, args={'art_user_id': art_user_id})
 
     page = page if this_page_count > 0 else page_count
     objects_list = []
@@ -126,11 +125,16 @@ def page_list(user_id, other_id=-1, page=1, size=10, dic=True):
     return objects_list, page_count, page, size, count, relation
 
 
-def months_list_view(user_id=None, other_id=None, group_id=None, timezone=8):
-    if user_id == other_id:
+def months_list_view(art_user=None, other_id=None, group_id=None, timezone=8):
+    if other_id is None:
+        sql = 'SELECT date_format(CONVERT_TZ(create_time, @@session.time_zone, "%+d:00"), "%s") months, count(id) as "count" \
+                            FROM art where user_id=%ld and cate <= 0 \
+                            %s \
+                            group by months order by months desc' % (timezone, '%s', art_user, '%s')
+    elif user.isHome(art_user, other_id):
         sql = 'SELECT date_format(CONVERT_TZ(create_time, @@session.time_zone, "%+d:00"), "%s") months, count(id) as "count" \
                       FROM art where user_id=%ld %s \
-                      group by months order by months desc' % (timezone, '%s', user_id, '%s')
+                      group by months order by months desc' % (timezone, '%s', art_user, '%s')
     else:
         sql = 'SELECT date_format(CONVERT_TZ(create_time, @@session.time_zone, "%+d:00"), "%s") months, count(id) as "count" \
                     FROM art where user_id=%ld and ( \
@@ -139,7 +143,7 @@ def months_list_view(user_id=None, other_id=None, group_id=None, timezone=8):
                     cate <= 0 \
                     ) \
                     %s \
-                    group by months order by months desc' % (timezone, '%s', user_id, user_id, other_id, '%s')
+                    group by months order by months desc' % (timezone, '%s', art_user, art_user, other_id, '%s')
 
     time_format = '%Y-%m'
     if group_id is None:
@@ -154,7 +158,7 @@ def months_list_view(user_id=None, other_id=None, group_id=None, timezone=8):
     return result
 
 
-def month_list(user_id, other_id, group_id, year, month, timezone=8):
+def month_list(art_user, other_id, group_id, year, month, timezone=8):
     s_time = RGTimeUtil.timestamp_with_month(year=year, month=month, timezone=timezone)
 
     if month + 1 >= 13:
@@ -165,18 +169,25 @@ def month_list(user_id, other_id, group_id, year, month, timezone=8):
 
     e_time = RGTimeUtil.timestamp_with_month(year=year, month=month, timezone=timezone)
 
-    if user_id == other_id:
+    if other_id is None:
         sql = 'select * from art \
-        where user_id=%(user_id)s and \
-        addtime >= {} and addtime < {} {} order by addtime desc'.format(s_time, e_time, '{}')
+                        where \
+                        user_id=%(art_user)s and \
+                        addtime >= {} and addtime < {} and cate <= 0 \
+                        {} \
+                        order by addtime desc'.format(s_time, e_time, '{}')
+    elif user.isHome(art_user, other_id):
+        sql = 'select * from art \
+                where user_id=%(art_user)s and \
+                addtime >= {} and addtime < {} {} order by addtime desc'.format(s_time, e_time, '{}')
     else:
         sql = 'select * from art \
                 where \
-                user_id=%(user_id)s and \
+                user_id=%(art_user)s and \
                 addtime >= {} and addtime < {} and \
                 ( \
                     cate <= \
-                    (select relation from user_relation where m_user_id = %(user_id)s and o_user_id = %(other_id)s) \
+                    (select relation from user_relation where m_user_id = %(art_user)s and o_user_id = %(other_id)s) \
                     or \
                     cate <= 0 \
                 ) \
@@ -191,7 +202,7 @@ def month_list(user_id, other_id, group_id, year, month, timezone=8):
         sql = sql.format('and group_id=%(group_id)s')
     print(sql)
     result, count, new_id = dao.execute_sql(sql, needdic=True, args={
-        'user_id': user_id,
+        'art_user': art_user,
         'other_id': other_id,
         'group_id': group_id,
     })

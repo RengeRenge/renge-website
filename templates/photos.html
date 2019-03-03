@@ -48,7 +48,7 @@
 <link href="/static/css/pagination.css" rel="stylesheet" type="text/css">
 <script type="text/javascript" src="/static/js/pagination.js"></script>
 
-<script type="text/javascript" src="/static/js/photosPage.js?ver=3" async="async"></script>
+<script type="text/javascript" src="/static/js/photosPage.js?ver=4" async="async"></script>
 
 {%- endif -%}
 <style>
@@ -68,18 +68,24 @@
 <div class="boprt a-control" style="top: 20px; opacity: 1;">
     <ul>
         <li>
-            {%- if home -%}
-            <form><a href="/blog/edit" class="boprt09" target="_top"><em>写日志</em></a></form>
-            {%- elif user -%}
-            <form><a id="followItem" target="_top"><em></em></a></form>
-            {%- endif -%}
+            <form>
+                {%- if home -%}
+                <a href="/blog/edit" class="boprt09" target="_top"><em>写日志</em></a>
+                {%- elif authed and user -%}
+                <a id="followItem" target="_top"><em></em></a>
+                {%- endif -%}
+            </form>
         </li>
         <li>
-            {%- if home -%}
-            <form><a href="/user/set" class="boprt05" target="_top"><em>设置</em></a></form>
-            {%- else -%}
-            <form><a href="/" class="boprt01" target="_top"><em>回家</em></a></form>
-            {%- endif -%}
+            <form>
+                {%- if home -%}
+                <a href="/user/set" class="boprt05" target="_top"><em>设置</em></a>
+                {%- elif authed -%}
+                <a href="/" class="boprt01" target="_top"><em>回家</em></a>
+                {%- else -%}
+                <a href="/" class="boprt01" target="_top"><em>登陆</em></a>
+                {%- endif -%}
+            </form>
         </li>
     </ul>
 </div>
@@ -218,28 +224,28 @@
     <img src="/static/image/close.png" class="close" onclick="dismiss_oPic()">
 
     <div style="min-height: 40px;
-             margin-top:{%-if home -%}10px{%- else -%}20px{%- endif -%};
-             padding-right: {%-if home -%}55px{%- else -%}70px{%- endif -%};
+             margin-top:10px;
+             padding-right: 55px;
              float: right">
-        <div id="display_img_privacy" style="display: inline-block;">
+        <div id="display_img_privacy" style="display: inline-block; font-weight: 700;">
         </div>
 
-        {%- if home and user -%}
+
         <div class="nav">
         <span>更多
             <ul>
+                {%- if home and user -%}
                 <li onclick="coverSet()">设为封面</li>
                 <li onclick="iconSet()">设为头像</li>
                 <li onclick="bgSet()">设为背景</li>
                 <li>移动到...</li>
                 <li onclick="delPic()">删除图片</li>
+                {%- endif -%}
                 <li onclick="showOriginal()">查看原图</li>
             </ul>
         </span>
         </div>
-        {%- endif -%}
     </div>
-
 </div>
 </body>
 </html>

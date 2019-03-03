@@ -138,10 +138,10 @@
                 code = data.code
                 if (code == 1000) {
                     // login ok, redirt
-                    window.location.href = 'blog';
+                    this.redirt()
                 } else if (code == 1001) {
                     $('#login_btn_pwd').addClass('login_button')
-                    show_tip('密码不正确🙆‍♀️')
+                    show_tip('服务器异常🙆‍♀️')
                 }
             })
         } else {
@@ -152,13 +152,32 @@
                 code = data.code
                 if (code == 1000) {
                     // login ok, redirt
-                    window.location.href = 'blog';
-                } else if (code == 1001) {
+                    this.redirt()
+                } else if (code === 1001) {
                     $('#login_btn_pwd').addClass('login_button')
                     show_tip('密码不正确🙆‍♀️')
+                } else {
+                    $('#login_btn_pwd').addClass('login_button')
+                    show_tip('服务器异常🙆‍♀️')
                 }
             })
         }
+    }
+
+    function redirt() {
+        let default_href = 'blog'
+                    let prevLink = document.referrer;
+                    if ($.trim(prevLink) === '') {
+                        location.href = default_href
+                    } else {
+                        if (prevLink.indexOf('www.example.com') === -1) {	//来自其它站点
+                            location.href = default_href
+                        }
+                        if (prevLink.indexOf('register.html') !== -1) {		//来自注册页面
+                            location.href = default_href
+                        }
+                        location.href = prevLink
+                    }
     }
 
     function login_hidden(id, hide, time, callback) {

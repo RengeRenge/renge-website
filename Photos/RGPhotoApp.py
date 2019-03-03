@@ -13,20 +13,20 @@ page
 
 
 @RestRouter.route('/', methods=["GET"])
-@RGUIController.auth_handler(page=True)
+@RGUIController.auth_handler(page=True, forceLogin=False)
 def auto_photo_page(user_id):
-    url = '/photo/%ld' % user_id + '/'
-    return redirect(url)
+    if user_id is None:
+        return redirect(url_for('login_page'))
+    else:
+        url = '/photo/%ld' % user_id + '/'
+        return redirect(url)
 
 
 @RestRouter.route('/<other_id>/', methods=["GET"])
 def photo_page(other_id):
     if is_int_number(other_id):
         auth, user_id = RGUIController.do_auth()
-        if auth is True:
-            return photo_page_render(user_id, other_id)
-        else:
-            return redirect(url_for('login_page'))
+        return photo_page_render(user_id, other_id)
     else:
         return redirect(url_for('RGPhoto.auto_photo_page'))
 
@@ -34,10 +34,12 @@ def photo_page(other_id):
 def photo_page_render(user_id, other_id):
     albums, re_relation = album.album_list(user_id, other_id)
     relation = user.get_relation(user_id, other_id)
+
     t = {
         "list": albums,
         "user": user.get_user(other_id),
-        "home": int(other_id) == int(user_id),
+        "home": user.isHome(user_id, other_id),
+        "authed": user_id is not None,
         "relation": relation,
         "re_relation": re_relation,
     }
@@ -48,15 +50,8 @@ def photo_page_render(user_id, other_id):
 def photos_page(other_id, album_id):
     if is_int_number(other_id) and is_int_number(album_id):
         auth, user_id = RGUIController.do_auth()
-        if auth is True:
-            return photos_page_render(user_id, other_id, album_id)
+        return photos_page_render(user_id, other_id, album_id)
     return redirect(url_for('login_page'))
-
-
-@RestRouter.route('/original', methods=["GET"])
-def photos_original_page():
-    t = get_data_with_request(request)
-    return render_template("picOriginalView.html", **t)
 
 
 def photos_page_render(user_id, other_id, album_id):
@@ -83,12 +78,19 @@ def photos_page_render(user_id, other_id, album_id):
         "nowPage": now_page,
         "count": count,
         "user": user.get_user(other_id, needIcon=True),
-        "home": int(other_id) == int(user_id),
+        "home": user.isHome(user_id, other_id),
+        "authed": user_id is not None,
         "relation": relation,
         "re_relation": re_relation,
         'album': album_detail
     }
     return render_template("photos.html", **t)
+
+
+@RestRouter.route('/original', methods=["GET"])
+def photos_original_page():
+    t = get_data_with_request(request)
+    return render_template("picOriginalView.html", **t)
 
 
 """
@@ -227,7 +229,7 @@ def album_del(user_id):
 
 
 @RestRouter.route('preList', methods=['POST'])
-@RGUIController.auth_handler(page=False)
+@RGUIController.auth_handler(page=False, forceLogin=False)
 def photo_pre_list(user_id):
     t = get_data_with_request(request)
 

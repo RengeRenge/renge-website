@@ -227,6 +227,9 @@ def change_relation(my_id, other_id, relation=0):
 
 def get_relation(my_id, other_id):
     # type: (int, int) -> int
+    if my_id is None or other_id is None:
+        return 0
+
     my_id = int(my_id)
     other_id = int(other_id)
     if my_id == other_id:
@@ -237,6 +240,12 @@ def get_relation(my_id, other_id):
         return result[0]['relation']
     else:
         return 0
+
+
+def isHome(my_id, other_id):
+    if my_id is None or other_id is None:
+        return False
+    return int(my_id) == int(other_id)
 
 
 def update_name(user_id, name):

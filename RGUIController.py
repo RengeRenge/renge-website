@@ -10,7 +10,7 @@ class RGUIController(object):
     pass
 
 
-def auth_handler(page=False):
+def auth_handler(page=False, forceLogin=True):
     """
 
     Decorator for session or token valid required.
@@ -22,17 +22,19 @@ def auth_handler(page=False):
         def wrapper(*args, **kwargs):
             try:
                 auth, user_id = do_auth()
-                if auth:
-                    return func(user_id, *args, **kwargs)
+                if forceLogin:
+                    if auth:
+                        return func(user_id, *args, **kwargs)
+                    else:
+                        return make_response(jsonify({'error': 'Unauthorized access'}), 401) \
+                            if not page else redirect(url_for('login_page'))
                 else:
-                    return make_response(jsonify({'error': 'Unauthorized access'}), 401) \
-                        if page is False else redirect(url_for('login_page'))
+                    return func(user_id, *args, **kwargs)
             except Exception as ex:
                 print(ex)
                 return make_response(jsonify({'error': 'System Error'}), 500)
                 # return make_response(jsonify({'error': 'System Error'}), 500) \
                 #     if page is False else redirect(url_for('login_page'))
-
         return wrapper
 
     return decorator

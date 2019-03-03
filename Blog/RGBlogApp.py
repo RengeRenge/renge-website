@@ -15,16 +15,18 @@ page
 @RestRouter.route('/', methods=["GET"])
 @RGUIController.auth_handler(page=True)
 def auto_blog_page(user_id):
-    url = '/blog/%ld' % user_id + '/'
-    return redirect(url)
+    if user_id is None:
+        return redirect(url_for('login_page'))
+    else:
+        url = '/blog/%ld' % user_id + '/'
+        return redirect(url)
 
 
 @RestRouter.route('/<other_id>/', methods=["GET"])
 def blog_page(other_id):
     if is_int_number(other_id):
         auth, view_user = RGUIController.do_auth()
-        if auth is True:
-            return blog_page_render(other_id, view_user)
+        return blog_page_render(other_id, view_user)
     return redirect(url_for('login_page'))
 
 
@@ -33,7 +35,9 @@ def blog_page_render(art_user_id, view_user_id):
     page = t['page'] if 'page' in t else 0
     size = t['size'] if 'size' in t else 10
 
-    arts, page_count, now_page, page_size, count, re_relation = article.page_list(view_user_id, art_user_id, page, size)
+    arts, page_count, now_page, page_size, count, re_relation = article.page_list(user_id=view_user_id,
+                                                                                  art_user_id=art_user_id, page=page,
+                                                                                  size=size)
     relation = user.get_relation(view_user_id, art_user_id)
     t = {
         "list": arts,
@@ -42,7 +46,8 @@ def blog_page_render(art_user_id, view_user_id):
         "nowPage": now_page,
         "count": count,
         "user": user.get_user(art_user_id),
-        "home": int(view_user_id) == int(art_user_id),
+        "home": user.isHome(view_user_id, art_user_id),
+        "authed": view_user_id is not None,
         "relation": relation,
         "re_relation": re_relation,
     }
@@ -50,7 +55,7 @@ def blog_page_render(art_user_id, view_user_id):
 
 
 @RestRouter.route('/view/', methods=["GET"])
-@RGUIController.auth_handler(page=True)
+@RGUIController.auth_handler(page=True, forceLogin=False)
 def auto_blog_view_page(other_id):
     url = '/blog/view/%ld/' % other_id
     return redirect(url)
@@ -59,21 +64,19 @@ def auto_blog_view_page(other_id):
 @RestRouter.route('/view/<other_id>/', methods=["GET"])
 def blog_view_page(other_id):
     if is_int_number(other_id):
-        auth, user_id = RGUIController.do_auth()
-        if auth is True:
-            return blog_view_page_render(user_id, other_id)
-        else:
-            return redirect(url_for('login_page'))
+        auth, view_user_id = RGUIController.do_auth()
+        return blog_view_page_render(view_user_id, other_id)
     else:
         return redirect(url_for('RGBlog.auto_blog_view_page'))
 
 
-def blog_view_page_render(user_id, other_id):
-    relation = user.get_relation(user_id, other_id)
-    re_relation = user.get_relation(other_id, user_id)
+def blog_view_page_render(view_user_id, art_user_id):
+    relation = user.get_relation(view_user_id, art_user_id)
+    re_relation = user.get_relation(art_user_id, view_user_id)
     t = {
-        "user": user.get_user(other_id),
-        "home": int(other_id) == int(user_id),
+        "user": user.get_user(art_user_id),
+        "home": user.isHome(art_user_id, view_user_id),
+        "authed": view_user_id is not None,
         "relation": relation,
         "re_relation": re_relation,
     }
@@ -83,24 +86,23 @@ def blog_view_page_render(user_id, other_id):
 @RestRouter.route('/art/<art_id>', methods=['GET'])
 def art_detail(art_id):
     auth, user_id = RGUIController.do_auth()
-    if auth is True:
-        art = article.art_detail(user_id, art_id)
-        if art is not None:
-            a_user_id = art['user_id']
-            _user = user.get_user(a_user_id)
-            home = a_user_id == user_id
-        else:
-            _user = None
-            home = False
 
-        return render_template("blog_page.html", **{
-            'art': art,
-            'flag': art is not None,
-            'home': home,
-            "user": _user,
-        })
+    art = article.art_detail(user_id, art_id)
+    if art is not None:
+        a_user_id = art['user_id']
+        _user = user.get_user(a_user_id)
+        home = a_user_id == user_id
     else:
-        return redirect(url_for('login_page'))
+        _user = None
+        home = False
+
+    return render_template("blog_page.html", **{
+        'art': art,
+        'flag': art is not None,
+        'home': home,
+        "user": _user,
+        "authed": auth,
+    })
 
 
 @RestRouter.route('/edit', methods=["GET"])
@@ -238,7 +240,7 @@ def art_new(user_id):
 
 
 @RestRouter.route('/group/list', methods=['GET'])
-@RGUIController.auth_handler()
+@RGUIController.auth_handler(forceLogin=False)
 def art_group_list(user_id):
     t = get_data_with_request(request)
 
@@ -346,7 +348,7 @@ def art_group_delete(user_id):
 
 
 @RestRouter.route('/month/view', methods=['GET'])
-@RGUIController.auth_handler()
+@RGUIController.auth_handler(forceLogin=False)
 def art_month_view(user_id):
     t = get_data_with_request(request)
 
@@ -369,14 +371,14 @@ def art_month_view(user_id):
     else:
         group_id = None
 
-    result = article.months_list_view(user_id=art_user, other_id=user_id, group_id=group_id, timezone=timezone)
+    result = article.months_list_view(art_user=art_user, other_id=user_id, group_id=group_id, timezone=timezone)
 
     res = form_res(1000, result)
     return jsonify(res)
 
 
 @RestRouter.route('/month/list', methods=['GET'])
-@RGUIController.auth_handler()
+@RGUIController.auth_handler(forceLogin=False)
 def art_month_list(user_id):
     t = get_data_with_request(request)
 
@@ -409,7 +411,7 @@ def art_month_list(user_id):
     else:
         group_id = None
 
-    result = article.month_list(user_id=art_user, other_id=user_id, group_id=group_id, year=year, month=month,
+    result = article.month_list(art_user=art_user, other_id=user_id, group_id=group_id, year=year, month=month,
                                 timezone=timezone)
 
     res = form_res(1000, result)
