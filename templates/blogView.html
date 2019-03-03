@@ -319,18 +319,24 @@
 <div class="boprt a-control" style="top: 20px; opacity: 1;">
     <ul>
         <li>
-            {%- if home -%}
-            <form><a href="/blog/edit" class="boprt09" target="_top"><em>写日志</em></a></form>
-            {%- elif user -%}
-                <form><a id="followItem" target="_top"><em></em></a></form>
-            {%- endif -%}
+            <form>
+                {%- if home -%}
+                <a href="/blog/edit" class="boprt09" target="_top"><em>写日志</em></a>
+                {%- elif authed and user -%}
+                <a id="followItem" target="_top"><em></em></a>
+                {%- endif -%}
+            </form>
         </li>
         <li>
-            {%- if home -%}
-            <form><a href="/user/set" class="boprt05" target="_top"><em>设置</em></a></form>
-            {%- else -%}
-            <form><a href="/" class="boprt01" target="_top"><em>回家</em></a></form>
-            {%- endif -%}
+            <form>
+                {%- if home -%}
+                <a href="/user/set" class="boprt05" target="_top"><em>设置</em></a>
+                {%- elif authed -%}
+                <a href="/" class="boprt01" target="_top"><em>回家</em></a>
+                {%- else -%}
+                <a href="/" class="boprt01" target="_top"><em>登陆</em></a>
+                {%- endif -%}
+            </form>
         </li>
     </ul>
 </div>

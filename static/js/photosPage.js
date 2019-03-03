@@ -486,6 +486,12 @@ $(function () {
     Pagination.init($(".ht-page"), pageChange);
     Pagination.Page($(".ht-page"), that.nowPage - 1, that.picSum, that.pageSize);
 
+    $('.nav span').hover(function () {
+        $(this).find('ul').show();
+    }, function () {
+        $(this).find('ul').hide();
+    });
+
     if (!that.isHome) {
         return
     }
@@ -514,11 +520,5 @@ $(function () {
                 },
             })
         }
-    });
-
-    $('.nav span').hover(function () {
-        $(this).find('ul').show();
-    }, function () {
-        $(this).find('ul').hide();
     });
 })
