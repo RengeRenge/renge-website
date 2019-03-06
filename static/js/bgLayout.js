@@ -144,7 +144,7 @@ function init() {
         }
         if (this.style.marginTop) {
             cssText = "margin-top:{0}".format(this.style.marginTop + 'px')
-            editRule(css.sheet, '.pageTitle', cssText)
+            editRule(css.sheet, '.titleWrapper', cssText)
             // $(".titleWrapper").css("margin-top", this.style.marginTop + 'px')
         }
         autoHeight()
