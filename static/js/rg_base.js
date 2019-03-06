@@ -2,6 +2,23 @@ that = this
 that.isEditing = false
 that.bdapi = 'QU2tzWyb5MoEcgv54sijXzruRKLTy5gL'
 
+function webpload() {
+    let WebP = new Image();
+    WebP.onload = WebP.onerror = function () {
+        if (WebP.height !== 2) {
+            let sc = document.createElement('script');
+            sc.type = 'text/javascript';
+            // sc.async = true;
+            let s = document.getElementsByTagName('script')[0];
+            sc.src = '/static/js/webpjs-0.0.2.min.js';
+            s.parentNode.insertBefore(sc, s);
+        }
+    };
+    WebP.src = 'data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAACyAgCdASoCAAIALmk0mk0iIiIiIgBoSygABc6WWgAA/veff/0PP8bA//LwYAAA';
+}
+
+webpload()
+
 window.onload = function () {
     document.body.onkeypress =
         function (e) {
