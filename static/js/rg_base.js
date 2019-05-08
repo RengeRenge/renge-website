@@ -285,10 +285,11 @@ String.prototype.originalRGSrc = function () {
         let index = this.lastIndexOf('.')
         let ext = this.substring(index)
         let filename = this.substr(0, index)
-
-        index = filename.lastIndexOf('_')
-        if (index >= 0) {
-            return filename.substr(0, index) + ext
+        if (filename.endsWith('_quality') || filename.endsWith('_thumbnail')) {
+            index = filename.lastIndexOf('_')
+            if (index > 0) {
+                return filename.substr(0, index) + ext
+            }
         }
     }
     return this
