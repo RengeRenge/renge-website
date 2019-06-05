@@ -344,7 +344,7 @@ def new_group(user_id=None, name='', order=0, level=0):
 
 
 def update_group_info(user_id=None, g_id=None, name=None, level=None):
-    sql = "UPDATE art_group SET {} where id=%(g_id)s and user_id=%(user_id)s".format('%s')
+    sql = 'UPDATE art_group SET {} where id=%(g_id)s and user_id=%(user_id)s'.format('{}')
 
     data = []
     if name:
