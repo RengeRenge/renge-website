@@ -150,12 +150,10 @@
     this.editor = editor
 
     $(function () {
-        {% if art %}
-        {%- if art.group_id -%}
+        {% if art and art.group_id %}
             $('#groupNameButton').text("{{art.group_name}}" + ' ({0})'.format(rg_privacyDesc("{{art.group_level}}")))
         {%- else -%}
             $('#groupNameButton').text("默认分类" + ' ({0})'.format(rg_privacyDesc(0)))
-        {%- endif -%}
         {% endif %}
 
         initGroupModal(that.submitArtGroupId, 'groupNameButton', null, true, function (id, name, level) {
