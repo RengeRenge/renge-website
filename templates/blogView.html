@@ -213,7 +213,8 @@
             for (let j = 0; j < year.months.length; j++) {
                 let month = year.months[j]
                 let monthNumber = month.months.split('-')[1]
-                let monthDesc = monthNumber + '月' + '({0})'.format(month.count)
+                let monthCount = month.count < 10 ? ('0' + month.count) : (month.count + '')
+                let monthDesc = monthNumber + '月' + '({0})'.format(monthCount)
                 monthString += '<li class="{1}" name="{2}"><a>{0}</a></li>'.format(monthDesc, active_m ? 'active' : '', month.months)
                 active_m = false
 
@@ -229,7 +230,7 @@
                 <ul class="month"> \
                     {2} \
                 </ul> \
-            </li>'.format(year.year, year.count, monthString, active_y?'active':'')
+            </li>'.format(year.year, year.count < 10 ? ('0' + year.count) : (year.count + ''), monthString, active_y?'active':'')
             htmlString += yearH5
             active_y = false
         }

@@ -146,3 +146,12 @@ def handle_download_file(filename):
     content_type = req.headers['content-type']
     print(remote_url)
     return Response(stream_with_context(req.iter_content(chunk_size=1024)), content_type=content_type)
+
+
+@RestRouter.route('/import/<filename>', methods=['GET'])
+def handle_download_import_file(filename):
+    remote_url = RemoteFileHost + '/' + FilePreFix + "download/import/" + filename
+    req = requests.get(remote_url, stream=True)
+    content_type = req.headers['content-type']
+    print(remote_url)
+    return Response(stream_with_context(req.iter_content(chunk_size=1024)), content_type=content_type)
