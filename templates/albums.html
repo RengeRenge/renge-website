@@ -119,12 +119,11 @@
 
     {%- if user -%}
     <div style="margin-bottom: 20px;" class="toolBarWrapper">
-        <a href="/blog/{{user.ID}}/" class="toolBarItem">日志</a>
+        <a href="/blog/{{user.ID}}/" class="toolBarItem">动态</a>
         <a href="/photo/{{user.ID}}/" class="toolBarItem toolBarItem-selected">相册</a>
         <a href="/blog/view/{{user.ID}}/" class="toolBarItem">归档</a>
         {% if home %}
         <a href="/user/friends" class="toolBarItem">好友</a>
-        <a class="toolBarItem">导入</a>
         {% endif %}
     </div>
     {%- endif -%}

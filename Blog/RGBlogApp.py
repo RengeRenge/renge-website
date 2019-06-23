@@ -35,7 +35,7 @@ def blog_page_render(art_user_id, view_user_id):
     page = t['page'] if 'page' in t else 0
     size = t['size'] if 'size' in t else 10
 
-    arts, page_count, now_page, page_size, count, re_relation = article.page_list(user_id=view_user_id,
+    arts, page_count, now_page, page_size, count, re_relation = article.page_list(other_id=view_user_id,
                                                                                   art_user_id=art_user_id, page=page,
                                                                                   size=size)
     relation = user.get_relation(view_user_id, art_user_id)
@@ -272,7 +272,34 @@ def art_group_rename(user_id):
     else:
         name = None
 
-    flag = article.update_group_info(user_id, group_id, name, None)
+    flag = article.update_group_info(user_id=user_id, g_id=group_id, name=name, level=None)
+
+    code = http_code.ok if flag is True else http_code.update_fail
+    res = form_res(code, None)
+    return jsonify(res)
+
+
+@RestRouter.route('/group/edit', methods=['POST'])
+@RGUIController.auth_handler()
+def art_group_edit(user_id):
+    t = get_data_with_request(request)
+
+    if 'id' in t:
+        group_id = t['id']
+    else:
+        group_id = None
+
+    if 'name' in t:
+        name = t['name']
+    else:
+        name = None
+
+    if 'level' in t:
+        level = t['level']
+    else:
+        level = None
+
+    flag = article.update_group_info(user_id=user_id, g_id=group_id, name=name, level=level)
 
     code = http_code.ok if flag is True else http_code.update_fail
     res = form_res(code, None)
@@ -319,11 +346,16 @@ def art_group_new(user_id):
     else:
         order = 0
 
+    if 'level' in t:
+        level = t['level']
+    else:
+        level = 0
+
     if flag is not True:
         res = form_res(http_code.lack_param, None)
         return jsonify(res)
 
-    flag, new_id = article.new_group(user_id=user_id, name=name, order=order)
+    flag, new_id = article.new_group(user_id=user_id, name=name, order=order, level=level)
 
     code = http_code.ok if flag is True else http_code.insert_fail
     res = form_res(code, {'id': new_id, 'user_id': user_id})

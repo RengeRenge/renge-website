@@ -3,14 +3,22 @@ groupSelf.groupData = null
 groupSelf.showGroup = false
 
 groupSelf.customGroup = null
-groupSelf.selectCallBack = null
-groupSelf.submitArtGroupId = null
+groupSelf.groupSelectCallBack = null
+groupSelf.groupChangeCallBack = null
+groupSelf.modal_selected_groupId = null
 
-function initGroupModal(defaultId, triggerDomId, customGroup, showTool, selectCallBack) {
+/*
+    groupSelectCallBack(groupId, name, level);
+    customGroup 回调时 groupId 为空字符串 level 为 0;
+    默认分类 id 为 -1 level 为 0;
+
+    groupChangeCallBack(group) 服务器返回的结构
+*/
+function initGroupModal(defaultId, triggerDomId, customGroup, showTool, groupSelectCallBack, groupChangeCallBack) {
 
     let toolh5 =
         '<img src="/static/image/add_group.png" class="toolIcon toolIconPoint RGTransition disblur" id="addGroupIcon" onclick="addGroup()" style="right: 170px">\n' +
-        '<img src="/static/image/rename.png" class="toolIcon toolIconPoint RGTransition disblur" id="renameIcon" onclick="rename()" style="right: 120px">\n' +
+        '<img src="/static/image/rename.png" class="toolIcon toolIconPoint RGTransition disblur" id="renameIcon" onclick="editGroup()" style="right: 120px">\n' +
         '<img src="/static/image/manager_order.png" class="toolIcon toolIconPoint RGTransition disblur" id="order_button" onclick="editOrder()">\n'
     let h5string =
         '    <i class="weui-loading"></i>\n' +
@@ -20,38 +28,6 @@ function initGroupModal(defaultId, triggerDomId, customGroup, showTool, selectCa
         '\n' +
         '    <div id="groupWrapper">\n' +
         '\n' +
-        '    </div>\n' +
-        '\n' +
-        '    <div id="addGroupModal" class="fullScreen" style="display: none">\n' +
-        '        <div class="modal-wrapper">\n' +
-        '        <div class="modal">\n' +
-        '            <div class="modal-header">\n' +
-        '                <!--<i class="modal-header-close iconfont icon-ic_close"></i>-->\n' +
-        '                <img onclick="hideAddGroupModal()" class="modal-header-close" src="/static/image/close.png" style="width: 15px; height: 15px;">\n' +
-        '                <div class="modal-title">\n' +
-        '                    新建分组\n' +
-        '                </div>\n' +
-        '            </div>\n' +
-        '            <div class="modal-body">\n' +
-        '                <div class="be-input be-input--append">\n' +
-        '                    <input type="input" placeholder="分组名称" class="be-input_inner" id="addGroupInput">\n' +
-        '                </div>\n' +
-        '                <div class="be-switch-container">\n' +
-        '                    <input type="checkbox" checked="checked" id="groupAddCheck">\n' +
-        '                    <label class="be-switch-label" for="groupAddCheck">\n' +
-        '                        置顶\n' +
-        '                    </label>\n' +
-        '                </div>\n' +
-        '            </div>\n' +
-        '            <div class="modal-footer">\n' +
-        '                <div style="display: inline-block; width: 50%">\n' +
-        '                    <div class="rgButton" onclick="doAddGroup(this)">\n' +
-        '                        确定\n' +
-        '                    </div>\n' +
-        '                </div>\n' +
-        '            </div>\n' +
-        '        </div>\n' +
-        '    </div>\n' +
         '    </div>'
 
     let container = document.createElement('div')
@@ -62,8 +38,9 @@ function initGroupModal(defaultId, triggerDomId, customGroup, showTool, selectCa
 
     document.body.appendChild(container)
 
-    groupSelf.selectCallBack = selectCallBack
-    groupSelf.submitArtGroupId = defaultId
+    groupSelf.groupSelectCallBack = groupSelectCallBack
+    groupSelf.groupChangeCallBack = groupChangeCallBack
+    groupSelf.modal_selected_groupId = defaultId
     groupSelf.customGroup = customGroup
 
     $('#'+triggerDomId).click(loadGroup)
@@ -101,7 +78,7 @@ function loadGroup() {
                 }
                 h5str += '<div id="defaultGroup" name="{1}" class="groupItem RGTransition nowrapText staticGroup" onclick="onGroupClick(this)">{0}</div>'.format('默认分类', -1)
                 for (let group of result.data) {
-                    h5str += '<div name="{1}" class="groupItem RGTransition nowrapText" oninput="onGroupInput(this)" onclick="onGroupClick(this)" onblur="onGroupItemBlur(this)">{0}</div>'.format(group.name.encodeHtml(), group.id)
+                    h5str += groupItemH5String(group)
                 }
                 $('#groupWrapper').html(h5str)
 
@@ -117,6 +94,14 @@ function loadGroup() {
     })
 }
 
+function groupItemH5String (group) {
+    return '<div name="{1}" class="groupItem RGTransition nowrapText" onclick="onGroupClick(this)" style="padding-left: 4px"><div id="groupItemName-{1}" style="display: inline-block">{0}</div><i class="fa fa-edit editIcon" style="margin-left: 4px; opacity: 0"></i></div>'.format(group.name.encodeHtml(), group.id)
+}
+
+let isEditOrder = false
+let isEditGroup = false
+let isAddGroup = false
+
 function hideGroup() {
     groupSelf.showGroup = false
     $('html,body').removeClass('overHidden'); //使网页恢复可滚动
@@ -128,39 +113,201 @@ function hideGroup() {
     $('#GroupFullScreen').hide()
     $('#groupWrapper').html('')
     endDrag()
-    endRename()
-    hideAddGroupModal()
+    endEditGroup()
+    dismissEditGroupModal()
     groupSelf.groupData = null
 }
 
 function addGroup() {
     if (isEditOrder)
         return
-    if (isRename)
+    if (isEditGroup)
         return
     if (isAddGroup) {
-        hideAddGroupModal()
+        dismissEditGroupModal()
     } else {
-        showAddGroupModal()
+        showEditGroupModal(null)
     }
 }
 
-function showAddGroupModal() {
-    isAddGroup = true
-    $('#addGroupModal').show()
+function editGroup() {
+    if (isEditOrder)
+        return
+    if (isEditGroup) {
+        endEditGroup()
+    } else {
+        startEditGroup()
+    }
 }
 
-function hideAddGroupModal() {
-    isAddGroup = false
+groupSelf.flashTimer = null
+
+function startEditGroup() {
+    isEditGroup = true
+    let source = document.querySelectorAll('.groupItem')
+    for (let i = 0; i < source.length; i++) {
+        if (source[i].className.indexOf('staticGroup') >= 0) {
+            continue
+        }
+        // source[i].setAttribute("contenteditable", "true");
+        // $(source[i]).addClass("rich groupItemBorder");
+        $(source[i]).removeClass("RGTransition")
+    }
+    $('.editIcon').css('opacity', 1)
+
+    clearInterval(groupSelf.flashTimer)
+
+    let i = 0
+
+    function flash() {
+        $('#renameIcon')[0].style.opacity = (i++ % 2) ? 1 : 0
+        i = i % 2
+    }
+
+    groupSelf.flashTimer = setInterval(flash, 500)
+    flash()
+}
+
+function endEditGroup() {
+    isEditGroup = false
     if (that.relation >= 0) {
         return
     }
-    $('#addGroupModal').hide()
-    $('#addGroupInput')[0].value = null
+    $('.editIcon').css('opacity', 0)
+    clearInterval(groupSelf.flashTimer)
+    $('#renameIcon')[0].style.opacity = 1
+
+    let source = document.querySelectorAll('.groupItem')
+    for (let i = 0; i < source.length; i++) {
+        // source[i].removeAttribute("contenteditable")
+        // $(source[i]).removeClass("rich groupItemBorder")
+        $(source[i]).addClass("RGTransition")
+    }
 }
 
-function doAddGroup(e) {
-    let name = $('#addGroupInput')[0].value.trim()
+function showEditGroupModal(id) {
+    let isNew = id === null;
+    if (isNew) {
+        isAddGroup = true
+        isEditGroup = false
+    } else {
+        isAddGroup = false
+        isEditGroup = true
+    }
+    let name = ''
+    let level = 0
+    if (!isNew) {
+        let group = groupSelf.groupData[indexOfGroupId(id)]
+        name = group.name
+        level = group.level
+    }
+    name = name ? name : ''
+    id = id ? id : ''
+
+    let h5String =
+        '        <div class="modal-wrapper">' +
+        '        <div class="modal">' +
+        '            <div class="modal-header">' +
+        '                <img onclick="dismissEditGroupModal()" class="modal-header-close" src="/static/image/close.png" style="width: 15px; height: 15px;">' +
+        '                <div class="modal-title">' +
+        (isNew ? '新建分组' : '编辑分组') +
+        '                </div>' +
+        '            </div>' +
+        '            <div class="modal-body">' +
+        '                <div class="be-input be-input--append">' +
+        '                    <input type="input" placeholder="分组名称" class="be-input_inner" id="group-modal-nameInput" value="{5}">' +
+        '                </div>' +
+        '                <div class="be-switch-container">' +
+        '                    <div>'+
+        '隐私设置 :'+
+        '<select id="group-modal-privacy" style="min-height: 40px;" class="cs-select cs-skin-border">'+
+        '<option value="0" {1}>所有人可见</option>'+
+        '<option value="1" {2}>仅好友可见</option>'+
+        '<option value="2" {3}>仅自己可见</option>'+
+        '</select>'+
+        '</div>'+'{4}'+
+        '                </div>' +
+        '            </div>' +
+        '            <div class="modal-footer">' +
+        '                <div style="display:inline-block; width:50%">' +
+        '                    <div class="rgButton" onclick="onEditGroupModalSubmit({0})">' +
+        '                        确定' +
+        '                    </div>' +
+        '                </div>' +
+        '            </div>' +
+        '        </div>' +
+        '    </div>';
+
+    let topH5String = isNew ? (
+        '<div class="be-switch-container">' +
+        '<input type="checkbox" checked="checked" id="groupAddCheck">' +
+        '<label class="be-switch-label" for="groupAddCheck">' +
+        '置顶' +
+        '</label>' +
+        '</div>'
+        )
+        :
+        ''
+
+    let container = document.createElement('div');
+    container.className = 'fullScreen';
+    container.id = 'GroupFullScreenEdit';
+
+    let selects = [];
+    for (let i = 0; i < 3; i++) {
+        let value = level === i ? 'selected="selected"' : '';
+        selects.push(value);
+    }
+    container.innerHTML = h5String.format(id, selects[0], selects[1], selects[2], topH5String, name);
+    document.body.appendChild(container)
+
+    new SelectFx($('#group-modal-privacy')[0], {
+        stickyPlaceholder: true,
+        onChange: function (val) {
+            // alert(val)
+        }
+    });
+}
+
+function dismissEditGroupModal() {
+    if (that.relation >= 0) {
+        return
+    }
+    isAddGroup = false
+    let modal = document.getElementById('GroupFullScreenEdit');
+    if (modal) document.body.removeChild(modal);
+}
+
+function onGroupClick(e) {
+
+    let id = e.attributes.name.value
+    let name = e.innerText.trim()
+
+    if (isEditGroup && id > 0 && id !== '') {
+        showEditGroupModal(id);
+    }
+    if (isEditGroup || isEditOrder) {
+        event.preventDefault()
+        return
+    }
+    groupSelf.modal_selected_groupId = id
+    let index = indexOfGroupId(id)
+    let level = index >= 0 ? groupSelf.groupData[index].level : 0
+    hideGroup()
+
+    groupSelf.groupSelectCallBack && groupSelf.groupSelectCallBack(id, name, level)
+}
+
+function onEditGroupModalSubmit(id) {
+    if (!id) {
+        doAddGroup()
+    } else {
+        doEditGroup(id)
+    }
+}
+
+function doAddGroup() {
+    let name = $('#group-modal-nameInput')[0].value.trim()
     if (!name) {
         alert('名称不能为空')
         return
@@ -174,12 +321,15 @@ function doAddGroup(e) {
         before = true
     }
 
+    let level = parseInt($("#group-modal-privacy").val())
+
     $.ajax({
         type: 'POST',
         url: "/blog/group/new",
         data: {
             name: name,
-            order: order
+            order: order,
+            level: level
         },
         success: function (result) {
             if (!groupSelf.showGroup)
@@ -190,8 +340,7 @@ function doAddGroup(e) {
                 else
                     alert('新建失败')
             } else {
-
-                hideAddGroupModal()
+                dismissEditGroupModal()
 
                 let newId = result.data.id
                 let user_id = result.data.user_id
@@ -199,9 +348,10 @@ function doAddGroup(e) {
                     id: newId,
                     name: name,
                     order: order,
+                    level: level,
                     user_id: user_id
                 }
-                let groupItemH5 = '<div name="{1}" class="groupItem RGTransition nowrapText" oninput="onGroupInput(this)" onclick="onGroupClick(this)" onblur="onGroupItemBlur(this)">{0}</div>'.format(name, newId)
+                let groupItemH5 = groupItemH5String(newGroupItem)
                 if (before) {
                     groupSelf.groupData.splice(0, 0, newGroupItem)
                     $('#defaultGroup').after(groupItemH5)
@@ -223,119 +373,37 @@ function doAddGroup(e) {
     })
 }
 
-let isEditOrder = false
-let isRename = false
-let isAddGroup = false
+function doEditGroup(id) {
 
-function rename() {
-    if (isEditOrder)
-        return
-    if (isRename) {
-        endRename()
-    } else {
-        startRename()
-    }
-}
-
-groupSelf.flashTimer = null
-
-function startRename() {
-    isRename = true
-    let source = document.querySelectorAll('.groupItem')
-    for (let i = 0; i < source.length; i++) {
-        if (source[i].className.indexOf('staticGroup') >= 0) {
-            continue
-        }
-        source[i].setAttribute("contenteditable", "true");
-        $(source[i]).addClass("rich groupItemBorder")
-        $(source[i]).removeClass("RGTransition")
-    }
-
-    clearInterval(groupSelf.flashTimer)
-
-    let i = 0
-
-    function flash() {
-        $('#renameIcon')[0].style.opacity = i++ % 2 ? 1 : 0
-        i = i % 2
-    }
-
-    groupSelf.flashTimer = setInterval(flash, 500)
-    flash()
-}
-
-function endRename() {
-    isRename = false
-    if (that.relation >= 0) {
+    id = parseInt(id)
+    let name = $('#group-modal-nameInput')[0].value.trim()
+    if (!name) {
+        alert('名称不能为空')
         return
     }
-    clearInterval(groupSelf.flashTimer)
-    $('#renameIcon')[0].style.opacity = 1
-
-    let source = document.querySelectorAll('.groupItem')
-    for (let i = 0; i < source.length; i++) {
-        source[i].removeAttribute("contenteditable")
-        $(source[i]).removeClass("rich groupItemBorder")
-        $(source[i]).addClass("RGTransition")
-    }
-}
-
-preventEnterEnable(true, function (e) {
-    if (e.target.className.indexOf('groupItem') !== -1) {
-        return true
-    }
-    return false
-})
-
-function onGroupInput(e) {
-    if (event.inputType === 'insertFromPaste') {
-        e.innerHTML = e.innerText
-    }
-}
-
-function onGroupClick(e) {
-    if (isRename || isEditOrder) {
-        event.preventDefault()
-        return
-    }
-    groupSelf.submitArtGroupId = e.attributes.name.value
-    let name = e.innerText.trim()
-    hideGroup()
-    groupSelf.selectCallBack && groupSelf.selectCallBack(groupSelf.submitArtGroupId, name)
-}
-
-function onGroupItemBlur(e) {
-
-    let id = parseInt(e.attributes.name.value)
-    let name = e.innerHTML.trim()
-
-    let citem = null
-    for (let i = 0; i < groupSelf.groupData.length; i++) {
-        let item = groupSelf.groupData[i]
-        if (item.id === id) {
-            citem = item
-            break
-        }
-    }
-
-    if (citem.name === name)
-        return
+    let level = parseInt($("#group-modal-privacy").val())
 
     $.ajax({
         type: 'POST',
-        url: "/blog/group/rename",
+        url: "/blog/group/edit",
         data: {
             id: id,
             name: name,
+            level: level,
         },
         success: function (result) {
             if (result.code !== 1000) {
-                alert('重命名失败🙅‍♂️')
+                alert('修改失败🙅‍♂️')
             } else {
-                if (groupSelf.submitArtGroupId && parseInt(groupSelf.submitArtGroupId) === id)
-                    groupSelf.selectCallBack(groupSelf.submitArtGroupId, name)
-                if (citem)
-                    citem.name = name
+                let group = groupSelf.groupData[indexOfGroupId(id)]
+                if (group) {
+                    group.name = name
+                    group.level = level
+                }
+                $('#groupItemName-'+id)[0].innerText = name
+                dismissEditGroupModal()
+                if (groupSelf.modal_selected_groupId && parseInt(groupSelf.modal_selected_groupId) === id)
+                    groupSelf.groupChangeCallBack(group)
             }
         },
         error: function (e) {
@@ -345,7 +413,7 @@ function onGroupItemBlur(e) {
 }
 
 function editOrder() {
-    if (isRename)
+    if (isEditGroup)
         return
     if (isEditOrder) {
         submitOrders(function (flag) {
@@ -552,7 +620,7 @@ function endDrag() {
 function indexOfGroupId(id) {
     for (let i = 0; i < groupSelf.groupData.length; i++) {
         let item = groupSelf.groupData[i]
-        if (id === item.id)
+        if (id+'' === item.id+'')
             return i
     }
     return -1
@@ -599,3 +667,11 @@ function submitOrders(callback) {
         },
     })
 }
+
+$(function () {
+    loadjscssfile("../static/select/css/cs-select.css", "css")
+    loadjscssfile("../static/select/css/cs-skin-border.css", "css")
+    loadjscssfile("../static/font-awesome/css/font-awesome.min.css", "css")
+    loadjscssfile("../static/select/js/classie.js", "js")
+    loadjscssfile("../static/select/js/selectFx.js", "js")
+})

@@ -33,7 +33,8 @@ app = Flask(__name__)
 3.注册的时间
 """
 
-
+# utf8mb4_0900_as_cs 区分大小写
+# ALTER TABLE art MODIFY create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP; 取消时间戳自动更新
 class User(Base):
     __tablename__ = "user"
     __table_args__ = {'mysql_collate': 'utf8mb4_unicode_ci'}
@@ -120,7 +121,7 @@ class Art(Base):
 
     addtime = Column(BigInteger, nullable=False, comment='ms')
     updatetime = Column(BigInteger, nullable=False, comment='ms')
-    create_time = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
+    create_time = Column(TIMESTAMP, nullable=False, default=datetime.utcnow, onupdate=None)
 
 
 """

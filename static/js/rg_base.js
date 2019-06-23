@@ -308,6 +308,17 @@ function rg_getTimezone() {
     return d
 }
 
+function rg_privacyDesc(cate) {
+    cate = parseInt(cate)
+    switch (cate) {
+        case 0:
+            return '所有人可见'
+        case 1:
+            return '仅好友可见'
+        default:
+            return '仅自己可见'
+    }
+}
 function show_loading() {
     let h5string = '<i class="weui-loading"></i>'
 

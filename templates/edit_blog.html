@@ -7,7 +7,7 @@
 <script>
     this.ubg = "{{user.bgImage}}"
     {%if art and art['group_id'] %}
-    that.submitArtGroupId = {{art['group_id']}}
+    this.submitArtGroupId = {{art['group_id']}}
     {%endif%}
 </script>
 
@@ -150,9 +150,19 @@
     this.editor = editor
 
     $(function () {
+        {% if art %}
+        {%- if art.group_id -%}
+            $('#groupNameButton').text("{{art.group_name}}" + ' ({0})'.format(rg_privacyDesc("{{art.group_level}}")))
+        {%- else -%}
+            $('#groupNameButton').text("默认分类" + ' ({0})'.format(rg_privacyDesc(0)))
+        {%- endif -%}
+        {% endif %}
 
-        initGroupModal(that.submitArtGroupId, 'groupNameButton', null, true, function (id, name) {
-            $('#groupNameButton').text(name)
+        initGroupModal(that.submitArtGroupId, 'groupNameButton', null, true, function (id, name, level) {
+            that.submitArtGroupId = id
+            $('#groupNameButton').text(name + ' ({0})'.format(rg_privacyDesc(level)))
+        }, function (group) {
+            $('#groupNameButton').text(group.name + ' ({0})'.format(rg_privacyDesc(group.level)))
         })
 
         $(".publish_button").click(function (e) {

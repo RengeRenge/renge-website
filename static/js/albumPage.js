@@ -51,8 +51,8 @@ function new_album(e) {
 
     let text =
         '<div onclick="goto_album(this)" class="bgNoRepeatImage" style="width: 100%;"> </div>\
-            <div id="new_title" class="p_title nowrapText rich" contenteditable="true" placeholder="标题" style="margin-top: 0px;" onblur="albumOnBlur(this)"></div>\
-            <div id="new_desc" class="p_desc nowrapText rich" contenteditable="true" placeholder="描述" onblur="albumOnBlur(this)"></div>\
+            <div id="new_title" class="p_title nowrapText rich" contenteditable="true" placeholder="标题" style="margin-top: 0px; text-overflow: unset;" onblur="albumOnBlur(this)"></div>\
+            <div id="new_desc" class="p_desc nowrapText rich" contenteditable="true" placeholder="描述" style="text-overflow: unset" onblur="albumOnBlur(this)"></div>\
             <div class="p_desc nowrapText secondTextColor"><div class="rgButton" onclick="do_new_album(this)">创建</div></div>'
     new_album.html(text)
     $('.collectionView').prepend(new_album)
@@ -75,7 +75,7 @@ function do_new_album(e) {
             } else {
                 let album = result.data
                 let text =
-                    '<div class="album_sxwelect"></div>\
+                    '<div class="album_select"></div>\
                     <div onclick="goto_album(this)" class="bgNoRepeatImage" style="width: 100%;"> </div>\
                     <div class="p_title nowrapText">{0}</div>\
                     <div class="p_desc nowrapText">{1}</div>\
@@ -144,11 +144,11 @@ function del_albums(e) {
                 'ids': ids
             },
             success: function (result) {
-                if (result.code != 1000) {
+                if (result.code !== 1000) {
                     alert('删除失败')
                 } else {
-                    for (let i in ids) {
-                        $('#' + ids[i]).remove()
+                    for (let id of ids) {
+                        $('#' + id).remove()
                     }
                     if (_that.managing)
                         manage_album()

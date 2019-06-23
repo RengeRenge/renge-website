@@ -8,4 +8,4 @@ class http_code(IntEnum):
     insert_fail = 1003
     del_fail = 1004
     lack_param = 1005
-    update_fail = 1004
+    update_fail = 1006
