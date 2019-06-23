@@ -88,6 +88,8 @@ def page_list(other_id=None, art_user_id=-1, page=1, size=10):
         for row in result:
             if relation is -1 and 'relation' in row:
                 relation = row['relation']
+                if relation is None:
+                    relation = 0
             del row['content']
 
     return result, page_count, page, size, count, relation
