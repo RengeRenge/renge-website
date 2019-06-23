@@ -76,6 +76,8 @@ def do_execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0, args
                                         args=args,
                                         conn=conn, commit=commit)
     except Exception as e:
+        conn.rollback()
+        conn.commit()
         return None, 0, -1, e
     finally:
         if conn:

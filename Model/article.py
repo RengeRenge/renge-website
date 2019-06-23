@@ -193,8 +193,10 @@ def month_list(art_user, other_id, group_id, year, month, timezone=8):
     return result
 
 
-def add_or_update_art(user_id, title=None, content='', cate=0, group_id=None, art_id=None, summary='', cover=''):
-    timestamp = RGTimeUtil.timestamp()
+def add_or_update_art(user_id, title=None, content='', cate=0, group_id=None, art_id=None, summary='', cover='',
+                      conn=None, commit=True, timestamp=None):
+    if timestamp is None:
+        timestamp = RGTimeUtil.timestamp()
 
     g = Goose(
         {'browser_user_agent': 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko)\
@@ -253,7 +255,7 @@ def add_or_update_art(user_id, title=None, content='', cate=0, group_id=None, ar
                 content=%(content)s, updatetime=%(timestamp)s, group_id=%(group_id)s \
                 WHERE id=%(art_id)s and user_id =%(user_id)s"
 
-    result, count, new_id = dao.execute_sql(sql, needdic=True, neednewid=True, args={
+    args = {
         'title': title,
         'summary': summary,
         'cate': cate,
@@ -263,7 +265,35 @@ def add_or_update_art(user_id, title=None, content='', cate=0, group_id=None, ar
         'content': content,
         'timestamp': timestamp,
         'art_id': art_id,
-    })
+    }
+
+    if conn is None:
+        try:
+            conn = dao.get()
+            result, count, new_id, err = dao.do_execute_sql_with_connect(
+                sql=sql,
+                needdic=True,
+                neednewid=True,
+                conn=conn,
+                commit=commit,
+                args=args
+            )
+        except Exception as e:
+            conn.rollback()
+            conn.commit()
+            result, count, new_id = None, 0, -1
+        finally:
+            if conn:
+                conn.close()
+    else:
+        result, count, new_id, err = dao.do_execute_sql_with_connect(
+            sql=sql,
+            needdic=True,
+            neednewid=True,
+            conn=conn,
+            commit=commit,
+            args=args
+        )
 
     if count > 0:
         return True, art_id if art_id is not None else new_id
@@ -321,8 +351,12 @@ def art_detail(user_id, art_id):
     return None
 
 
+def new_group_sql():
+    return 'insert into art_group (name, user_id, `order`, level) values (%(name)s, %(user_id)s, %(order)s, %(level)s)'
+
+
 def new_group(user_id=None, name='', order=0, level=0):
-    sql = 'insert into art_group (name, user_id, `order`, level) values (%(name)s, %(user_id)s, %(order)s, %(level)s)'
+    sql = new_group_sql()
     result, count, new_id = dao.execute_sql(sql, neednewid=True, args={
         'name': name,
         'user_id': user_id,
