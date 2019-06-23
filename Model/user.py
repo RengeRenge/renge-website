@@ -334,7 +334,7 @@ def friend_page_list(user_id, page=1, size=10):
 
     sql = sql_temp % (
         "re.addtime as 'follow_time', file.file_name as 'icon', \
-        u.nickname, u.tag, u.id as 'ID', u.description as 'desc', u.addtime as 'addTime'",
+        u.nickname, u.tag, u.id as 'ID', u.title as 'title', u.description as 'desc', u.addtime as 'addTime'",
         ' left join file on file.id = u.icon',
         '%(user_id)s',
         'follow_time'

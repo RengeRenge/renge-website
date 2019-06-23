@@ -100,12 +100,11 @@
 
     {%- if user -%}
     <div style="margin-bottom: 20px;" class="toolBarWrapper">
-        <a href="/blog/{{user.ID}}/" class="toolBarItem toolBarItem-selected">日志</a>
+        <a href="/blog/{{user.ID}}/" class="toolBarItem toolBarItem-selected">动态</a>
         <a href="/photo/{{user.ID}}/" class="toolBarItem">相册</a>
         <a href="/blog/view/{{user.ID}}/" class="toolBarItem">归档</a>
         {% if home %}
         <a href="/user/friends" class="toolBarItem">好友</a>
-        <a class="toolBarItem">导入</a>
         {% endif %}
     </div>
     {%- endif -%}
@@ -115,14 +114,14 @@
             {%- for item in list -%}
             <div class="wrapperLR wrapperItem wrapperItemBg">
                 <div class="">
-                    <div class="articleTitle auto_text" id="{{item.ID}}" onclick="goto_blog(this)">
+                    <div class="articleTitle auto_text" id="{{item.id}}" onclick="goto_blog(this)">
                         {%- if item.title -%}
                             {{ item.title }}
                         {%- else -%}
                             <script>
-                            var timeStamp = {{item.addTime}}
+                            var timeStamp = {{item.addtime}}
                             var time = (new Date(timeStamp)).Format("yyyy年 MM月 dd日")
-                            var dom = document.getElementById('{{item.ID}}')
+                            var dom = document.getElementById('{{item.id}}')
                             dom.innerText = time
                             </script>
                         {%- endif -%}
@@ -130,9 +129,9 @@
                     <div class="auto_text artSubTitle"> {{ item.summary }}</div>
                     <div class="auto_text artSubTitle secondTextColor" style="margin-top: 10px">
                     <script>
-                        var timeStamp = {{item.addTime}}
+                        var timeStamp = {{item.addtime}}
                         var time = (new Date(timeStamp)).Format("yyyy-MM-dd hh:mm:ss")
-                        var dom = document.getElementById('{{item.ID}}').parentElement.getElementsByClassName('auto_text artSubTitle secondTextColor')[0]
+                        var dom = document.getElementById('{{item.id}}').parentElement.getElementsByClassName('auto_text artSubTitle secondTextColor')[0]
                         dom.innerText = time
                     </script>
                 </div>
@@ -141,7 +140,7 @@
                     <div class="bgNoRepeatImage blogListCover"
                          style='background-image: url("{{item.cover|safe}}");'
                          onclick="goto_blog(this)"
-                         name="{{item.ID}}"
+                         name="{{item.id}}"
                     >
                     </div>
                 </div>

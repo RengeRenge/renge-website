@@ -1,8 +1,6 @@
 # encoding: utf-8
 import operator
-from datetime import datetime
 
-import pymysql
 from goose3 import Goose
 from goose3.text import StopWordsChinese
 
@@ -11,41 +9,7 @@ from Model import user
 from RGUtil import RGTimeUtil
 
 
-class article:
-    def __init__(self, ID, title, summary, cate, userId, groupId, cover, content, addTime, updateTime, create_time):
-        self.ID = ID
-        self.title = title
-        self.summary = summary
-        self.addTime = addTime
-        self.cate = int(cate)
-        self.userId = userId
-        self.groupId = groupId
-        self.cover = cover
-        self.content = content
-        # self.addTime = addTime
-        self.addTime = RGTimeUtil.timestamp(date=create_time)
-        self.updateTime = updateTime
-        self.createTime = create_time
-
-
-def art_obj_with_sqlresult(result, needContent=False):
-    art = article(
-        result[0],
-        result[1],
-        result[2],
-        result[3],
-        result[4],
-        result[5],
-        result[6],
-        result[7] if needContent else None,
-        result[8],
-        result[9],
-        result[10]
-    )
-    return art
-
-
-def id_list(user_id, last_id=None, size=10, dic=True):
+def id_list(user_id, last_id=None, size=10):
     conn = None
     cursor = None
     try:
@@ -64,97 +28,113 @@ def id_list(user_id, last_id=None, size=10, dic=True):
         dao.close(conn, cursor)
 
     sql = 'SELECT * FROM art where user_id=%(user_id)s AND id < %(last_id)s order by id desc limit %(size)s'
-    result, count, new_id = dao.execute_sql(sql, args={'user_id': user_id, 'last_id': last_id, 'size': size})
+    result, count, new_id = dao.execute_sql(sql, needdic=True,
+                                            args={'user_id': user_id, 'last_id': last_id, 'size': size})
 
-    objects_list = []
     last_id = 0
     for row in result:
-        d = art_obj_with_sqlresult(row)
-        last_id = d.ID
-        if dic:
-            objects_list.append(d.__dict__)
-        else:
-            objects_list.append(d)
+        last_id = row['id']
 
-    return objects_list, count, last_id if count > 0 else 0
+    return result, count, last_id if count > 0 else 0
 
 
-def page_list(user_id=None, art_user_id=-1, page=1, size=10, dic=True):
+def page_list(other_id=None, art_user_id=-1, page=1, size=10):
     size = int(size)
 
-    relation = 0
+    relation = -1
 
     page = int(page)
     if page < 1:
         page = 1
 
-    if user.isHome(user_id, art_user_id):
-        sql = 'SELECT * FROM art where user_id=%(art_user_id)s order by id desc'
+    if other_id is None:
+        sql = 'select art.* from art left join art_group as g on g.id = art.group_id \
+                        where \
+                        art.user_id=%(art_user)s \
+                        and cate <= 0 \
+                        and (g.id is NULL or g.level <= 0) \
+                        order by addtime desc'
+        relation = 0
+    elif user.isHome(art_user_id, other_id):
+        relation = 2
+        sql = 'select art.* from art where user_id=%(art_user)s order by addtime desc'
     else:
-        if user_id is not None:
-            relation = user.get_relation(art_user_id, user_id)
+        sql = 'select art.*, relation from art \
+                left join art_group as g on g.id = art.group_id \
+                left join (select relation from user_relation \
+                            where m_user_id = %(art_user)s and o_user_id = %(other_id)s) as r on 1=1 \
+                where \
+                art.user_id=%(art_user)s \
+                and (g.id is NULL or g.level <= 0 or g.level <= r.relation) \
+                and (cate <= 0 or cate <= r.relation) \
+                order by addtime desc'
 
-        if relation == 0:
-            sql = 'SELECT * FROM art where user_id=%(art_user_id)s and cate=0 order by id desc'
-        elif relation == 1:
-            sql = 'SELECT * FROM art where user_id=%(art_user_id)s and cate<=1 order by id desc'
-        else:
-            return None, 0, 0, 0, 0, relation
-
-    result, count, new_id = dao.execute_sql(sql, needret=False, args={'art_user_id': art_user_id})
+    args = {
+        'art_user': art_user_id,
+        'other_id': other_id,
+    }
+    result, count, new_id = dao.execute_sql(sql, needret=False, args=args)
 
     page_count = int(operator.truediv(count - 1, size)) + 1
     page = min(page, page_count)
 
     sql += ' limit %d offset %d' % (size, (page - 1) * size)
-    print(sql)
 
-    result, this_page_count, new_id = dao.execute_sql(sql, args={'art_user_id': art_user_id})
+    result, this_page_count, new_id = dao.execute_sql(sql, needdic=True, args=args)
 
     page = page if this_page_count > 0 else page_count
-    objects_list = []
 
     if result is not None:
         for row in result:
-            d = art_obj_with_sqlresult(row)
-            if dic:
-                objects_list.append(d.__dict__)
-            else:
-                objects_list.append(d)
+            if relation is -1 and 'relation' in row:
+                relation = row['relation']
+            del row['content']
 
-    return objects_list, page_count, page, size, count, relation
+    return result, page_count, page, size, count, relation
 
 
 def months_list_view(art_user=None, other_id=None, group_id=None, timezone=8):
+    timezone = '%+d' % timezone
+    time_format = '%%Y-%%m'
+
     if other_id is None:
-        sql = 'SELECT date_format(CONVERT_TZ(create_time, @@session.time_zone, "%+d:00"), "%s") months, count(id) as "count" \
-                            FROM art where user_id=%ld and cate <= 0 \
-                            %s \
-                            group by months order by months desc' % (timezone, '%s', art_user, '%s')
+        sql = 'SELECT date_format(CONVERT_TZ(create_time, @@session.time_zone, "{}:00"), "{}") months, count(art.id) as "count" \
+                            FROM art \
+                                left join art_group as g on g.id = art.group_id \
+                            where \
+                            art.user_id=%(art_user)s \
+                            and cate <= 0 \
+                            and (g.id is NULL or g.level <= 0) \
+                            {} \
+                            group by months order by months desc'.format(timezone, time_format, '{}')
     elif user.isHome(art_user, other_id):
-        sql = 'SELECT date_format(CONVERT_TZ(create_time, @@session.time_zone, "%+d:00"), "%s") months, count(id) as "count" \
-                      FROM art where user_id=%ld %s \
-                      group by months order by months desc' % (timezone, '%s', art_user, '%s')
+        sql = 'SELECT date_format(CONVERT_TZ(create_time, @@session.time_zone, "{}:00"), "{}") months, count(art.id) as "count" \
+                      FROM art where user_id=%(art_user)s {} \
+                      group by months order by months desc'.format(timezone, time_format, '{}')
     else:
-        sql = 'SELECT date_format(CONVERT_TZ(create_time, @@session.time_zone, "%+d:00"), "%s") months, count(id) as "count" \
-                    FROM art where user_id=%ld and ( \
-                    cate <= (select relation from user_relation where m_user_id = %ld and o_user_id = %ld) \
-                    or \
-                    cate <= 0 \
-                    ) \
-                    %s \
-                    group by months order by months desc' % (timezone, '%s', art_user, art_user, other_id, '%s')
+        sql = 'SELECT date_format(CONVERT_TZ(create_time, @@session.time_zone, "{}:00"), "{}") months, count(art.id) as "count" \
+                    FROM art \
+                        left join art_group as g on g.id = art.group_id \
+                        left join (select relation from user_relation \
+                                    where m_user_id = %(art_user)s and o_user_id = %(other_id)s) as r on 1=1 \
+                    where art.user_id=%(art_user)s \
+                    and (g.id is NULL or g.level <= 0 or g.level <= r.relation) \
+                    and (cate <= 0 or cate <= r.relation) \
+                    {} \
+                    group by months order by months desc'.format(timezone, time_format, '{}')
 
-    time_format = '%Y-%m'
     if group_id is None:
-        sql = sql % (time_format, '')
+        sql = sql.format('')
     elif group_id < 0:
-        sql = sql % (time_format, 'and (group_id is null or group_id not in (SELECT id from art_group))')
+        sql = sql.format('and (group_id is null or group_id not in (SELECT id from art_group))')
     else:
-        sql = sql % (time_format, 'and group_id=%ld' % group_id)
+        sql = sql.format('and group_id=%(group_id)s')
 
-    result, count, new_id = dao.execute_sql(sql, needdic=True)
-
+    result, count, new_id = dao.execute_sql(sql, needdic=True, args={
+        'art_user': art_user,
+        'other_id': other_id,
+        'group_id': group_id,
+    })
     return result
 
 
@@ -170,27 +150,31 @@ def month_list(art_user, other_id, group_id, year, month, timezone=8):
     e_time = RGTimeUtil.timestamp_with_month(year=year, month=month, timezone=timezone)
 
     if other_id is None:
-        sql = 'select * from art \
+        sql = 'select art.* from art \
+                            left join art_group as g on g.id = art.group_id \
                         where \
-                        user_id=%(art_user)s and \
-                        addtime >= {} and addtime < {} and cate <= 0 \
+                        art.user_id=%(art_user)s \
+                        and addtime >= {} \
+                        and addtime < {} \
+                        and cate <= 0 \
+                        and (g.id is NULL or g.level <= 0) \
                         {} \
                         order by addtime desc'.format(s_time, e_time, '{}')
     elif user.isHome(art_user, other_id):
-        sql = 'select * from art \
+        sql = 'select art.* from art \
                 where user_id=%(art_user)s and \
                 addtime >= {} and addtime < {} {} order by addtime desc'.format(s_time, e_time, '{}')
     else:
-        sql = 'select * from art \
+        sql = 'select art.* from art \
+                left join art_group as g on g.id = art.group_id \
+                left join (select relation from user_relation \
+                            where m_user_id = %(art_user)s and o_user_id = %(other_id)s) as r on 1=1 \
                 where \
-                user_id=%(art_user)s and \
-                addtime >= {} and addtime < {} and \
-                ( \
-                    cate <= \
-                    (select relation from user_relation where m_user_id = %(art_user)s and o_user_id = %(other_id)s) \
-                    or \
-                    cate <= 0 \
-                ) \
+                art.user_id=%(art_user)s \
+                and addtime >= {} \
+                and addtime < {} \
+                and (g.id is NULL or g.level <= 0 or g.level <= r.relation) \
+                and (cate <= 0 or cate <= r.relation) \
                 {} \
                 order by addtime desc'.format(s_time, e_time, '{}')
 
@@ -200,7 +184,7 @@ def month_list(art_user, other_id, group_id, year, month, timezone=8):
         sql = sql.format('and (group_id is null or group_id not in (SELECT id from art_group))')
     else:
         sql = sql.format('and group_id=%(group_id)s')
-    print(sql)
+
     result, count, new_id = dao.execute_sql(sql, needdic=True, args={
         'art_user': art_user,
         'other_id': other_id,
@@ -309,22 +293,30 @@ def art_detail(user_id, art_id):
         'SELECT art.id, art.title, art.summary, \
             art.cate, art.user_id, art.cover, \
             art.content, art.addtime, art.updatetime, \
-            art_group.name as "group_name", art_group.id as "group_id"\
-        FROM art left join art_group on art_group.id = art.group_id\
-        where art.id = %(art_id)s and (\
-            (art.cate = 0)\
-            or\
-            (art.user_id = %(user_id)s)\
-            or\
-            (art.user_id in (select user_relation.m_user_id\
-                            from user_relation\
-                            where m_user_id = art.user_id and o_user_id = %(user_id)s and relation >= art.cate))\
-            )'
+            art_group.name as "group_name", art_group.id as "group_id", art_group.level as "group_level"\
+        FROM art \
+            left join art_group on art_group.id = art.group_id\
+            left join user_relation as r on r.m_user_id = art.user_id  and r.o_user_id=%(other_id)s \
+        where art.id = %(art_id)s and ((art.user_id = %(other_id)s) or\
+            (art_group.id is NULL \
+            or \
+            art_group.level <= 0 \
+            or \
+            art_group.level <= r.relation \
+            ) \
+            and (\
+            art.cate <= 0\
+            or \
+            art.cate <= r.relation \
+            ))'
+
     result, count, new_id = dao.execute_sql(sql, needdic=True, args={
         'art_id': art_id,
-        'user_id': user_id
+        'other_id': user_id
     })
     if count:
+        art = result[0]
+        art['logicCate'] = max(art['cate'], art['group_level'] if art['group_level'] is not None else 0)
         return result[0]
     return None
 

@@ -138,17 +138,20 @@
 </style>
 <script>
     let d = rg_getTimezone()
+    let that = this
 
     preventEnterEnable(true, function (e) {
         return true
     })
 
     $(function () {
-        initGroupModal(that.submitArtGroupId, 'groupNameButton', '全部分类', that.relation < 0, function (id, name) {
-            $('#groupNameButton').text(name)
-            loadTimeLine(id)
-        })
-
+        initGroupModal(groupSelf.modal_selected_groupId, 'groupNameButton', '全部分类', that.relation < 0,
+            function (id, name, level) {
+                $('#groupNameButton').text(name)
+                loadTimeLine(id)
+            }, function (group) {
+                $('#groupNameButton').text(group.name)
+            })
         loadTimeLine(null)
     })
 
@@ -167,6 +170,9 @@
                     let year = null
                     let last_year = null
                     let years = []
+                    if (!result.data.length) {
+                        result.data = [{count: 0, months: (new Date()).Format("yyyy-MM")}]
+                    }
                     for (let i = 0; i < result.data.length; i++) {
                         let monthView = result.data[i]
                         let month = monthView['months']
@@ -208,7 +214,7 @@
                 let month = year.months[j]
                 let monthNumber = month.months.split('-')[1]
                 let monthDesc = monthNumber + '月' + '({0})'.format(month.count)
-                monthString += '<li class="{1}" name="{2}"><a href="#">{0}</a></li>'.format(monthDesc, active_m ? 'active' : '', month.months)
+                monthString += '<li class="{1}" name="{2}"><a>{0}</a></li>'.format(monthDesc, active_m ? 'active' : '', month.months)
                 active_m = false
 
                 if (firstMonth) {
@@ -269,7 +275,7 @@
                 timezone: d,
                 year: year,
                 month: month,
-                group_id: groupSelf.submitArtGroupId
+                group_id: groupSelf.modal_selected_groupId
             },
             success: function (result) {
                 if (result.code === 1000) {
@@ -365,12 +371,11 @@
 
     {%- if user -%}
     <div style="margin-bottom: 20px;" class="toolBarWrapper">
-        <a href="/blog/{{user.ID}}/" class="toolBarItem">日志</a>
+        <a href="/blog/{{user.ID}}/" class="toolBarItem">动态</a>
         <a href="/photo/{{user.ID}}/" class="toolBarItem">相册</a>
         <a href="/blog/view/{{user.ID}}/" class="toolBarItem toolBarItem-selected">归档</a>
         {% if home %}
         <a href="/user/friends" class="toolBarItem">好友</a>
-        <a class="toolBarItem">导入</a>
         {% endif %}
     </div>
     {%- endif -%}
@@ -382,14 +387,15 @@
                 全部日志
             </div>
         </div>
-        <div class="wrapperLR">
+        <div class="wrapperLR" style="padding-bottom: 160px">
             <div class="timeline" style="margin-top: 10px">
                 <ul id="timeLineYearWrapper" class="year">
                 </ul>
             </div>
+            <div style="width: 100%">
+                <div id="artCollectionView" class="collectionView">
 
-            <div id="artCollectionView" class="collectionView" style="width: 100%">
-
+                </div>
             </div>
         </div>
     </div>
