@@ -16,6 +16,7 @@
     border: 0;
     background: rgba(0, 0, 0, 0);
     font-weight: bold;
+    font-family: 微软雅黑, 宋体, Arial, Helvetica, Verdana, sans-serif;
     text-align: left;
 }
 
@@ -29,7 +30,7 @@
     width: 100%;
     min-height: 40px;
     line-height: 40px;
-    font-size: 30px;
+    font-size: 20px;
     border: 0;
     background: rgba(0, 0, 0, 0);
     font-weight: bold;
