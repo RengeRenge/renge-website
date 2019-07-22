@@ -197,7 +197,7 @@
   bottom: 0;
   left: 0;
 }
-.simditor .simditor-body {
+.simditor-body {
   padding: 22px 15px 40px;
   min-height: 300px;
   outline: none;
@@ -206,19 +206,19 @@
   z-index: 1;
   background: transparent;
 }
-.simditor .simditor-body a.selected {
+.simditor-body a.selected {
   background: #b3d4fd;
 }
-.simditor .simditor-body a.simditor-mention {
+.simditor-body a.simditor-mention {
   cursor: pointer;
 }
-.simditor .simditor-body .simditor-table {
+.simditor-body .simditor-table {
   position: relative;
 }
-.simditor .simditor-body .simditor-table.resizing {
+.simditor-body .simditor-table.resizing {
   cursor: col-resize;
 }
-.simditor .simditor-body .simditor-table .simditor-resize-handle {
+.simditor-body .simditor-table .simditor-resize-handle {
   position: absolute;
   left: 0;
   top: 0;
@@ -226,17 +226,17 @@
   height: 100%;
   cursor: col-resize;
 }
-.simditor .simditor-body pre {
+.simditor-body pre {
   /*min-height: 28px;*/
   box-sizing: border-box;
   -moz-box-sizing: border-box;
   word-wrap: break-word !important;
   white-space: pre-wrap !important;
 }
-.simditor .simditor-body img {
+.simditor-body img {
   cursor: pointer;
 }
-.simditor .simditor-body img.selected {
+.simditor-body img.selected {
   box-shadow: 0 0 0 4px #cccccc;
 }
 .simditor .simditor-paste-bin {
@@ -584,7 +584,8 @@
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
 }
 
-.simditor .simditor-body, .editor-style {
+/*控制文章字体*/
+.simditor-body, .editor-style {
   font-size: 16px;
   font-family: arial, sans-serif;
   line-height: 1.6;
@@ -592,97 +593,97 @@
   outline: none;
   word-wrap: break-word;
 }
-.simditor .simditor-body > :first-child, .editor-style > :first-child {
+.simditor-body > :first-child, .editor-style > :first-child {
   margin-top: 0 !important;
 }
-.simditor .simditor-body a, .editor-style a {
+.simditor-body a, .editor-style a {
   color: #4298BA;
   text-decoration: none;
   word-break: break-all;
 }
-.simditor .simditor-body a:visited, .editor-style a:visited {
+.simditor-body a:visited, .editor-style a:visited {
   color: #4298BA;
 }
-.simditor .simditor-body a:hover, .editor-style a:hover {
+.simditor-body a:hover, .editor-style a:hover {
   color: #0F769F;
 }
-.simditor .simditor-body a:active, .editor-style a:active {
+.simditor-body a:active, .editor-style a:active {
   color: #9E792E;
 }
-.simditor .simditor-body a:hover, .simditor .simditor-body a:active, .editor-style a:hover, .editor-style a:active {
+.simditor-body a:hover, .simditor-body a:active, .editor-style a:hover, .editor-style a:active {
   outline: 0;
 }
-.simditor .simditor-body h1, .simditor .simditor-body h2, .simditor .simditor-body h3, .simditor .simditor-body h4, .simditor .simditor-body h5, .simditor .simditor-body h6, .editor-style h1, .editor-style h2, .editor-style h3, .editor-style h4, .editor-style h5, .editor-style h6 {
+.simditor-body h1, .simditor-body h2, .simditor-body h3, .simditor-body h4, .simditor-body h5, .simditor-body h6, .editor-style h1, .editor-style h2, .editor-style h3, .editor-style h4, .editor-style h5, .editor-style h6 {
   font-weight: normal;
   margin: 40px 0 20px;
   color: #000000;
 }
-.simditor .simditor-body h1, .editor-style h1 {
+.simditor-body h1, .editor-style h1 {
   font-size: 24px;
 }
-.simditor .simditor-body h2, .editor-style h2 {
+.simditor-body h2, .editor-style h2 {
   font-size: 22px;
 }
-.simditor .simditor-body h3, .editor-style h3 {
+.simditor-body h3, .editor-style h3 {
   font-size: 20px;
 }
-.simditor .simditor-body h4, .editor-style h4 {
+.simditor-body h4, .editor-style h4 {
   font-size: 18px;
 }
-.simditor .simditor-body h5, .editor-style h5 {
+.simditor-body h5, .editor-style h5 {
   font-size: 16px;
 }
-.simditor .simditor-body h6, .editor-style h6 {
+.simditor-body h6, .editor-style h6 {
   font-size: 16px;
 }
-.simditor .simditor-body p, .simditor .simditor-body div, .editor-style p, .editor-style div {
+.simditor-body p, .simditor-body div, .editor-style p, .editor-style div {
   word-wrap: break-word;
   margin: 0 0 15px 0;
   color: #333;
   word-wrap: break-word;
 }
-.simditor .simditor-body b, .simditor .simditor-body strong, .editor-style b, .editor-style strong {
+.simditor-body b, .simditor-body strong, .editor-style b, .editor-style strong {
   font-weight: bold;
 }
-.simditor .simditor-body i, .simditor .simditor-body em, .editor-style i, .editor-style em {
+.simditor-body i, .simditor-body em, .editor-style i, .editor-style em {
   font-style: italic;
 }
-.simditor .simditor-body u, .editor-style u {
+.simditor-body u, .editor-style u {
   text-decoration: underline;
 }
-.simditor .simditor-body strike, .simditor .simditor-body del, .editor-style strike, .editor-style del {
+.simditor-body strike, .simditor-body del, .editor-style strike, .editor-style del {
   text-decoration: line-through;
 }
-.simditor .simditor-body ul, .simditor .simditor-body ol, .editor-style ul, .editor-style ol {
+.simditor-body ul, .simditor-body ol, .editor-style ul, .editor-style ol {
   list-style: disc outside none;
   margin: 15px 0;
   padding: 0 0 0 40px;
   line-height: 1.6;
 }
-.simditor .simditor-body ul li, .simditor .simditor-body ol li, .editor-style ul li, .editor-style ol li {
+.simditor-body ul li, .simditor-body ol li, .editor-style ul li, .editor-style ol li {
   list-style-type: inherit;
 }
-.simditor .simditor-body ul ul, .simditor .simditor-body ul ol, .simditor .simditor-body ol ul, .simditor .simditor-body ol ol, .editor-style ul ul, .editor-style ul ol, .editor-style ol ul, .editor-style ol ol {
+.simditor-body ul ul, .simditor-body ul ol, .simditor-body ol ul, .simditor-body ol ol, .editor-style ul ul, .editor-style ul ol, .editor-style ol ul, .editor-style ol ol {
   padding-left: 30px;
 }
-.simditor .simditor-body ul ul, .simditor .simditor-body ol ul, .editor-style ul ul, .editor-style ol ul {
+.simditor-body ul ul, .simditor-body ol ul, .editor-style ul ul, .editor-style ol ul {
   list-style: circle outside none;
 }
-.simditor .simditor-body ul ul ul, .simditor .simditor-body ol ul ul, .editor-style ul ul ul, .editor-style ol ul ul {
+.simditor-body ul ul ul, .simditor-body ol ul ul, .editor-style ul ul ul, .editor-style ol ul ul {
   list-style: square outside none;
 }
-.simditor .simditor-body ol, .editor-style ol {
+.simditor-body ol, .editor-style ol {
   list-style: decimal;
 }
-.simditor .simditor-body blockquote, .editor-style blockquote {
+.simditor-body blockquote, .editor-style blockquote {
   border-left: 6px solid #ddd;
   padding: 5px 0 5px 10px;
   margin: 15px 0 15px 15px;
 }
-.simditor .simditor-body blockquote > :first-child, .editor-style blockquote > :first-child {
+.simditor-body blockquote > :first-child, .editor-style blockquote > :first-child {
   margin-top: 0;
 }
-.simditor .simditor-body code, .editor-style code {
+.simditor-body code, .editor-style code {
   display: inline-block;
   padding: 0 4px;
   margin: 0 5px;
@@ -693,7 +694,7 @@
   word-break: break-all;
   word-wrap: break-word;
 }
-.simditor .simditor-body pre, .editor-style pre {
+.simditor-body pre, .editor-style pre {
   padding: 10px 5px 10px 10px;
   margin: 15px 0;
   display: block;
@@ -706,14 +707,14 @@
   word-wrap: normal;
   overflow-x: auto;
 }
-.simditor .simditor-body pre code, .editor-style pre code {
+.simditor-body pre code, .editor-style pre code {
   display: block;
   padding: 0;
   margin: 0;
   background: none;
   border-radius: 0;
 }
-.simditor .simditor-body hr, .editor-style hr {
+.simditor-body hr, .editor-style hr {
   display: block;
   height: 0px;
   border: 0;
@@ -721,17 +722,17 @@
   margin: 15px 0;
   padding: 0;
 }
-.simditor .simditor-body table, .editor-style table {
+.simditor-body table, .editor-style table {
   width: 100%;
   table-layout: fixed;
   border-collapse: collapse;
   border-spacing: 0;
   margin: 15px 0;
 }
-.simditor .simditor-body table thead, .editor-style table thead {
+.simditor-body table thead, .editor-style table thead {
   background-color: #f9f9f9;
 }
-.simditor .simditor-body table td, .simditor .simditor-body table th, .editor-style table td, .editor-style table th {
+.simditor-body table td, .simditor-body table th, .editor-style table td, .editor-style table th {
   min-width: 40px;
   height: 30px;
   border: 1px solid #ccc;
@@ -740,10 +741,10 @@
   text-align: left;
   box-sizing: border-box;
 }
-.simditor .simditor-body table td.active, .simditor .simditor-body table th.active, .editor-style table td.active, .editor-style table th.active {
+.simditor-body table td.active, .simditor-body table th.active, .editor-style table td.active, .editor-style table th.active {
   background-color: #ffffee;
 }
-.simditor .simditor-body img, .editor-style img {
+.simditor-body img, .editor-style img {
   margin: 0 5px;
   vertical-align: middle;
 }
