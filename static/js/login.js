@@ -19,12 +19,12 @@ function check(username, callback) {
     })
 }
 
-function login(username, pwd, callback) {
+function login(username, pwd, remember, callback) {
     $.ajax({
         type: 'POST',
         dataType: "json",
         url: "user/login",
-        data: {'username': username, 'pwd': pwd, 'type': 0},
+        data: {'username': username, 'pwd': pwd, 'remember': remember, 'type': 0},
         success: function (data) {
             if (callback)
                 callback(data)
@@ -51,12 +51,12 @@ function logout(callback) {
     })
 }
 
-function regist(username, pwd, callback) {
+function regist(username, pwd, remember, callback) {
     $.ajax({
         type: 'POST',
         dataType: "json",
         url: "user/new",
-        data: {'username': username, 'pwd': pwd, 'type': 0},
+        data: {'username': username, 'pwd': pwd, 'remember': remember, 'type': 0},
         success: function (result) {
             if (callback)
                 callback(result)

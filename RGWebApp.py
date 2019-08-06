@@ -22,7 +22,7 @@ app.register_blueprint(RGUserApp.RestRouter)
 app.register_blueprint(RGPhotoApp.RestRouter)
 
 
-# app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=15)
 
 
 @app.route('/favicon.ico', methods=['GET'])
