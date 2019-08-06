@@ -13,7 +13,7 @@ body {
     /*margin: 0;*/
     /*padding: 0;*/
 
-    background-image: url("../image/hina.jpg");
+    background-image: url("../image/config/hina.jpg");
 
     /* 让背景图基于容器大小伸缩 */
     background-size: cover;
@@ -342,7 +342,7 @@ body {
 }
 
 .titleWrapper {
-    color: azure;
+    /*color: azure;*/
     background-color: rgba(0, 0, 0, 0);
     padding-left: 5px;
 }
