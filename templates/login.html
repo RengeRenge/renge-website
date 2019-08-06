@@ -2,6 +2,7 @@
 <html lang="zh">
 
 <link href="/static/css/rg_base.css" rel="stylesheet" type="text/css" id="rg_base">
+<link href="/static/css/rg_config.css" rel="stylesheet" type="text/css" id="rg_config">
 <link href="/static/css/login.css" rel="stylesheet" type="text/css">
 <link href="/static/css/weui-for-work.min.css" rel="stylesheet" type="text/css">
 
@@ -17,11 +18,11 @@
 </head>
 <body>
 <div class="hina_bg"></div>
-<div class="page_wrapper">
+<div class="page_wrapper main_title_color">
     <div class="page_center_wrapper">
-        <div style="width: 75%; min-width: 120px; max-width: 260px; background-color: rgba(0,0,0,0);">
+        <div style="width: 75%; min-width: 120px; max-width: 260px; background-color: rgba(0,0,0,0); display: flex; flex-direction: column">
 
-            <div style="font-size: 35px; color: azure;">BLOG</div>
+            <div style="font-size: 35px;">BLOG</div>
 
             <div class="weui-cells" style="border-radius: 8px">
                 <div class="weui-cell">
@@ -43,7 +44,23 @@
                 </div>
             </div>
 
-            <div id="login_tip" class="login_tip"></div>
+            <div>
+                <div id="login_tip" class="login_tip main_title_color"></div>
+            </div>
+
+            <div>
+                <a style="cursor: pointer; float: right;">忘记密码</a>
+            </div>
+
+            <div style="margin-top: 30px">
+                <div class="separator "></div>
+                <div style="text-align: center">
+                    <div style="right: 0;">
+                      <span id="mode_desc">没有账号？</span>
+                      <a id="mode_action" style="cursor: pointer" onclick="switchMode()">立即注册。</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -74,18 +91,23 @@
             }
             that.lastvalue = e.target.value
 
-            $('#login_btn_user').removeClass('weui-loading')
-            $('#login_btn_user').addClass('login_button')
-
-            $('#login_btn_pwd').removeClass('weui-loading')
-            $('#login_btn_pwd').addClass('login_button')
-
-
-            login_hidden('#pwd_wapper', true, 200, null)
+            hidePwdInputView()
             show_tip('')
-            that.registMode = false
         });
     })
+
+    function hidePwdInputView(clearText=false) {
+        $('#login_btn_user').removeClass('weui-loading')
+        $('#login_btn_user').addClass('login_button')
+
+        $('#login_btn_pwd').removeClass('weui-loading')
+        $('#login_btn_pwd').addClass('login_button')
+
+
+        login_hidden('#pwd_wapper', true, 200, null)
+        if (clearText)
+            $('#pwd').val('')
+    }
 
     function check_user() {
 
@@ -102,8 +124,9 @@
 
             $('#login_btn_user').removeClass('weui-loading')
 
-            if (data.code == 1000) {
+            let showPwd = (data.code === 1000 && !that.registMode) || (data.code === 1001 && that.registMode)
 
+            if (showPwd) {
                 login_hidden('#login_btn_pwd', true, 0, null)
 
                 login_hidden('#pwd_wapper', false, 200, function () {
@@ -111,27 +134,74 @@
                     login_hidden('#login_btn_pwd', false, 80, null)
                 })
 
-            } else if (data.code == 1001) {
+                if (that.registMode) {
+                    show_tip('请输入密码以完成注册')
+                } else {
 
+                }
+            } else {
                 login_hidden('#login_btn_pwd', true, 0, null)
-
-                login_hidden('#pwd_wapper', false, 200, function () {
-                    $('#pwd').focus()
-                    login_hidden('#login_btn_pwd', false, 80, function () {
-                        show_tip('未注册 请输入密码完成注册🙋🏿‍♀️')
-                        that.registMode = true
-                    })
-                })
+                if (that.registMode) {
+                    show_tip('该用户已注册 请直接登陆')
+                } else {
+                    show_tip('该用户未注册 请点击立即注册')
+                }
             }
         })
     }
 
+    function switchMode() {
+
+        that.registMode = !that.registMode
+        if (this.registMode) {
+            $('#mode_desc').text('已有账号，')
+            $('#mode_action').text('去登陆。')
+        } else {
+            $('#mode_desc').text('没有账号？ ')
+            $('#mode_action').text('立即注册。')
+        }
+
+        hidePwdInputView(true)
+        show_tip('')
+
+        let username = $('#user').val()
+
+        if (that.registMode) {
+            if (!username.length) {
+                show_tip('请输入注册用户名')
+                $('#user').focus()
+                login_hidden('#pwd_wapper', true, 200, function () {
+                })
+            } else {
+                check_user()
+            }
+        } else {
+            if (!username.length) {
+                show_tip('请输入登陆用户名')
+                $('#user').focus()
+                login_hidden('#pwd_wapper', true, 200, function () {
+                })
+            } else {
+                check_user()
+            }
+        }
+    }
+
     function login_user() {
+        let username = $('#user').val()
+        let pwd = $('#pwd').val()
+
+        if (!username.length || !pwd.length) {
+            show_tip('用户名密码不能为空')
+            return;
+        }
+
+
         $('#login_btn_pwd').removeClass('login_button')
         $('#login_btn_pwd').addClass('weui-loading')
 
         if (that.registMode) {
-            regist($('#user').val(), $('#pwd').val(), function (data) {
+            regist(username, pwd, function (data) {
 
                 $('#login_btn_pwd').removeClass('weui-loading')
 
@@ -145,7 +215,7 @@
                 }
             })
         } else {
-            login($('#user').val(), $('#pwd').val(), function (data) {
+            login(username, pwd, function (data) {
 
                 $('#login_btn_pwd').removeClass('weui-loading')
 

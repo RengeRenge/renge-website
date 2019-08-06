@@ -114,3 +114,5 @@ venv.bak/
 .idea/workspace.xml
 .DS_Store
 .idea
+rg_config.css
+static/image/config

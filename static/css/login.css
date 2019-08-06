@@ -20,22 +20,3 @@
 .login_button:hover {
     cursor: pointer;
 }
-
-.login_tip {
-    text-align: right;
-    color: black;
-    text-decoration-color: white;
-    padding-right: 5px;
-    padding-left: 5px;
-    margin-top: 5px;
-    margin-bottom: 5px;
-
-    font-size: 13px;
-    font-family: "SF Pro Text", "SF Pro Icons", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
-
-    display: inline-block;
-    float: right;
-
-    background-color: rgba(255,255,255,0.6);
-    border-radius: 4px;
-}

@@ -7,6 +7,7 @@
 </script>
 
 <link href="/static/css/rg_base.css" rel="stylesheet" type="text/css" id="rg_base">
+<link href="/static/css/rg_config.css" rel="stylesheet" type="text/css" id="rg_config">
 <link href="/static/css/dragEvent.css" rel="stylesheet" type="text/css">
 <link href="/static/color/spectrum.min.css" rel="stylesheet" type="text/css">
 <link href="/static/css/weui-for-work.min.css" rel="stylesheet" type="text/css">
@@ -148,8 +149,8 @@
 
 <div class="page_wrapper">
     <input style="position: absolute; margin-top: 20px;" id="marginTop" type="range" value="{%if user.style.marginTop %}{{user.style.marginTop}}{% else %}0{% endif%}" max="2000" oninput="adjustHeight(this)">
-    <div class="page_wrapper titleWrapper" style="padding: 0">
-        <div class="page_wrapper titleWrapper" style="padding-left: 5px;">
+    <div class="main_title_color page_wrapper titleWrapper" style="padding: 0">
+        <div class="main_title_color page_wrapper titleWrapper" style="padding-left: 5px;">
             <h1 class="auto_text pageTitle editEnableWrapper"
                 contenteditable="{% if home %}true{%else%}false{%endif%}"
                 id='title'
