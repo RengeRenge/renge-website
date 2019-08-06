@@ -6,7 +6,7 @@
 <link href="/static/css/login.css" rel="stylesheet" type="text/css">
 <link href="/static/css/weui-for-work.min.css" rel="stylesheet" type="text/css">
 
-<script type="text/javascript" src="/static/js/login.js"></script>
+<script type="text/javascript" src="/static/js/login.js?ver=1"></script>
 <script type="text/javascript" src="/static/jquery/jquery.min.js"></script>
 <script type="text/javascript" src="/static/js/rg_base.js?ver=1"></script>
 
@@ -51,13 +51,23 @@
             <div>
                 <a style="cursor: pointer; float: right;">忘记密码</a>
             </div>
+            <div style="text-align: center">
+                <div class="si-remember-password">
+                    <input type="checkbox" id="remember-me" class="form-choice form-choice-checkbox" onchange="checkRemember(this)" >
+                    <label class="form-label" for="remember-me">
+                        <span class="form-choice-indicator"></span>记住登陆状态
+                    </label>
+                </div>
+            </div>
 
-            <div style="margin-top: 30px">
-                <div class="separator "></div>
-                <div style="text-align: center">
-                    <div style="right: 0;">
-                      <span id="mode_desc">没有账号？</span>
-                      <a id="mode_action" style="cursor: pointer" onclick="switchMode()">立即注册。</a>
+            <div>
+                <div style="text-align: center; margin-top: 30px">
+                    <!--<div style="padding: 0 1px;margin: 20px 0">-->
+                        <!--<div class="main_title_color_background" style="height: 1px;"></div>-->
+                    <!--</div>-->
+                    <div>
+                        <span id="mode_desc">没有账号？</span>
+                        <a id="mode_action" style="cursor: pointer" onclick="switchMode()">立即注册。</a>
                     </div>
                 </div>
             </div>
@@ -79,6 +89,7 @@
     $(function () {
 
         that.registMode = false
+        that.remember = 0
 
         login_hidden('#pwd_wapper', true, 0, null)
 
@@ -127,25 +138,26 @@
             let showPwd = (data.code === 1000 && !that.registMode) || (data.code === 1001 && that.registMode)
 
             if (showPwd) {
-                login_hidden('#login_btn_pwd', true, 0, null)
-
-                login_hidden('#pwd_wapper', false, 200, function () {
+                login_hidden('#login_btn_pwd', true, 0, function () {
+                    login_hidden('#pwd_wapper', false, 200, function () {
                     $('#pwd').focus()
-                    login_hidden('#login_btn_pwd', false, 80, null)
+                    login_hidden('#login_btn_pwd', false, 80, function () {
+                        if (that.registMode) {
+                            show_tip('请输入密码以完成注册')
+                        } else {
+
+                        }
+                    })
                 })
-
-                if (that.registMode) {
-                    show_tip('请输入密码以完成注册')
-                } else {
-
-                }
+                })
             } else {
-                login_hidden('#login_btn_pwd', true, 0, null)
-                if (that.registMode) {
+                login_hidden('#login_btn_pwd', true, 0, function () {
+                    if (that.registMode) {
                     show_tip('该用户已注册 请直接登陆')
                 } else {
                     show_tip('该用户未注册 请点击立即注册')
                 }
+                })
             }
         })
     }
@@ -168,18 +180,18 @@
 
         if (that.registMode) {
             if (!username.length) {
-                show_tip('请输入注册用户名')
                 $('#user').focus()
                 login_hidden('#pwd_wapper', true, 200, function () {
+                    show_tip('请输入注册用户名')
                 })
             } else {
                 check_user()
             }
         } else {
             if (!username.length) {
-                show_tip('请输入登陆用户名')
                 $('#user').focus()
                 login_hidden('#pwd_wapper', true, 200, function () {
+                    show_tip('请输入登陆用户名')
                 })
             } else {
                 check_user()
@@ -201,7 +213,7 @@
         $('#login_btn_pwd').addClass('weui-loading')
 
         if (that.registMode) {
-            regist(username, pwd, function (data) {
+            regist(username, pwd, that.remember, function (data) {
 
                 $('#login_btn_pwd').removeClass('weui-loading')
 
@@ -215,7 +227,7 @@
                 }
             })
         } else {
-            login(username, pwd, function (data) {
+            login(username, pwd, that.remember, function (data) {
 
                 $('#login_btn_pwd').removeClass('weui-loading')
 
@@ -256,6 +268,10 @@
         } else {
             $(id).show(time, callback)
         }
+    }
+
+    function checkRemember(e) {
+        that.remember = e.checked?1:0
     }
 
     function show_tip(tip) {

@@ -83,6 +83,7 @@ def user_login():
     t = get_data_with_request(request)
     use = user.user_login(t['username'], t['pwd'])
     token_type = int(t['type'])
+    remember = int(t['remember'])
     if use is not None:
         token = tokens.generate_token_ifneed(use.ID, token_type)
 
@@ -93,7 +94,7 @@ def user_login():
         session['user_id'] = use.ID
         session['user_name'] = use.username
         session['type'] = token_type
-        session.permanent = True
+        session.permanent = True if remember > 0 else False
 
         resp = jsonify(form_res(http_code.ok, {
             'token': token,
