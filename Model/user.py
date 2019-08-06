@@ -10,6 +10,7 @@ from Files.RGFileGlobalConfigContext import url_with_name
 from Model import files
 from RGUtil import RGTimeUtil
 
+salt = 'Renge'
 
 class user:
     def __init__(self, ID, username, pwd, nickname, title, desc, icon, bgImage, style, tag, defaultAlbumId, addTime):
@@ -59,7 +60,7 @@ def user_with_dbResult(result=None, needpwd=False, needusername=False, needIcon=
 
 def new_user(username, pwd, title='Title', desc='Desc', nick='Nickname'):
     timestamp = RGTimeUtil.timestamp()
-    pwd = md5_key(pwd)
+    pwd = sha256_key(username, pwd)
 
     _user = None
 
@@ -172,14 +173,22 @@ def get_user_with_name(username):
         return None
 
 
-def md5_key(arg):
+def sha256_key(username, pwd):
     _hash = hashlib.md5()
-    _hash.update(arg.encode("utf8"))
-    return _hash.hexdigest()
+    _hash.update(pwd.encode("utf8"))
+    pwd = _hash.hexdigest()
+
+    pwd = username + salt + pwd
+
+    _hash = hashlib.sha256()
+    _hash.update(pwd.encode("utf8"))
+    pwd = _hash.hexdigest()
+
+    return pwd
 
 
 def user_login(username, pwd):
-    pwd = md5_key(pwd)
+    pwd = sha256_key(username, pwd)
     sql = "SELECT * FROM user where username=%(username)s AND pwd=%(pwd)s"
     result, count, new_id = dao.execute_sql(sql=sql, args={'username': username, 'pwd': pwd})
 
