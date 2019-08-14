@@ -1,13 +1,27 @@
+# encoding: utf-8
+import base64
+import smtplib
+from email.mime.text import MIMEText
+
 import requests
-from flask import Blueprint, request, jsonify, render_template, url_for, redirect, session, json
+from flask import Blueprint, request, jsonify, session, json, redirect, url_for
 
 import RGUIController
-from Model import article, user, tokens, pic
-from RGGlobalConfigContext import RGHost, RGFullThisServerHost
-from RGUtil.RGCodeUtil import http_code
-from RGUtil.RGRequestHelp import get_data_with_request, form_res
+import User.RGOpenIdController
+from Model import user, tokens
+from RGIgnoreConfig.RGGlobalConfigContext import RGFullThisServerHost
+from RGUtil import RGTimeUtil
+from RGUtil.RGCodeUtil import RGResCode, RGVerifyType
+from RGUtil.RGRequestHelp import get_data_with_request, form_res, request_value
 
 RestRouter = Blueprint('RGUser', __name__, url_prefix='/user', static_folder='../static')
+
+RGUserLogoutLastPath = '/logout'
+RGUserLogoutPath = 'user/' + RGUserLogoutLastPath
+
+
+with open('RGIgnoreConfig/RGMailAccount.json', 'r') as f:
+    RGMailConfig = json.loads(f.read())
 
 """
 page
@@ -32,16 +46,58 @@ def friend_page(user_id):
         "home": True,
     }
 
-    return render_template("friends.html", **t)
+    return RGUIController.ui_render_template("friends.html", **t)
 
 
 @RestRouter.route('/set', methods=["GET"])
 @RGUIController.auth_handler(page=True)
 def set_page(user_id):
     t = {
-        "user": user.get_user(user_id, needIcon=True),
+        "user": user.get_user(user_id, need_icon=True, need_username=True),
     }
-    return render_template("setting.html", **t)
+    return RGUIController.ui_render_template("setting.html", **t)
+
+
+@RestRouter.route('/passwordPage', methods=["GET"])
+def password_page():
+    return RGUIController.ui_render_template("login.html", **{
+        'username': request_value(request, key='username', default=''),
+        'coll_user_email': True,
+        'verify_type': 2
+    })
+
+
+@RestRouter.route('/verifyPage', methods=["GET"])
+def verify_page():
+    username = request_value(request, 'username')
+
+    if username is None:
+        return redirect(url_for('login_page'))
+
+    _user = user.get_user_with_username(username, need_email=True)
+
+    if _user is None:
+        return redirect(url_for('login_page'))
+
+    verify_type = _user.get_payload(key='type')
+
+    if _user.is_full_active() and verify_type != RGVerifyType.forget_pwd:
+        return redirect(url_for('login_page'))
+    elif _user.is_active_and_need_bind_email():
+        return redirect(url_for('login_page'))
+    elif _user.is_time_out():
+        return redirect(url_for('login_page'))
+
+    email = _user.get_payload(key='email')
+    if email is None:
+        return redirect(url_for('login_page'))
+
+    return RGUIController.ui_render_template("login.html", **{
+        'username': username,
+        'email': email,
+        'coll_pwd': True,
+        'verify_type': verify_type
+    })
 
 
 """
@@ -51,61 +107,217 @@ restful
 
 @RestRouter.route('/check', methods=['GET'])
 def user_check():
-    t = get_data_with_request(request)
-    use = user.get_user_with_name(t['username'])
-    code = http_code.not_existed if use is None else http_code.ok
-    return jsonify(form_res(code, use))
+    username = request_value(request, 'username', default=None)
+    if username is None:
+        return jsonify(form_res(RGResCode.lack_param))
+
+    exist = False
+    _user = user.login_sign_check(username)
+    if _user is None:
+        code, _users = User.RGOpenIdController.user_list(username)
+        if code == RGResCode.ok and len(_users) > 0:
+            exist = True
+    else:
+        exist = True
+    code = RGResCode.ok if exist else RGResCode.not_existed
+    return jsonify(form_res(code, _user))
+
+
+@RestRouter.route('/getVerifyCode', methods=['POST'])
+def get_verify_code():
+    username = request_value(request, 'username')
+    email = request_value(request, 'email')
+    verify_type = int(request_value(request, 'verifyType', default='0'))
+
+    if verify_type == RGVerifyType.bind:
+        auth, user_id, pass_email, auth_username = RGUIController.do_auth_more_info()
+        if auth is False or username != auth_username:
+            return jsonify(form_res(RGResCode.auth_fail))
+
+    verify_code = user.generate_verify_code()
+
+    res = user.new_user_and_save_verify_code(
+        username=username,
+        email=email,
+        verify_code=verify_code,
+        verify_type=verify_type
+    )
+
+    if res == RGResCode.ok:
+        try:
+            if verify_type == RGVerifyType.forget_pwd:
+                title = RGMailConfig['newPasswordUserMailTitle']
+                content = RGMailConfig['newPasswordVerifyCodeMailFormat'].format(verify_code)
+            else:
+                title = RGMailConfig['newUserMailTitle']
+                content = RGMailConfig['bindVerifyCodeMailFormat'].format(verify_code)
+
+            send_verify_mail(receiver=email, title=title, content=content)
+            return jsonify(form_res(RGResCode.ok))
+        except Exception as e:
+            print(e)
+            user.update_user_info(username=username, info_payload='')
+            return jsonify(form_res(RGResCode.server_error))
+    return jsonify(form_res(res))
 
 
 @RestRouter.route('/new', methods=['POST'])
 def user_new():
-    t = get_data_with_request(request)
-    use = user.new_user(t['username'], t['pwd'])
-    token_type = int(t['type'])
-    if use is not None:
-        token = tokens.generate_token_ifneed(use.ID, token_type)
+    username = request_value(request, 'username')
+    # email = request_value(request, 'email')
+    pwd = request_value(request, 'pwd')
+    verify_code = int(request_value(request, 'code', default='0'))
 
-        session['token'] = token
-        session['user_id'] = use.ID
-        session['user_name'] = use.username
-        session['type'] = token_type
+    uid, res = user.verify_user(
+        username=username,
+        email=None,
+        pwd=pwd,
+        verify_code=verify_code,
+        verify_type=RGVerifyType.new
+    )
 
-        return jsonify(form_res(http_code.ok, {
-            'token': token,
-            'user': json.dumps(use.__dict__)
+    if uid is not None:
+        _user = user.get_user_with_username(username=username, need_email=True)
+        remember = int(request_value(request, 'remember', default='0'))
+        token_type = int(request_value(request, 'type', default='0'))
+        token = RGUIController.token_session(
+            uid=uid,
+            token_type=token_type,
+            username=username,
+            email=_user.email,
+            remember=remember
+        )
+        return jsonify(form_res(RGResCode.ok, {
+            'token': token
         }))
     else:
-        return jsonify(form_res(http_code.not_existed, None))
+        return jsonify(form_res(res, None))
+
+
+@RestRouter.route('/password', methods=['POST'])
+def user_password():
+    username = request_value(request, 'username')
+    pwd = request_value(request, 'pwd')
+    verify_code = int(request_value(request, 'code', default='0'))
+
+    uid, res = user.verify_user(
+        username=username,
+        email=None,
+        pwd=pwd,
+        verify_code=verify_code,
+        verify_type=RGVerifyType.forget_pwd
+    )
+
+    if uid is not None:
+        _user = user.get_user_with_username(username=username, need_email=True)
+        remember = int(request_value(request, 'remember', default='0'))
+        token_type = int(request_value(request, 'type', default='0'))
+        token = RGUIController.token_session(
+            uid=uid,
+            token_type=token_type,
+            username=username,
+            email=_user.email,
+            remember=remember
+        )
+        return jsonify(form_res(RGResCode.ok, {
+            'token': token
+        }))
+    else:
+        return jsonify(form_res(res, None))
+
+
+@RestRouter.route('/bind', methods=['POST'])
+def user_bind():
+    verify_code = int(request_value(request, 'code'))
+    pwd = request_value(request, 'pwd')
+    email = request_value(request, 'email')
+    username = request_value(request, 'username')
+
+    auth, user_id, pass_email, auth_username = RGUIController.do_auth_more_info()
+    if not auth or username != auth_username:
+        return jsonify(form_res(RGResCode.auth_fail))
+
+    uid, res = user.verify_user(
+        username=username,
+        email=email,
+        pwd=pwd,
+        verify_code=verify_code,
+        verify_type=RGVerifyType.bind
+    )
+
+    if uid is not None:
+        token = RGUIController.token_session(
+            uid=uid,
+            token_type=session['type'],
+            username=username,
+            email=email,
+            remember=None
+        )
+        return jsonify(form_res(RGResCode.ok, {
+            'token': token
+        }))
+    else:
+        return jsonify(form_res(res, None))
+
+
+def get_username_email(info, has_expire=False):
+    info = str(base64.b64decode(info), "utf-8")
+    salt = user.salt + ' '
+
+    if has_expire:
+        index = info.rfind(' ')
+        expire = info[index + 1:]
+        expire = int(expire)
+        if expire < RGTimeUtil.timestamp():
+            return None, None
+        info = info[0:index]
+
+    index = info.rfind(salt)
+    if index == -1:
+        return None, None
+
+    username = info[0:index]
+    email = info[index + len(salt):]
+    return username, email
+
+
+def get_base64_username_email(username, email, expire=None):
+    if expire is None:
+        info = username + user.salt + ' ' + email
+    else:
+        info = username + user.salt + ' ' + email + ' {}'.format(RGTimeUtil.timestamp() + expire * 1000)
+    info = info.encode("utf-8")
+    info = base64.urlsafe_b64encode(info)
+    info = str(info, encoding="utf-8")
+    return info
 
 
 @RestRouter.route('/login', methods=['POST'])
 def user_login():
-    t = get_data_with_request(request)
-    use = user.user_login(t['username'], t['pwd'])
-    token_type = int(t['type'])
-    remember = int(t['remember'])
-    if use is not None:
-        token = tokens.generate_token_ifneed(use.ID, token_type)
+    username = request_value(request, 'username')
+    pwd = request_value(request, 'pwd')
+    _user = user.user_login(username, pwd)
 
-        # c = requests.cookies.RequestsCookieJar()
-        # c.set('cookie-token', token, path='/')
-        # sessions.cookies.update(c)
-        session['token'] = token
-        session['user_id'] = use.ID
-        session['user_name'] = use.username
-        session['type'] = token_type
-        session.permanent = True if remember > 0 else False
+    remember = int(request_value(request, 'remember', default='0'))
+    token_type = int(request_value(request, 'type', default='0'))
 
-        resp = jsonify(form_res(http_code.ok, {
-            'token': token,
-            'user': json.dumps(use.__dict__)
+    if _user is not None:
+        token = RGUIController.token_session(
+            uid=_user.ID,
+            token_type=token_type,
+            username=_user.username,
+            email=_user.email,
+            remember=remember
+        )
+        resp = jsonify(form_res(RGResCode.ok, {
+            'token': token
         }))
         return resp
     else:
-        return jsonify(form_res(http_code.not_existed, None))
+        return jsonify(form_res(RGResCode.not_existed, None))
 
 
-@RestRouter.route('/logout', methods=['POST'])
+@RestRouter.route(RGUserLogoutLastPath, methods=['POST'])
 @RGUIController.auth_handler(page=False)
 def user_logout(user_id):
     t = get_data_with_request(request)
@@ -114,15 +326,10 @@ def user_logout(user_id):
     result = tokens.destroy_token(user_id=user_id, token_type=token_type)
 
     if result:
-        session['token'] = None
-        session['user_id'] = None
-        session['user_name'] = None
-        session['type'] = None
-        session.permanent = False
-
-        return jsonify(form_res(http_code.ok, None))
+        RGUIController.token_session_remove()
+        return jsonify(form_res(RGResCode.ok, None))
     else:
-        return jsonify(form_res(http_code.del_fail, None))
+        return jsonify(form_res(RGResCode.del_fail, None))
 
 
 @RestRouter.route('/follow', methods=['POST'])
@@ -134,13 +341,13 @@ def user_follow(user_id):
     flag, relation = user.follow(user_id, t['id'])
 
     if flag is True:
-        code = http_code.ok
+        code = RGResCode.ok
         data = {
             'relation': relation,
             're_relation': user.get_relation(other_id, user_id),
         }
     else:
-        code = http_code.insert_fail
+        code = RGResCode.insert_fail
         data = None
     return jsonify(form_res(code, data))
 
@@ -153,9 +360,9 @@ def cancel_follow(user_id):
     flag, relation = user.cancel_follow(user_id, t['id'])
 
     if flag is True:
-        code = http_code.ok
+        code = RGResCode.ok
     else:
-        code = http_code.del_fail
+        code = RGResCode.del_fail
     return jsonify(form_res(code, None))
 
 
@@ -168,12 +375,12 @@ def user_edit_name(user_id):
         name = t['name']
         flag = user.update_name(user_id, name)
         if flag is True:
-            code = http_code.ok
+            code = RGResCode.ok
         else:
-            code = http_code.not_existed
+            code = RGResCode.not_existed
         return jsonify(form_res(code, None))
     else:
-        return jsonify(form_res(http_code.lack_param, None))
+        return jsonify(form_res(RGResCode.lack_param, None))
 
 
 @RestRouter.route('/editTitle', methods=['POST'])
@@ -184,12 +391,12 @@ def user_edit_title(user_id):
         name = t['name']
         flag = user.update_title(user_id, name)
         if flag is True:
-            code = http_code.ok
+            code = RGResCode.ok
         else:
-            code = http_code.not_existed
+            code = RGResCode.not_existed
         return jsonify(form_res(code, None))
     else:
-        return jsonify(form_res(http_code.lack_param, None))
+        return jsonify(form_res(RGResCode.lack_param, None))
 
 
 @RestRouter.route('/editdesc', methods=['POST'])
@@ -201,12 +408,12 @@ def user_edit_desc(user_id):
         name = t['desc']
         flag = user.update_desc(user_id, name)
         if flag is True:
-            code = http_code.ok
+            code = RGResCode.ok
         else:
-            code = http_code.not_existed
+            code = RGResCode.not_existed
         return jsonify(form_res(code, None))
     else:
-        return jsonify(form_res(http_code.lack_param, None))
+        return jsonify(form_res(RGResCode.lack_param, None))
 
 
 @RestRouter.route('/setInfo', methods=['POST'])
@@ -240,13 +447,13 @@ def user_set_info(user_id):
         if 'background' in data:
             bg_file = data['background']
             if bg_file['success'] is False:
-                return jsonify(form_res(http_code.insert_fail, None))
+                return jsonify(form_res(RGResCode.insert_fail, None))
             bg_id = bg_file['file']['ID']
 
         if 'icon' in data:
             icon_file = data['icon']
             if icon_file['success'] is False:
-                return jsonify(form_res(http_code.insert_fail, None))
+                return jsonify(form_res(RGResCode.insert_fail, None))
             icon_id = icon_file['file']['ID']
 
     if 'nickname' in t:
@@ -266,9 +473,40 @@ def user_set_info(user_id):
         if 'bgId' in t:
             bg_id = t['bgId']
 
-    flag = user.update_user_info(user_id, nickname=nickname, tag=tag, icon=icon_id, background=bg_id, style=style)
+    flag = user.update_user_info(user_id=user_id, nickname=nickname, tag=tag, icon=icon_id, background=bg_id, style=style)
     if flag is True:
-        code = http_code.ok
+        code = RGResCode.ok
     else:
-        code = http_code.update_fail
+        code = RGResCode.update_fail
     return jsonify(form_res(code, None))
+
+
+def send_verify_mail(receiver, content, title):
+    _user = RGMailConfig['user']
+    _pwd = RGMailConfig['pwd']
+
+    # "smtp.163.com" 163的SMTP服务器
+    mail_host = RGMailConfig["mailHost"]
+
+    # 第一部分：准备工作
+    # 1.将邮件的信息打包成一个对象
+    message = MIMEText(content, "plain", "utf-8")  # 内容，格式，编码
+    # 2.设置邮件的发送者
+    message["From"] = _user
+    # 3.设置邮件的接收方
+    message["To"] = receiver
+    # join():通过字符串调用，参数为一个列表
+    # message["To"] = ",".join(receiver)
+    # 4.设置邮件的标题
+    message["Subject"] = title
+
+    # 第二部分：发送邮件
+    # 1.启用服务器发送邮件
+    # 参数：服务器，端口号
+    smtpObj = smtplib.SMTP_SSL(mail_host, RGMailConfig["sendMailPort"])
+    # 2.登录邮箱进行验证
+    # 参数：用户名，授权码
+    smtpObj.login(_user, _pwd)
+    # 3.发送邮件
+    # 参数：发送方，接收方，邮件信息
+    smtpObj.sendmail(_user, receiver, message.as_string())

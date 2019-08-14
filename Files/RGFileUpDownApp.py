@@ -6,7 +6,7 @@ from flask import Blueprint, request, jsonify, stream_with_context, Response, js
 import RGUIController
 from Files.RGFileGlobalConfigContext import RemoteFileHost, FilePreFix
 from Model import files, pic
-from RGUtil.RGCodeUtil import http_code
+from RGUtil.RGCodeUtil import RGResCode
 from RGUtil.RGRequestHelp import get_data_with_request, form_res
 
 RestRouter = Blueprint('RGFileUpDown', __name__, url_prefix='/' + FilePreFix)
@@ -60,7 +60,7 @@ def new_file(user_id):
                 'success': flag,
                 'file': file_info,
             }
-        return jsonify(form_res(http_code.ok, data))
+        return jsonify(form_res(RGResCode.ok, data))
 
 
 def handler_upload_res(user_id, t, simditor=False):
@@ -135,7 +135,7 @@ def handler_upload_res(user_id, t, simditor=False):
             return jsonify(res_data)
         else:
             return False, None
-            # res = form_res(http_code.insert_fail, None)
+            # res = form_res(RGResCode.insert_fail, None)
             # return jsonify(res)
 
 

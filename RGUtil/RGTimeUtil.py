@@ -1,6 +1,7 @@
 # encoding: utf-8
 import time
 from datetime import datetime, tzinfo, timedelta
+from tzlocal import get_localzone
 
 
 def timestamp(date=None):
@@ -12,6 +13,11 @@ def timestamp(date=None):
         t = time.mktime(time_array)
         t = int(t)
     return int(round(t * 1000))
+
+
+def time_now_str():
+    now = datetime.now(tz=get_localzone())
+    return now.strftime("%Y-%m-%d %H:%M:%S.%f%z")
 
 
 def date_with_format(date_string, date_format):

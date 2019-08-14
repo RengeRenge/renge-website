@@ -5,9 +5,8 @@ from flask import json
 
 from RGUtil.RGLogUtil import LogUtil
 
-with open('rg_database.json', 'r') as f:
+with open('RGIgnoreConfig/rg_database.json', 'r') as f:
     config = json.loads(f.read())
-    f.close()
 
 executeMutex = threading.RLock()
 
@@ -41,6 +40,10 @@ def close(conn, cursor):
 #             del args[k]
 #             continue
 #     return args
+
+def get_last_insert(cursor):
+    cursor.execute('SELECT LAST_INSERT_ID();')
+    return cursor.fetchone()
 
 
 def execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0, args=None):

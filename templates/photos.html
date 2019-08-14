@@ -24,32 +24,32 @@
     this.nowPage = {{nowPage}}
 </script>
 
-<script type="text/javascript" src="/static/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="/static/jquery/jquery.min.js?ver={{js_ver}}"></script>
 
-<link href="/static/css/rg_base.css" rel="stylesheet" type="text/css" id="rg_base">
-<link href="/static/css/rg_config.css" rel="stylesheet" type="text/css" id="rg_config">
-<link href="/static/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-<script type="text/javascript" src="/static/js/rg_base.js?ver=1"></script>
-<script type="text/javascript" src="/static/js/bgLayout.js?ver=1"></script>
+<link href="/static/css/rg_base.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_base">
+<link href="/static/css/rg_config.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_config">
+<link href="/static/font-awesome/css/font-awesome.min.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="/static/js/rg_base.js?ver={{js_ver}}"></script>
+<script type="text/javascript" src="/static/js/bgLayout.js?ver={{js_ver}}"></script>
 
 {%- if album -%}
-<link rel="stylesheet" type="text/css" href="/static/css/weui-for-work.min.css" />
-<link rel="stylesheet" type="text/css" href="/static/css/photos.css" />
+<link rel="stylesheet" type="text/css" href="/static/css/weui-for-work.min.css?ver={{css_ver}}" />
+<link rel="stylesheet" type="text/css" href="/static/css/photos.css?ver={{css_ver}}" />
 
-<script type="text/javascript" src="/static/js/timeUtil.js"></script>
-<script type="text/javascript" src="/static/js/rgbaster.min.js"></script>
+<script type="text/javascript" src="/static/js/timeUtil.js?ver={{js_ver}}"></script>
+<script type="text/javascript" src="/static/js/rgbaster.min.js?ver={{js_ver}}"></script>
 
 <!--select-->
-<link rel="stylesheet" type="text/css" href="/static/select/css/cs-select.css" />
-<link rel="stylesheet" type="text/css" href="/static/select/css/cs-skin-border.css" />
-<script type="text/javascript" src="/static/select/js/classie.js"></script>
-<script type="text/javascript" src="/static/select/js/selectFx.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/select/css/cs-select.css?ver={{css_ver}}" />
+<link rel="stylesheet" type="text/css" href="/static/select/css/cs-skin-border.css?ver={{css_ver}}" />
+<script type="text/javascript" src="/static/select/js/classie.js?ver={{js_ver}}"></script>
+<script type="text/javascript" src="/static/select/js/selectFx.js?ver={{js_ver}}"></script>
 
 <!--page-->
-<link href="/static/css/pagination.css" rel="stylesheet" type="text/css">
-<script type="text/javascript" src="/static/js/pagination.js"></script>
+<link href="/static/css/pagination.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="/static/js/pagination.js?ver={{js_ver}}"></script>
 
-<script type="text/javascript" src="/static/js/photosPage.js?ver=4" async="async"></script>
+<script type="text/javascript" src="/static/js/photosPage.js?ver={{js_ver}}" async="async"></script>
 
 {%- endif -%}
 <style>
@@ -57,6 +57,9 @@
         color: initial;
         text-decoration: none;
         cursor: pointer;
+    }
+    .back {
+        padding-left: {% if album %}0{% else %}20{% endif %}px;
     }
 </style>
 <head>
@@ -124,8 +127,8 @@
     </div>
     {%- endif -%}
 
-    <div class="wrapperBg wrapperPadding">
-        <div style="margin-top: 20px;margin-bottom: 20px">
+    <div class="wrapperBg {% if album %} wrapperPadding {% else %} wrapperPaddingOnlyTop {% endif %}">
+        <div style="margin-bottom: 20px; margin-top: 10px">
             <a href="./" class="back">返回</a>
         </div>
 
@@ -199,7 +202,7 @@
 
         <div class="ht-page"></div>
         {%- else -%}
-            <div class="nothing">内容不见了</div>
+            <div class="nothing"><a style="background-color: rgba(255,255,255,0.3);">内容不见了</a></div>
         {%- endif -%}
     </div>
 </div>

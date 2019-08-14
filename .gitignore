@@ -116,3 +116,4 @@ venv.bak/
 .idea
 rg_config.css
 static/image/config
+RGIgnoreConfig
