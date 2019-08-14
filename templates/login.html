@@ -1,20 +1,21 @@
 <!DOCTYPE html>
 <html lang="zh">
 
-<link href="/static/css/rg_base.css" rel="stylesheet" type="text/css" id="rg_base">
-<link href="/static/css/rg_config.css" rel="stylesheet" type="text/css" id="rg_config">
-<link href="/static/css/login.css" rel="stylesheet" type="text/css">
-<link href="/static/css/weui-for-work.min.css" rel="stylesheet" type="text/css">
+<link href="/static/css/rg_base.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_base">
+<link href="/static/css/rg_config.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_config">
+<link href="/static/css/login.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
+<link href="/static/css/weui-for-work.min.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
 
-<script type="text/javascript" src="/static/js/login.js?ver=1"></script>
-<script type="text/javascript" src="/static/jquery/jquery.min.js"></script>
-<script type="text/javascript" src="/static/js/rg_base.js?ver=1"></script>
+<script src="http://pv.sohu.com/cityjson?ie=utf-8"></script>
+<script type="text/javascript" src="/static/js/login.js?ver={{js_ver}}"></script>
+<script type="text/javascript" src="/static/jquery/jquery.min.js?ver={{js_ver}}"></script>
+<script type="text/javascript" src="/static/js/rg_base.js?ver={{js_ver}}"></script>
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=1.0, user-scalable=yes"/>
-    <title>登陆</title>
+    <title>{%- if coll_pwd -%}设置密码{%- elif coll_email -%}绑定邮箱{%- elif coll_user_email -%}验证邮箱{%- else -%}登陆{%- endif -%}</title>
 </head>
 <body>
 <div class="hina_bg"></div>
@@ -27,31 +28,105 @@
             <div class="weui-cells" style="border-radius: 8px">
                 <div class="weui-cell">
                     <div class="weui-cell__bd">
-                        <input class="weui-input login_input" placeholder="用户名" id="user" type="text"/>
+                        <input {% if coll_pwd or coll_email %} disabled="disabled" value="{{username}}" {% endif %}
+                               {% if coll_user_email %} value="{{username}}" {% endif %}
+                                class="weui-input login_input"
+                                placeholder="用户名"
+                                id="user"
+                                type="text"
+                        />
                     </div>
+                    {%- if not (coll_pwd or coll_email) -%}
                     <div class="weui-cell__ft">
-                        <div class="login_button" id="login_btn_user"></div>
+                        <div class="login_button" id="login_btn_user" onclick="check_user()"></div>
                     </div>
+                    {%- endif -%}
                 </div>
+                {%- if coll_pwd -%}
+                <!--注册最后一步 确认密码-->
 
-                <div class="weui-cell" id="pwd_wapper">
+                <div class="weui-cell">
                     <div class="weui-cell__bd">
-                        <input class="weui-input login_input" placeholder="密码" id="pwd" type="password"/>
-                    </div>
-                    <div class="weui-cell__ft">
-                        <div class="login_button" id="login_btn_pwd"></div>
+                        <input class="weui-input login_input" placeholder="密码" id="pwd1" type="password"/>
                     </div>
                 </div>
+
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">
+                        <input class="weui-input login_input" placeholder="确认密码" id="pwd2" type="password"/>
+                    </div>
+                </div>
+
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">
+                        <input class="weui-input login_input" placeholder="邮箱验证码" id="sign_in_email_code" type="number"/>
+                    </div>
+                    <div class="weui-cell__ft">
+                        <div class="login_button" id="sign_in_btn_code" onclick="onSurePwd('{{verify_type}}')"></div>
+                    </div>
+                </div>
+
+                {%- elif coll_email -%}
+                <!--绑定邮箱-->
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">
+                        <input class="weui-input login_input" placeholder="邮箱" id="bind_email_text" type="email"/>
+                    </div>
+                    <div class="weui-cell__ft">
+                        <div class="login_button" id="bind_email_btn" onclick="send_bind_email()"></div>
+                    </div>
+                </div>
+
+                <div class="weui-cell" id="bind_code_wrapper" hidden="hidden">
+                    <div class="weui-cell__bd">
+                        <input class="weui-input login_input" placeholder="邮箱验证码" id="bind_email_code" type="number"/>
+                    </div>
+                </div>
+
+                <div class="weui-cell" id="bind_email_pwd_wrapper" hidden="hidden">
+                    <div class="weui-cell__bd">
+                        <input class="weui-input login_input" placeholder="博客密码" id="bind_email_pwd" type="password"/>
+                    </div>
+                    <div class="weui-cell__ft">
+                        <div class="login_button" id="bind_email_sure_btn" onclick="verify_bind_email()"></div>
+                    </div>
+                </div>
+
+                {%- else -%}
+
+                <!--正常登陆注册-->
+                <div class="weui-cell" id="pwd_wrapper">
+                    <div class="weui-cell__bd">
+                        <input {% if coll_user_email %} hidden="hidden" {% endif %}
+                               class="weui-input login_input" placeholder="密码" id="pwd" type="password"/>
+                        <input {% if not coll_user_email %} hidden="hidden" {% endif %}
+                               class="weui-input login_input" placeholder="邮箱" id="email" type="email"/>
+                    </div>
+                    <div class="weui-cell__ft">
+                        <div class="login_button" id="login_btn_pwd" onclick="login_user()"></div>
+                    </div>
+                </div>
+
+                {%- endif -%}
             </div>
 
             <div>
-                <div id="login_tip" class="login_tip main_title_color"></div>
+                <div id="login_tip" class="login_tip main_title_color">{%- if coll_pwd -%}邮件已发送 请查看并完成注册{%- elif coll_email -%}系统升级 需绑定邮箱以继续使用{%- elif coll_user_email -%}请输入要修改密码的账号{%- endif -%}</div>
             </div>
-
+            {%- if not verify_type -%}
             <div>
-                <a style="cursor: pointer; float: right;">忘记密码</a>
+                <a style="cursor: pointer; float: right; text-decoration: none; color: inherit;"
+                   href="/user/passwordPage">忘记密码
+                </a>
             </div>
-            <div style="text-align: center">
+            {%- elif coll_user_email -%}
+            <div>
+                <a style="cursor: pointer; float: right;" onclick="redirt()">返回</a>
+            </div>
+            {%- endif -%}
+
+            {%- if not (coll_email or coll_user_email) -%}
+            <div style="text-align: center" id="remember_wrapper">
                 <div class="si-remember-password">
                     <input type="checkbox" id="remember-me" class="form-choice form-choice-checkbox" onchange="checkRemember(this)" >
                     <label class="form-label" for="remember-me">
@@ -59,18 +134,24 @@
                     </label>
                 </div>
             </div>
+            {%- endif -%}
 
+            {%- if not coll_pwd -%}
             <div>
                 <div style="text-align: center; margin-top: 30px">
-                    <!--<div style="padding: 0 1px;margin: 20px 0">-->
-                        <!--<div class="main_title_color_background" style="height: 1px;"></div>-->
-                    <!--</div>-->
+                    {%- if coll_email -%}
+                    <div>
+                        <a style="cursor: pointer;" onclick="onLogout()">切换账号</a>
+                    </div>
+                    {%- elif not coll_user_email -%}
                     <div>
                         <span id="mode_desc">没有账号？</span>
                         <a id="mode_action" style="cursor: pointer" onclick="switchMode()">立即注册。</a>
                     </div>
+                    {%- endif -%}
                 </div>
             </div>
+            {%- endif -%}
         </div>
     </div>
 </div>
@@ -82,19 +163,33 @@
             check_user()
         } else if (e.target.id === 'pwd') {
             login_user()
+        } else if (e.target.id === 'pwd1') {
+            $('#pwd2').focus()
+        } else if (e.target.id === 'pwd2') {
+            $('#sign_in_email_code').focus()
+        } else if (e.target.id === 'sign_in_email_code') {
+            onSurePwd('{{verify_type}}')
+        } else if (e.target.id === 'email') {
+            login_user()
+        } else if (e.target.id === 'bind_email_text') {
+            send_bind_email()
+        } else if (e.target.id === 'bind_email_code') {
+            $('#bind_email_pwd').focus()
+        } else if (e.target.id === 'bind_email_pwd') {
+            verify_bind_email()
         }
     })
 
     var that = this
     $(function () {
-
-        that.registMode = false
+        onGetIP()
+        that.registMode = parseInt('{%- if coll_user_email -%} 2 {%- else -%} 0 {%- endif -%}')
         that.remember = 0
 
-        login_hidden('#pwd_wapper', true, 0, null)
+        login_hidden('#pwd_wrapper', true, 0, null)
+        login_hidden('#bind_code_wrapper', true, 0, null)
+        login_hidden('#bind_email_pwd_wrapper', true, 0, null)
 
-        $('#login_btn_user').click(check_user)
-        $('#login_btn_pwd').click(login_user)
 
         $("#user").on("input", function (e) {
             if (that.lastvalue === e.target.value) {
@@ -103,6 +198,16 @@
             that.lastvalue = e.target.value
 
             hidePwdInputView()
+            if (that.registMode < 1) show_tip('')
+        });
+
+        $("#bind_email_text").on("input", function (e) {
+            if (that.lastvalue === e.target.value) {
+                return
+            }
+            that.lastvalue = e.target.value
+
+            show_bind_more_info(false, false)
             show_tip('')
         });
     })
@@ -115,82 +220,122 @@
         $('#login_btn_pwd').addClass('login_button')
 
 
-        login_hidden('#pwd_wapper', true, 200, null)
-        if (clearText)
+        login_hidden('#pwd_wrapper', true, 200, null)
+        if (clearText) {
             $('#pwd').val('')
+            $('#email').val('')
+        }
+
     }
 
     function check_user() {
-
         let username = $('#user').val()
         if (!username || username.length <= 0) {
             show_tip('请输入用户名️')
             return
         }
-
+        if (checkRequest()) {
+            return
+        }
         $('#login_btn_user').removeClass('login_button')
         $('#login_btn_user').addClass('weui-loading')
 
         check(username, function (data) {
-
+            requestFine()
             $('#login_btn_user').removeClass('weui-loading')
 
-            let showPwd = (data.code === 1000 && !that.registMode) || (data.code === 1001 && that.registMode)
+            let that = this
+            let showPwd = false;
+            if (that.registMode > 1) {
+                showPwd = data.code === 1000
+            } else {
+                showPwd = (data.code === 1000 && !that.registMode) || (data.code === 1001 && that.registMode)
+            }
+
 
             if (showPwd) {
+                if (that.registMode) {
+                } else {
+                    show_tip('')
+                }
                 login_hidden('#login_btn_pwd', true, 0, function () {
-                    login_hidden('#pwd_wapper', false, 200, function () {
-                    $('#pwd').focus()
-                    login_hidden('#login_btn_pwd', false, 80, function () {
-                        if (that.registMode) {
-                            show_tip('请输入密码以完成注册')
-                        } else {
-
-                        }
+                    login_hidden('#pwd_wrapper', false, 200, function () {
+                        login_hidden('#login_btn_pwd', false, 80, function () {
+                            if (that.registMode > 1) {
+                                $('#email').focus()
+                                show_tip('请输入账号绑定的邮箱')
+                            } else if (that.registMode) {
+                                $('#email').focus()
+                                show_tip('请输入邮箱以完成注册')
+                            } else {
+                                $('#pwd').focus()
+                                show_tip('')
+                            }
+                        })
                     })
                 })
-                })
             } else {
+                $('#login_btn_user').addClass('login_button')
                 login_hidden('#login_btn_pwd', true, 0, function () {
-                    if (that.registMode) {
-                    show_tip('该用户已注册 请直接登陆')
-                } else {
-                    show_tip('该用户未注册 请点击立即注册')
-                }
+                    if (data.code < 1000) {
+                        show_tip('服务器异常🙆‍♀️')
+                    } else if (that.registMode > 1) {
+                        show_tip('不存在此账号')
+                    } else if (that.registMode) {
+                        show_tip('该用户已注册 请直接登陆')
+                    } else {
+                        show_tip('该用户未注册 请点击立即注册')
+                    }
                 })
             }
         })
     }
 
     function switchMode() {
-
+        if (checkRequest()) {
+            return
+        }
+        requestFine()
         that.registMode = !that.registMode
         if (this.registMode) {
             $('#mode_desc').text('已有账号，')
             $('#mode_action').text('去登陆。')
+            $('.form-choice').css('cursor', 'default')
+            $('.form-choice~.form-label').css('cursor', 'default')
+            $('#remember-me').attr('disabled', "disabled")
+            $('#remember_wrapper').animate({opacity: 0}, 200, function () {
+            });
         } else {
             $('#mode_desc').text('没有账号？ ')
             $('#mode_action').text('立即注册。')
+            $('.form-choice').css('cursor', 'pointer')
+            $('.form-choice~.form-label').css('cursor', 'pointer')
+            $('#remember-me').attr('disabled', null)
+            $('#remember_wrapper').animate({opacity: 1.0}, 200, function () {
+            });
         }
 
         hidePwdInputView(true)
-        show_tip('')
 
         let username = $('#user').val()
 
         if (that.registMode) {
+            $('#pwd').hide()
+            $('#email').show()
             if (!username.length) {
                 $('#user').focus()
-                login_hidden('#pwd_wapper', true, 200, function () {
+                login_hidden('#pwd_wrapper', true, 200, function () {
                     show_tip('请输入注册用户名')
                 })
             } else {
                 check_user()
             }
         } else {
+            $('#pwd').show()
+            $('#email').hide()
             if (!username.length) {
                 $('#user').focus()
-                login_hidden('#pwd_wapper', true, 200, function () {
+                login_hidden('#pwd_wrapper', true, 200, function () {
                     show_tip('请输入登陆用户名')
                 })
             } else {
@@ -201,65 +346,275 @@
 
     function login_user() {
         let username = $('#user').val()
-        let pwd = $('#pwd').val()
-
-        if (!username.length || !pwd.length) {
-            show_tip('用户名密码不能为空')
+        if (!username.length) {
+            show_tip('用户名不能为空')
             return;
         }
 
+        if (that.registMode) {
+            let email = $('#email').val()
+            if (!email.length) {
+                show_tip('邮箱不能为空')
+            } else {
+                var reg = new RegExp("^[a-z0-9]+([._\\-]*[a-z0-9])*@([a-z0-9]+[-a-z0-9]*[a-z0-9]+.){1,63}[a-z0-9]+$"); //正则表达式
+                if(!reg.test(email)){
+                    show_tip('请填写正确的邮箱地址')
+                }else{
+                    send_sign_in_email(email, username, that.registMode > 1 ? 2 : 0)
+                }
+            }
+            return;
+        }
 
+        let pwd = $('#pwd').val()
+        if (!pwd.length) {
+            show_tip('密码不能为空')
+            return;
+        }
+        do_login(username, pwd, that.remember)
+    }
+
+    function do_login(username, pwd, remember) {
+        if (checkRequest()) {
+            return
+        }
         $('#login_btn_pwd').removeClass('login_button')
         $('#login_btn_pwd').addClass('weui-loading')
 
-        if (that.registMode) {
-            regist(username, pwd, that.remember, function (data) {
+        login(username, pwd, remember, function (res) {
+            requestFine()
+            $('#login_btn_pwd').removeClass('weui-loading')
 
-                $('#login_btn_pwd').removeClass('weui-loading')
+            let code = res.code
+            if (code === 1000) {
+                // login ok, redirt
+                that.redirt()
+            } else if (code === 1001) {
+                $('#login_btn_pwd').addClass('login_button')
+                show_tip('密码不正确🙆‍♀️')
+            } else {
+                $('#login_btn_pwd').addClass('login_button')
+                show_tip('服务器异常🙆‍♀️')
+            }
+        })
+    }
 
-                code = data.code
-                if (code == 1000) {
-                    // login ok, redirt
-                    this.redirt()
-                } else if (code == 1001) {
-                    $('#login_btn_pwd').addClass('login_button')
-                    show_tip('服务器异常🙆‍♀️')
-                }
-            })
+    function send_bind_email() {
+        let username = $('#user').val()
+        if (!username.length) {
+            show_tip('用户名不能为空')
+            return
+        }
+        let email = $('#bind_email_text').val()
+        if (!email.length) {
+            show_tip('邮箱不能为空')
+            return
         } else {
-            login(username, pwd, that.remember, function (data) {
+            var reg = new RegExp("^[a-z0-9]+([._\\-]*[a-z0-9])*@([a-z0-9]+[-a-z0-9]*[a-z0-9]+.){1,63}[a-z0-9]+$"); //正则表达式
+            if(!reg.test(email)){
+                show_tip('请填写正确的邮箱地址')
+                return
+            }
+        }
+        if (checkRequest()) {
+            return
+        }
 
-                $('#login_btn_pwd').removeClass('weui-loading')
+        show_bind_more_info(false, true)
+        getVerifyCode(email, username, 1, function (res) {
+            handleBindEmailCode(res.code, false)
+        })
+    }
 
-                code = data.code
-                if (code == 1000) {
-                    // login ok, redirt
-                    this.redirt()
-                } else if (code === 1001) {
-                    $('#login_btn_pwd').addClass('login_button')
-                    show_tip('密码不正确🙆‍♀️')
-                } else {
-                    $('#login_btn_pwd').addClass('login_button')
+    function verify_bind_email() {
+        let username = $('#user').val()
+        if (!username.length) {
+            show_tip('用户名不能为空')
+            return
+        }
+        let email = $('#bind_email_text').val()
+        if (!email.length) {
+            show_tip('邮箱不能为空')
+            return
+        } else {
+            var reg = new RegExp("^[a-z0-9]+([._\\-]*[a-z0-9])*@([a-z0-9]+[-a-z0-9]*[a-z0-9]+.){1,63}[a-z0-9]+$"); //正则表达式
+            if(!reg.test(email)){
+                show_tip('请填写正确的邮箱地址')
+                return
+            }
+        }
+
+        let code = $('#bind_email_code').val()
+        if (!code.length) {
+            show_tip('验证码不能为空')
+            return
+        }
+        let pwd = $('#bind_email_pwd').val()
+        if (!pwd.length) {
+            show_tip('密码不能为空')
+            return
+        }
+        if (checkRequest()) {
+            return
+        }
+
+        $('#bind_email_sure_btn').removeClass('login_button')
+        $('#bind_email_sure_btn').addClass('weui-loading')
+        bindEmail(username, email, code, pwd, function (res) {
+            $('#bind_email_sure_btn').removeClass('weui-loading')
+            $('#bind_email_sure_btn').addClass('login_button')
+            handleBindEmailCode(res.code, true)
+        })
+    }
+
+    function handleBindEmailCode(code, verify=false, redirt=false) {
+        requestFine()
+        switch (code) {
+                case 1000:
+                    if (verify) {
+                        that.redirt(redirt)
+                        break;
+                    }
+                case 1009:
+                    show_tip('邮件已发送 请去邮箱验证️')
+                    show_bind_more_info(true, false)
+                    if (!verify) {
+                        $('#bind_email_code').focus()
+                    }
+                    break;
+                case 1008:
+                    show_tip('验证码已超时️')
+                    show_bind_more_info(false, false)
+                    break;
+                case 1011:
+                    show_tip('登陆状态校验失败')
+                    show_bind_more_info(false, false)
+                    break;
+                case 1012:
+                    show_tip('验证码错误')
+                    show_bind_more_info(true, false)
+                    break;
+                case 1013:
+                    show_tip('密码错误')
+                    show_bind_more_info(true, false)
+                    break;
+                case 1014:
+                    show_tip('用户已被注册')
+                    show_bind_more_info(false, false)
+                    break;
+                case 1002:
+                    show_tip('邮箱已被注册')
+                    show_bind_more_info(false, false)
+                    break;
+                default:
                     show_tip('服务器异常🙆‍♀️')
-                }
-            })
+                    show_bind_more_info(false, false)
+            }
+    }
+
+    function show_bind_more_info(show, loading) {
+        login_hidden('#bind_code_wrapper', !show, 200, null)
+        login_hidden('#bind_email_pwd_wrapper', !show, 200, null)
+        if (show) {
+            $('#bind_email_btn').removeClass('weui-loading')
+            $('#bind_email_btn').removeClass('login_button')
+        } else {
+            if (loading) {
+                $('#bind_email_btn').addClass('weui-loading')
+                $('#bind_email_btn').removeClass('login_button')
+            } else {
+                $('#bind_email_btn').addClass('login_button')
+                $('#bind_email_btn').removeClass('weui-loading')
+            }
+            $('#bind_email_sure_btn').removeClass('weui-loading')
+            $('#bind_email_sure_btn').addClass('login_button')
         }
     }
 
-    function redirt() {
-        let default_href = 'blog'
-                    let prevLink = document.referrer;
-                    if ($.trim(prevLink) === '') {
-                        location.href = default_href
-                    } else {
-                        if (prevLink.indexOf('www.example.com') === -1) {	//来自其它站点
-                            location.href = default_href
-                        }
-                        if (prevLink.indexOf('register.html') !== -1) {		//来自注册页面
-                            location.href = default_href
-                        }
-                        location.href = prevLink
-                    }
+    function send_sign_in_email(email, username, verifyType) {
+        if (checkRequest()) {
+            return
+        }
+        $('#login_btn_pwd').removeClass('login_button')
+        $('#login_btn_pwd').addClass('weui-loading')
+        getVerifyCode(email, username, verifyType, function (res) {
+            requestFine()
+            $('#login_btn_pwd').removeClass('weui-loading')
+            $('#login_btn_pwd').addClass('login_button')
+
+            let code = res.code
+            switch (code) {
+                case 1000:
+                case 1009:
+                    show_tip('邮件已发送 请去邮箱验证️')
+                    location.href = '/user/verifyPage?username={0}'.format(username)
+                    break;
+                case 1001:
+                case 1011:
+                    show_tip('该邮箱和账号未绑定')
+                    break;
+                case 1002:
+                    show_tip('邮箱已被注册')
+                    break;
+                case 1014:
+                    show_tip('用户已被注册')
+                    break;
+                default:
+                    show_tip('服务器异常🙆‍♀️')
+            }
+        })
+    }
+
+    function onSurePwd(verifyType) {
+        verifyType = parseInt(verifyType)
+        let username = $('#user').val()
+        if (!username.length) {
+            show_tip('用户名不能为空')
+            return
+        }
+        let pwd1 = $('#pwd1').val()
+        let pwd2 = $('#pwd2').val()
+        if (pwd1 !== pwd2) {
+            show_tip('两次输入密码不一致')
+            return;
+        }
+        let verifyCode = $('#sign_in_email_code').val()
+        if (!verifyCode.length) {
+            show_tip('验证码不能为空')
+            return;
+        }
+        if (checkRequest()) {
+            return
+        }
+
+        $('#sign_in_btn_code').removeClass('login_button')
+        $('#sign_in_btn_code').addClass('weui-loading')
+
+        userVerify(username, pwd1, verifyCode, that.remember, verifyType, function (res) {
+            $('#sign_in_btn_code').removeClass('weui-loading')
+            $('#sign_in_btn_code').addClass('login_button')
+            handleBindEmailCode(res.code, true, true, verifyType>1)
+        })
+    }
+
+    function redirt(home=false) {
+        let default_href = '/blog'
+        if (home) {
+            location.href = default_href
+            return
+        }
+        let prevLink = document.referrer;
+        if ($.trim(prevLink) === '') {
+            location.href = default_href
+        } else {
+            if (prevLink.indexOf('renged.xyz') === -1) {	//来自其它站点
+                location.href = default_href
+            } else if (prevLink.indexOf('passwordPage') !== -1) {		//来自注册页面
+                location.href = default_href
+            } else {
+                location.href = prevLink
+            }
+        }
     }
 
     function login_hidden(id, hide, time, callback) {
@@ -271,11 +626,23 @@
     }
 
     function checkRemember(e) {
+        if (that.registMode) {
+            return;
+        }
         that.remember = e.checked?1:0
     }
 
     function show_tip(tip) {
         $('#login_tip').html(tip)
+    }
+
+    function onLogout() {
+        logout(function () {
+            that.redirt(true)
+        })
+    }
+    function onGetIP() {
+        this.userIP = returnCitySN?returnCitySN["cip"]:''
     }
 </script>
 </body>

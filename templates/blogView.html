@@ -8,20 +8,20 @@
     this.ubg = "{{user.bgImage}}"
     this.style = {{user.style|default('')|tojson}}
 </script>
-<link href="/static/css/rg_base.css" rel="stylesheet" type="text/css" id="rg_base">
-<link href="/static/css/rg_config.css" rel="stylesheet" type="text/css" id="rg_config">
-<link href="/static/css/photos.css" rel="stylesheet" type="text/css">
-<link href="/static/css/timeline.css" rel="stylesheet" type="text/css">
+<link href="/static/css/rg_base.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_base">
+<link href="/static/css/rg_config.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_config">
+<link href="/static/css/photos.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
+<link href="/static/css/timeline.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
 
-<script type="text/javascript" src="/static/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="/static/jquery/jquery.min.js?ver={{js_ver}}"></script>
 
 <!--bg-->
-<script type="text/javascript" src="/static/js/rg_base.js?ver=1"></script>
-<script type="text/javascript" src="/static/js/bgLayout.js?ver=1"></script>
-<script type="text/javascript" src="/static/js/timeUtil.js"></script>
+<script type="text/javascript" src="/static/js/rg_base.js?ver={{js_ver}}"></script>
+<script type="text/javascript" src="/static/js/bgLayout.js?ver={{js_ver}}"></script>
+<script type="text/javascript" src="/static/js/timeUtil.js?ver={{js_ver}}"></script>
 
-<link rel="stylesheet" type="text/css" href="/static/css/groupModal.css" />
-<script type="text/javascript" src="/static/js/groupModal.js?ver=1"></script>
+<link rel="stylesheet" type="text/css" href="/static/css/groupModal.css?ver={{css_ver}}" />
+<script type="text/javascript" src="/static/js/groupModal.js?ver={{js_ver}}"></script>
 
 <head>
     <meta charset="UTF-8">

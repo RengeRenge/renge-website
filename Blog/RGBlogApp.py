@@ -1,8 +1,8 @@
-from flask import Blueprint, request, jsonify, render_template, url_for, redirect
+from flask import Blueprint, request, jsonify, url_for, redirect
 
 import RGUIController
 from Model import article, user
-from RGUtil.RGCodeUtil import http_code
+from RGUtil.RGCodeUtil import RGResCode
 from RGUtil.RGRequestHelp import get_data_with_request, form_res, is_int_number
 
 RestRouter = Blueprint('RGBlog', __name__, url_prefix='/blog', static_folder='../static')
@@ -23,6 +23,7 @@ def auto_blog_page(user_id):
 
 
 @RestRouter.route('/<other_id>/', methods=["GET"])
+@RGUIController.check_bind()
 def blog_page(other_id):
     if is_int_number(other_id):
         auth, view_user = RGUIController.do_auth()
@@ -51,7 +52,7 @@ def blog_page_render(art_user_id, view_user_id):
         "relation": relation,
         "re_relation": re_relation,
     }
-    return render_template("index.html", **t)
+    return RGUIController.ui_render_template("index.html", **t)
 
 
 @RestRouter.route('/view/', methods=["GET"])
@@ -80,7 +81,7 @@ def blog_view_page_render(view_user_id, art_user_id):
         "relation": relation,
         "re_relation": re_relation,
     }
-    return render_template("blogView.html", **t)
+    return RGUIController.ui_render_template("blogView.html", **t)
 
 
 @RestRouter.route('/art/<art_id>', methods=['GET'])
@@ -96,7 +97,7 @@ def art_detail(art_id):
         _user = None
         home = False
 
-    return render_template("blog_page.html", **{
+    return RGUIController.ui_render_template("blog_page.html", **{
         'art': art,
         'flag': art is not None,
         'home': home,
@@ -109,11 +110,11 @@ def art_detail(art_id):
 @RGUIController.auth_handler(page=True)
 def new_blog_page(user_id):
     if user_id is not None:
-        return render_template("edit_blog.html", **{
+        return RGUIController.ui_render_template("edit_blog.html", **{
             "user": user.get_user(user_id),
         })
     else:
-        return render_template("login.html")
+        return RGUIController.ui_render_template("login.html")
 
 
 @RestRouter.route('/edit/<art_id>', methods=["GET"])
@@ -130,13 +131,13 @@ def edit_blog_page_render(art_id):
             a_user_id = art['user_id']
 
             if a_user_id == user_id:
-                return render_template("edit_blog.html", **{
+                return RGUIController.ui_render_template("edit_blog.html", **{
                     'art': art,
                     "user": user.get_user(user_id),
                 })
         return redirect(url_for('RGBlog.new_blog_page'))
     else:
-        return render_template("login.html")
+        return RGUIController.ui_render_template("login.html")
 
 
 """
@@ -178,7 +179,7 @@ def art_del(user_id):
         art_id = None
 
     flag, art = article.del_art(user_id, art_id)
-    code = http_code.ok if flag is True else http_code.insert_fail
+    code = RGResCode.ok if flag is True else RGResCode.insert_fail
     res = form_res(code, None)
     return jsonify(res)
 
@@ -234,7 +235,7 @@ def art_new(user_id):
         summary=summary,
         cover=cover
     )
-    code = http_code.ok if flag is True else http_code.insert_fail
+    code = RGResCode.ok if flag is True else RGResCode.insert_fail
     res = form_res(code, {"id": art_id})
     return jsonify(res)
 
@@ -252,7 +253,7 @@ def art_group_list(user_id):
     relation = user.get_relation(other_id, user_id)
     flag, result = article.group_list(other_id=other_id, relation=relation)
 
-    code = http_code.ok if flag is True else http_code.not_existed
+    code = RGResCode.ok if flag is True else RGResCode.not_existed
     res = form_res(code, result)
     return jsonify(res)
 
@@ -274,7 +275,7 @@ def art_group_rename(user_id):
 
     flag = article.update_group_info(user_id=user_id, g_id=group_id, name=name, level=None)
 
-    code = http_code.ok if flag is True else http_code.update_fail
+    code = RGResCode.ok if flag is True else RGResCode.update_fail
     res = form_res(code, None)
     return jsonify(res)
 
@@ -301,7 +302,7 @@ def art_group_edit(user_id):
 
     flag = article.update_group_info(user_id=user_id, g_id=group_id, name=name, level=level)
 
-    code = http_code.ok if flag is True else http_code.update_fail
+    code = RGResCode.ok if flag is True else RGResCode.update_fail
     res = form_res(code, None)
     return jsonify(res)
 
@@ -323,7 +324,7 @@ def art_group_edit_order(user_id):
 
     flag = article.update_group_order(user_id=user_id, ids=group_ids, orders=orders)
 
-    code = http_code.ok if flag is True else http_code.update_fail
+    code = RGResCode.ok if flag is True else RGResCode.update_fail
     res = form_res(code, None)
     return jsonify(res)
 
@@ -352,12 +353,12 @@ def art_group_new(user_id):
         level = 0
 
     if flag is not True:
-        res = form_res(http_code.lack_param, None)
+        res = form_res(RGResCode.lack_param, None)
         return jsonify(res)
 
     flag, new_id = article.new_group(user_id=user_id, name=name, order=order, level=level)
 
-    code = http_code.ok if flag is True else http_code.insert_fail
+    code = RGResCode.ok if flag is True else RGResCode.insert_fail
     res = form_res(code, {'id': new_id, 'user_id': user_id})
     return jsonify(res)
 
@@ -374,7 +375,7 @@ def art_group_delete(user_id):
 
     flag = article.delete_group(user_id=user_id, g_id=group_id)
 
-    code = http_code.ok if flag is True else http_code.del_fail
+    code = RGResCode.ok if flag is True else RGResCode.del_fail
     res = form_res(code, None)
     return jsonify(res)
 

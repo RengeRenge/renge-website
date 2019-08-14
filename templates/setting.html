@@ -6,21 +6,21 @@
     this.style = {{user.style|tojson}}
 </script>
 
-<link href="/static/css/rg_base.css" rel="stylesheet" type="text/css" id="rg_base">
-<link href="/static/css/rg_config.css" rel="stylesheet" type="text/css" id="rg_config">
-<link href="/static/css/dragEvent.css" rel="stylesheet" type="text/css">
-<link href="/static/color/spectrum.min.css" rel="stylesheet" type="text/css">
-<link href="/static/css/weui-for-work.min.css" rel="stylesheet" type="text/css">
+<link href="/static/css/rg_base.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_base">
+<link href="/static/css/rg_config.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_config">
+<link href="/static/css/dragEvent.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
+<link href="/static/color/spectrum.min.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
+<link href="/static/css/weui-for-work.min.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
 
-<script type="text/javascript" src="/static/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="/static/jquery/jquery.min.js?ver={{js_ver}}"></script>
 <!--bg-->
-<script type="text/javascript" src="/static/js/rg_base.js?ver=1"></script>
-<script type="text/javascript" src="/static/js/bgLayout.js?ver=1"></script>
+<script type="text/javascript" src="/static/js/rg_base.js?ver={{js_ver}}"></script>
+<script type="text/javascript" src="/static/js/bgLayout.js?ver={{js_ver}}"></script>
 
-<script type="text/javascript" src="/static/js/dragEvent.js?ver=1"></script>
-<script type="text/javascript" src="/static/color/spectrum.min.js"></script>
+<script type="text/javascript" src="/static/js/dragEvent.js?ver={{js_ver}}"></script>
+<script type="text/javascript" src="/static/color/spectrum.min.js?ver={{js_ver}}"></script>
 
-<script type="text/javascript" src="/static/js/login.js?ver=1"></script>
+<script type="text/javascript" src="/static/js/login.js?ver={{js_ver}}"></script>
 <style>
     .fullScreen {
         background-color: rgba(255, 255, 255, 0.6);
@@ -138,6 +138,9 @@
 <body>
 <div class="boprt a-control" style="top: 20px; opacity: 1;">
     <ul>
+        <li>
+            <form><a href="/user/passwordPage?username={{user.username}}" class="boprt14" target="_top"><em>修改密码</em></a></form>
+        </li>
         <li>
             <form><a onclick="save()" class="boprt05" target="_top"><em>保存</em></a></form>
         </li>

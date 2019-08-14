@@ -9,18 +9,18 @@
     this.ubg = "{{user.bgImage}}"
     this.style = {{user.style|tojson}}
 </script>
-<script type="text/javascript" src="/static/jquery/jquery.min.js"></script>
-<link href="/static/css/rg_base.css" rel="stylesheet" type="text/css" id="rg_base">
-<link href="/static/css/rg_config.css" rel="stylesheet" type="text/css" id="rg_config">
+<script type="text/javascript" src="/static/jquery/jquery.min.js?ver={{js_ver}}"></script>
+<link href="/static/css/rg_base.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_base">
+<link href="/static/css/rg_config.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_config">
 
 <!--bg-->
-<script type="text/javascript" src="/static/js/rg_base.js?ver=1"></script>
-<script type="text/javascript" src="/static/js/bgLayout.js?ver=1"></script>
+<script type="text/javascript" src="/static/js/rg_base.js?ver={{js_ver}}"></script>
+<script type="text/javascript" src="/static/js/bgLayout.js?ver={{js_ver}}"></script>
 <!--page-->
-<link href="/static/css/pagination.css" rel="stylesheet" type="text/css">
-<script type="text/javascript" src="/static/js/pagination.js"></script>
+<link href="/static/css/pagination.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="/static/js/pagination.js?ver={{js_ver}}"></script>
 
-<script type="text/javascript" src="/static/js/timeUtil.js"></script>
+<script type="text/javascript" src="/static/js/timeUtil.js?ver={{js_ver}}"></script>
 
 <head>
     <script type="text/javascript">
@@ -98,8 +98,7 @@
     </div>
     {% endif %}
 
-    {%- if list -%}
-    <div class="wrapperLR wrapperPadding wrapperBg">
+    <div class="wrapperLR {% if count > 0 %}wrapperPadding{% endif %} wrapperBg">
         <div class="wrapperFull">
             {% for item in list %}
             <div class="wrapperItem wrapperItemBg">
@@ -129,6 +128,11 @@
                 </div>
             </div>
             {% endfor %}
+            {% if count == 0 %}
+            <div class="nothing">
+                <a style="background-color: rgba(255,255,255,0.6);">暂时没有好友</a>
+            </div>
+            {% endif %}
             {% if count > 0 %}
             <div class="ht-page"></div>
             <script>
@@ -142,7 +146,6 @@
             {% endif %}
         </div>
     </div>
-    {% endif %}
 </div>
 </body>
 </html>

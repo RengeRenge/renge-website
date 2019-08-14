@@ -1,16 +1,26 @@
-from RGUtil.RGCodeUtil import http_code
+from RGUtil.RGCodeUtil import RGResCode
 
 
 def get_data_with_request(_request):
-    if _request.method == "POST":
-        return _request.form
+    return _request.values
+    # if _request.method == "POST":
+    #     return _request.form
+    # elif _request.json:
+    #     return _request.json
+    # return _request.args
+
+
+def request_value(_request, key, default=None):
+    args = get_data_with_request(_request)
+    if key in args:
+        return args[key]
     else:
-        return _request.args
+        return default
 
 
-def form_res(code, data):
+def form_res(code, data=None):
     if code == 0:
-        code = http_code.not_existed if data is None else http_code.ok
+        code = RGResCode.not_existed if data is None else RGResCode.ok
 
     if data is not None:
         if not isinstance(data, dict) and not isinstance(data, list):

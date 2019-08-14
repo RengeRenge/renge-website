@@ -22,20 +22,20 @@
         }
 </script>
 
-<link href="/static/css/rg_base.css" rel="stylesheet" type="text/css" id="rg_base">
-<link href="/static/css/rg_config.css" rel="stylesheet" type="text/css" id="rg_config">
-<link href="/static/css/blog.css" rel="stylesheet" type="text/css">
+<link href="/static/css/rg_base.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_base">
+<link href="/static/css/rg_config.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_config">
+<link href="/static/css/blog.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
 
-<script type="text/javascript" src="/static/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="/static/jquery/jquery.min.js?ver={{js_ver}}"></script>
 
 <!--bg-->
-<script type="text/javascript" src="/static/js/rg_base.js?ver=1"></script>
-<script type="text/javascript" src="/static/js/bgLayout.js?ver=1"></script>
+<script type="text/javascript" src="/static/js/rg_base.js?ver={{js_ver}}"></script>
+<script type="text/javascript" src="/static/js/bgLayout.js?ver={{js_ver}}"></script>
 <!--page-->
-<link href="/static/css/pagination.css" rel="stylesheet" type="text/css">
-<script type="text/javascript" src="/static/js/pagination.js"></script>
+<link href="/static/css/pagination.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="/static/js/pagination.js?ver={{js_ver}}"></script>
 
-<script type="text/javascript" src="/static/js/timeUtil.js"></script>
+<script type="text/javascript" src="/static/js/timeUtil.js?ver={{js_ver}}"></script>
 <script>
     autoTitleEnable('{{user.title}}', '{{user.desc}}')
 </script>
@@ -110,7 +110,7 @@
     </div>
     {%- endif -%}
 
-    <div class="wrapperLR wrapperBg wrapperPadding">
+    <div class="wrapperLR wrapperBg {% if count > 0 %}wrapperPadding{% endif %}">
         <div class="wrapperFull">
             {%- for item in list -%}
             <div class="wrapperLR wrapperItem wrapperItemBg">
@@ -150,7 +150,7 @@
             {% endfor %}
             {% if count == 0 %}
                 <div class="nothing">
-                    什么都没有
+                    <div style="background-color: rgba(255,255,255,0.3);">暂时没有内容 {% if home %}<a style="text-decoration: #bbb9b4; color: inherit;" href="/blog/edit"> 去写日志</a>{% endif %}</div>
                 </div>
             {% else %}
             <div class="ht-page"></div>

@@ -13,7 +13,6 @@ from sqlalchemy.ext.declarative import declarative_base
 
 with open('rg_database.json', 'r') as f:
     config = json.loads(f.read())
-    f.close()
 
 DB_URI = "mysql+pymysql://{user}:{passwd}@{host}:{port}/{database}?charset={charset}".format(**config)
 engine = create_engine(DB_URI)
@@ -37,7 +36,7 @@ app = Flask(__name__)
 # ALTER TABLE art MODIFY create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP; 取消时间戳自动更新
 class User(Base):
     __tablename__ = "user"
-    __table_args__ = {'mysql_collate': 'utf8mb4_unicode_ci'}
+    __table_args__ = {'mysql_collate': 'utf8mb4_unicode_as_cs'}
 
     id = Column(BigInteger, primary_key=True, comment='user id', autoincrement=True)
     username = Column(String(30), nullable=False, default='', unique=True, comment='login id')
@@ -55,6 +54,12 @@ class User(Base):
     default_album_id = Column(BigInteger, nullable=False, default='', comment='default album')
 
     addtime = Column(BigInteger, nullable=False, comment='ms')
+
+    info_payload = Column(mysql.LONGTEXT, nullable=True, default='', comment='user info')
+
+    is_active = Column(mysql.TINYINT, nullable=True, default=1, comment='wait for check email')
+    is_delete = Column(mysql.TINYINT, nullable=False, default=0)
+
 
 
 class user_relation(Base):
