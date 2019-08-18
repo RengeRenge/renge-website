@@ -66,7 +66,11 @@ def bind_page():
     if not RGUIController.user_need_to_bind_page():
         return redirect(url_for('login_page'))
     auth, user_id, email, username = RGUIController.do_auth_more_info()
-    return RGUIController.ui_render_template("login.html", **{'username': username, 'coll_email': True, 'verify_type': RGVerifyType.bind})
+    return RGUIController.ui_render_template("login.html", **{
+        'username': username,
+        'coll_email': True,
+        'verify_type': RGVerifyType.bind
+    })
 
 
 @app.route('/loginPage', methods=["GET"])
