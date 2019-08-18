@@ -243,11 +243,11 @@ def add_or_update_art(user_id, title=None, content='', cate=0, group_id=None, ar
         p_cover = art_parse.top_image.src
     if p_cover is not None and len(p_cover) is not 0:
         cover = p_cover
-        
+    cover = 'https://www.renged.xyz/file/IMG_7197_quality.jpg'
     if cover is not None and len(cover) > 0:
         try:
             parsed_tuple = parse.urlparse(cover)
-            if parsed_tuple.netloc == RGDomainName or parsed_tuple.hostname is None:
+            if parsed_tuple.netloc.endswith(RGDomainName) or parsed_tuple.hostname is None:
                 p_cover = parsed_tuple.path
                 index = p_cover.find(FilePreFix)
                 if index == 0 or index == 1:
