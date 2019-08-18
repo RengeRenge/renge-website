@@ -159,7 +159,7 @@ def art_list(user_id):
 
     size = t['size']
 
-    arts, art_count, last_id = article.id_list(user_id, last_id, size, True)
+    arts, art_count, last_id = article.id_list(user_id, last_id, size)
     res = form_res(1000, {
         'art': arts,
         'count': art_count,
