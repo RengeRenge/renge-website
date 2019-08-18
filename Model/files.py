@@ -1,5 +1,5 @@
 from DAO import rg_dao as dao
-from Files.RGFileGlobalConfigContext import url_with_name
+from RGIgnoreConfig.RGFileGlobalConfigContext import url_with_name
 from RGUtil import RGTimeUtil
 
 

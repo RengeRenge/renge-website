@@ -3,13 +3,12 @@ import hashlib
 import operator
 import random
 
-import pymysql
 from flask import json
 
 import User
 from DAO import rg_dao as dao
-from Files.RGFileGlobalConfigContext import url_with_name
 from Model import files
+from RGIgnoreConfig.RGFileGlobalConfigContext import url_with_name
 from RGUtil import RGTimeUtil
 from RGUtil.RGCodeUtil import RGResCode, RGVerifyType
 from User import RGOpenIdController
