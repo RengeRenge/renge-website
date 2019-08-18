@@ -5,7 +5,7 @@ from flask import Blueprint, request, jsonify, stream_with_context, Response, js
 
 import RGUIController
 from Model import files, pic
-from RGIgnoreConfig.RGFileGlobalConfigContext import FilePreFix
+from RGIgnoreConfig.RGFileGlobalConfigContext import FilePreFix, RemoteFileHost
 from RGUtil.RGCodeUtil import RGResCode
 from RGUtil.RGRequestHelp import get_data_with_request, form_res
 
