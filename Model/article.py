@@ -7,7 +7,7 @@ from goose3.text import StopWordsChinese
 
 from DAO import rg_dao as dao
 from Model import user
-from RGIgnoreConfig.RGFileGlobalConfigContext import RGThumbnailName, RGQualityName
+from RGIgnoreConfig.RGFileGlobalConfigContext import RGThumbnailName, RGQualityName, FilePreFix
 from RGIgnoreConfig.RGGlobalConfigContext import RGDomainName
 from RGUtil import RGTimeUtil
 
@@ -243,15 +243,18 @@ def add_or_update_art(user_id, title=None, content='', cate=0, group_id=None, ar
         p_cover = art_parse.top_image.src
     if p_cover is not None and len(p_cover) is not 0:
         cover = p_cover
-
+    cover = '/file/QQ20190717-140233@2x_quality.png'
     if cover is not None and len(cover) > 0:
         try:
             parsed_tuple = parse.urlparse(cover)
-            if parsed_tuple.netloc == RGDomainName:
-                cover = parsed_tuple.path
-                index = cover.rfind(RGQualityName+'.')
-                if index != -1:
-                    cover = cover[0:index] + RGThumbnailName + cover[index+len(RGQualityName):]
+            if parsed_tuple.netloc == RGDomainName or parsed_tuple.hostname is None:
+                p_cover = parsed_tuple.path
+                index = p_cover.find(FilePreFix)
+                if index == 0 or index == 1:
+                    cover = p_cover
+                    index = cover.rfind(RGQualityName+'.')
+                    if index != -1:
+                        cover = cover[0:index] + RGThumbnailName + cover[index+len(RGQualityName):]
         except Exception as e:
             print(e)
 
