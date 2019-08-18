@@ -1,11 +1,14 @@
 # encoding: utf-8
 import operator
+from urllib import parse
 
 from goose3 import Goose
 from goose3.text import StopWordsChinese
 
 from DAO import rg_dao as dao
 from Model import user
+from RGIgnoreConfig.RGFileGlobalConfigContext import RGThumbnailName, RGQualityName
+from RGIgnoreConfig.RGGlobalConfigContext import RGDomainName
 from RGUtil import RGTimeUtil
 
 
@@ -240,6 +243,17 @@ def add_or_update_art(user_id, title=None, content='', cate=0, group_id=None, ar
         p_cover = art_parse.top_image.src
     if p_cover is not None and len(p_cover) is not 0:
         cover = p_cover
+
+    if cover is not None and len(cover) > 0:
+        try:
+            parsed_tuple = parse.urlparse(cover)
+            if parsed_tuple.netloc == RGDomainName:
+                cover = parsed_tuple.path
+                index = cover.rfind(RGQualityName+'.')
+                if index != -1:
+                    cover = cover[0:index] + RGThumbnailName + cover[index+len(RGQualityName):]
+        except Exception as e:
+            print(e)
 
     if group_id is not None and int(group_id) < 0:
         group_id = None
