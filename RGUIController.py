@@ -105,16 +105,19 @@ def do_auth_more_info():
 def user_need_to_bind_page():
     auth, user_id, email, username = do_auth_more_info()
     if auth:
-        if email is None or len(email) <= 0:
+        if (email is None or len(email) <= 0) and username is not None:
             try:
                 from User import RGOpenIdController
                 from RGUtil.RGCodeUtil import RGResCode
                 code, data = RGOpenIdController.user_list(username=username)
                 if code == RGResCode.ok and len(data) > 0:
                     return False
-            except:
-                pass
-            return True
+                else:
+                    return True
+            except Exception as e:
+                print('user_need_to_bind_page')
+                print(e)
+                return False
     return False
 
 
