@@ -24,7 +24,7 @@ def user_list(username=None, email=None):
         params = openid_base_params({
             'emails': [email]
         })
-
+    print('Open Id -> user_list {}'.format(params))
     req = requests.get(
         url=CTOpenIdUserApi,
         json=params
@@ -57,15 +57,16 @@ def user_new(username, email, password):
     if password is None:
         return RGResCode.lack_param, None
 
-    print('new user with open id u:[%s] e:[%s]' % (username, email))
+    params = openid_base_params({
+        'username': username,
+        'email': email,
+    })
+    print('Open Id -> user_new {}'.format(params))
 
+    params['pwd'] = password
     req = requests.post(
         url=CTOpenIdUserApi,
-        json=openid_base_params({
-            'username': username,
-            'email': email,
-            'pwd': password,
-        })
+        json=params
     )
     t = req.json()
     print(t)
@@ -81,10 +82,13 @@ def user_update(username, password=None, payload=None):
         return RGResCode.lack_param, None
 
     params = openid_base_params({'username': username})
+    if payload:
+        params['extra_payload'] = payload
+    print('Open Id -> user_update {}'.format(params))
+
     if password:
         params['pwd'] = password
-    if payload:
-        params['extra_payload'] = password
+
     req = requests.put(
         url=CTOpenIdUserApi,
         json=params
@@ -103,6 +107,7 @@ def user_delete(username):
         return RGResCode.lack_param, None
 
     params = openid_base_params({'usernames': [username]})
+    print('Open Id -> user_update {}'.format(params))
     req = requests.delete(
         url=CTOpenIdUserApi,
         json=params
@@ -119,12 +124,14 @@ def user_delete(username):
 
 
 def auth(username, password):
+    params = openid_base_params({
+            'username': username
+    })
+    print('Open Id -> auth {}'.format(username))
+    params['pwd'] = password
     req = requests.post(
         url=CTOpenIdUserAuthApi,
-        json=openid_base_params({
-            'username': username,
-            'pwd': password
-        })
+        json=params
     )
     t = req.json()
     print(t)
