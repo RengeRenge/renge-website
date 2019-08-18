@@ -130,7 +130,7 @@ def get_verify_code():
     verify_type = int(request_value(request, 'verifyType', default='0'))
 
     if verify_type == RGVerifyType.bind:
-        auth, user_id, pass_email, auth_username = RGUIController.do_auth_more_info()
+        auth, user_id, pass_email, auth_username = RGUIController.do_auth_more_info(need_request_email=False)
         if auth is False or username != auth_username:
             return jsonify(form_res(RGResCode.auth_fail))
 
@@ -233,7 +233,7 @@ def user_bind():
     email = request_value(request, 'email')
     username = request_value(request, 'username')
 
-    auth, user_id, pass_email, auth_username = RGUIController.do_auth_more_info()
+    auth, user_id, pass_email, auth_username = RGUIController.do_auth_more_info(need_request_email=False)
     if not auth or username != auth_username:
         return jsonify(form_res(RGResCode.auth_fail))
 
