@@ -84,6 +84,13 @@ def do_auth_more_info():
             user_id = session['user_id']
             email = session['email'] if 'email' in session else None
             username = session['username'] if 'username' in session else None
+
+            if username is None or email:
+                from Model import user
+                _user = user.get_user(user_id=user_id, need_bg=False, need_email=True)
+                username = _user.username
+                session['username'] = username
+
             auth = True
 
             t = get_data_with_request(request)
