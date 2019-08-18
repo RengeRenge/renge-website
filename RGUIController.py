@@ -141,11 +141,11 @@ def token_session(uid=None, token_type=None, username=None, email=None, remember
 
 
 def token_session_remove():
-    del session['user_id']
-    del session['username']
-    del session['email']
-    del session['token']
-    del session['type']
+    session.pop('user_id', '')
+    session.pop('username', '')
+    session.pop('email', '')
+    session.pop('token', '')
+    session.pop('type', '')
     session.permanent = False
 
 
