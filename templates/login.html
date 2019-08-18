@@ -47,6 +47,12 @@
 
                 <div class="weui-cell">
                     <div class="weui-cell__bd">
+                        <input class="weui-input login_input" placeholder="邮箱验证码" id="sign_in_email_code" type="number"/>
+                    </div>
+                </div>
+
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">
                         <input class="weui-input login_input" placeholder="密码" id="pwd1" type="password"/>
                     </div>
                 </div>
@@ -54,12 +60,6 @@
                 <div class="weui-cell">
                     <div class="weui-cell__bd">
                         <input class="weui-input login_input" placeholder="确认密码" id="pwd2" type="password"/>
-                    </div>
-                </div>
-
-                <div class="weui-cell">
-                    <div class="weui-cell__bd">
-                        <input class="weui-input login_input" placeholder="邮箱验证码" id="sign_in_email_code" type="number"/>
                     </div>
                     <div class="weui-cell__ft">
                         <div class="login_button" id="sign_in_btn_code" onclick="onSurePwd('{{verify_type}}')"></div>
@@ -163,11 +163,11 @@
             check_user()
         } else if (e.target.id === 'pwd') {
             login_user()
+        } else if (e.target.id === 'sign_in_email_code') {
+            $('#pwd1').focus()
         } else if (e.target.id === 'pwd1') {
             $('#pwd2').focus()
         } else if (e.target.id === 'pwd2') {
-            $('#sign_in_email_code').focus()
-        } else if (e.target.id === 'sign_in_email_code') {
             onSurePwd('{{verify_type}}')
         } else if (e.target.id === 'email') {
             login_user()
