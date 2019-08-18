@@ -243,7 +243,7 @@ def add_or_update_art(user_id, title=None, content='', cate=0, group_id=None, ar
         p_cover = art_parse.top_image.src
     if p_cover is not None and len(p_cover) is not 0:
         cover = p_cover
-    cover = '/file/QQ20190717-140233@2x_quality.png'
+        
     if cover is not None and len(cover) > 0:
         try:
             parsed_tuple = parse.urlparse(cover)
