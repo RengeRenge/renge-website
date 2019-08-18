@@ -57,6 +57,8 @@ class user:
         判断是没有接入OpenID的老用户
         :return: True or False
         """
+        if self.has_email():
+            return True
         code, _users = User.RGOpenIdController.user_list(username=self.username)
         if code == RGResCode.ok and len(_users) > 0:
             open_id_exist = True
