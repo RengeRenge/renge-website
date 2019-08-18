@@ -65,7 +65,7 @@ def home_page(user_id):
 def bind_page():
     if not RGUIController.user_need_to_bind_page():
         return redirect(url_for('login_page'))
-    auth, user_id, email, username = RGUIController.do_auth_more_info()
+    auth, user_id, email, username = RGUIController.do_auth_more_info(need_request_email=False)
     return RGUIController.ui_render_template("login.html", **{
         'username': username,
         'coll_email': True,

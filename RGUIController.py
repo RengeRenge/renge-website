@@ -22,11 +22,10 @@ def auth_handler(page=False, forceLogin=True):
         @wraps(func)
         def wrapper(*args, **kwargs):
             try:
-                auth, user_id = do_auth()
-                if auth:
-                    if user_need_to_bind_page() and page is True:
-                        return redirect(url_for('bind_page'))
+                if user_need_to_bind_page() and page is True:
+                    return redirect(url_for('bind_page'))
 
+                auth, user_id = do_auth()
                 if forceLogin:
                     if auth:
                         return func(user_id, *args, **kwargs)
@@ -70,11 +69,11 @@ def check_bind():
 
 
 def do_auth():
-    auth, user_id, email, username = do_auth_more_info()
+    auth, user_id, email, username = do_auth_more_info(need_request_email=False)
     return auth, user_id
 
 
-def do_auth_more_info():
+def do_auth_more_info(need_request_email=False):
     user_id = None
     auth = False
     email = None
@@ -85,11 +84,15 @@ def do_auth_more_info():
             email = session['email'] if 'email' in session else None
             username = session['username'] if 'username' in session else None
 
-            if username is None or email:
+            if need_request_email or username is None:
                 from Model import user
-                _user = user.get_user(user_id=user_id, need_bg=False, need_email=True)
-                username = _user.username
-                session['username'] = username
+                _user = user.get_user(user_id=user_id, need_bg=False, need_email=need_request_email)
+                if username is None:
+                    session['username'] = _user.username
+                    username = _user.username
+                if need_request_email:
+                    session['email'] = _user.email
+                    email = _user.email
 
             auth = True
 
@@ -103,7 +106,7 @@ def do_auth_more_info():
 
 
 def user_need_to_bind_page():
-    auth, user_id, email, username = do_auth_more_info()
+    auth, user_id, email, username = do_auth_more_info(need_request_email=False)
     if auth:
         if (email is None or len(email) <= 0) and username is not None:
             try:
@@ -111,6 +114,7 @@ def user_need_to_bind_page():
                 from RGUtil.RGCodeUtil import RGResCode
                 code, data = RGOpenIdController.user_list(username=username)
                 if code == RGResCode.ok and len(data) > 0:
+                    session['email'] = data[0]['email']
                     return False
                 else:
                     return True
