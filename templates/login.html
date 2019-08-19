@@ -230,8 +230,7 @@
 
     function check_user() {
         let username = $('#user').val()
-        if (!username || username.length <= 0) {
-            show_tip('请输入用户名️')
+        if (usernameCheck(username)) {
             return
         }
         if (checkRequest()) {
@@ -346,20 +345,17 @@
 
     function login_user() {
         let username = $('#user').val()
-        if (!username.length) {
-            show_tip('用户名不能为空')
-            return;
+        if (usernameCheck(username)) {
+            return
         }
-
         if (that.registMode) {
             let email = $('#email').val()
             if (!email.length) {
                 show_tip('邮箱不能为空')
             } else {
-                var reg = new RegExp("^[a-z0-9]+([._\\-]*[a-z0-9])*@([a-z0-9]+[-a-z0-9]*[a-z0-9]+.){1,63}[a-z0-9]+$"); //正则表达式
-                if(!reg.test(email)){
+                if (email.isInvalidEmail()) {
                     show_tip('请填写正确的邮箱地址')
-                }else{
+                } else{
                     send_sign_in_email(email, username, that.registMode > 1 ? 2 : 0)
                 }
             }
@@ -375,6 +371,9 @@
     }
 
     function do_login(username, pwd, remember) {
+        if (usernameCheck(username)) {
+            return
+        }
         if (checkRequest()) {
             return
         }
@@ -401,8 +400,7 @@
 
     function send_bind_email() {
         let username = $('#user').val()
-        if (!username.length) {
-            show_tip('用户名不能为空')
+        if (usernameCheck(username)) {
             return
         }
         let email = $('#bind_email_text').val()
@@ -428,8 +426,7 @@
 
     function verify_bind_email() {
         let username = $('#user').val()
-        if (!username.length) {
-            show_tip('用户名不能为空')
+        if (usernameCheck(username)) {
             return
         }
         let email = $('#bind_email_text').val()
@@ -437,8 +434,7 @@
             show_tip('邮箱不能为空')
             return
         } else {
-            var reg = new RegExp("^[a-z0-9]+([._\\-]*[a-z0-9])*@([a-z0-9]+[-a-z0-9]*[a-z0-9]+.){1,63}[a-z0-9]+$"); //正则表达式
-            if(!reg.test(email)){
+            if(email.isInvalidEmail()){
                 show_tip('请填写正确的邮箱地址')
                 return
             }
@@ -532,6 +528,9 @@
     }
 
     function send_sign_in_email(email, username, verifyType) {
+        if (usernameCheck(username)) {
+            return
+        }
         if (checkRequest()) {
             return
         }
@@ -568,8 +567,7 @@
     function onSurePwd(verifyType) {
         verifyType = parseInt(verifyType)
         let username = $('#user').val()
-        if (!username.length) {
-            show_tip('用户名不能为空')
+        if (usernameCheck(username)) {
             return
         }
         let pwd1 = $('#pwd1').val()
@@ -640,6 +638,25 @@
         logout(function () {
             that.redirt(true)
         })
+    }
+    function usernameCheck(u) {
+        if (!u || u.length <= 0) {
+            show_tip('请输入用户名️')
+            return true
+        }
+        if (u.indexOf(' ') >= 0) {
+            show_tip('用户名不能含有空格')
+            return true
+        }
+        if (u.length < 4 && that.registMode === true) {
+            show_tip('用户名长度不能小于4')
+            return true
+        }
+        if (u.hasEmojiCharacter()) {
+            show_tip('用户名不能含有表情字符😃')
+            return true
+        }
+        return false
     }
     function onGetIP() {
         this.userIP = returnCitySN?returnCitySN["cip"]:''

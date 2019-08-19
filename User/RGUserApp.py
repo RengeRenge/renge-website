@@ -125,8 +125,8 @@ def user_check():
 
 @RestRouter.route('/getVerifyCode', methods=['POST'])
 def get_verify_code():
-    username = request_value(request, 'username')
-    email = request_value(request, 'email')
+    username = request_value(request, 'username').strip()
+    email = request_value(request, 'email').strip()
     verify_type = int(request_value(request, 'verifyType', default='0'))
 
     if verify_type == RGVerifyType.bind:
@@ -163,7 +163,7 @@ def get_verify_code():
 
 @RestRouter.route('/new', methods=['POST'])
 def user_new():
-    username = request_value(request, 'username')
+    username = request_value(request, 'username').strip()
     # email = request_value(request, 'email')
     pwd = request_value(request, 'pwd')
     verify_code = int(request_value(request, 'code', default='0'))
@@ -197,6 +197,9 @@ def user_new():
 @RestRouter.route('/password', methods=['POST'])
 def user_password():
     username = request_value(request, 'username')
+    if username is not None:
+        username = username.strip()
+
     pwd = request_value(request, 'pwd')
     verify_code = int(request_value(request, 'code', default='0'))
 
@@ -230,8 +233,8 @@ def user_password():
 def user_bind():
     verify_code = int(request_value(request, 'code'))
     pwd = request_value(request, 'pwd')
-    email = request_value(request, 'email')
-    username = request_value(request, 'username')
+    email = request_value(request, 'email').strip()
+    username = request_value(request, 'username').strip()
 
     auth, user_id, pass_email, auth_username = RGUIController.do_auth_more_info(need_request_email=False)
     if not auth or username != auth_username:
@@ -294,7 +297,7 @@ def get_base64_username_email(username, email, expire=None):
 
 @RestRouter.route('/login', methods=['POST'])
 def user_login():
-    username = request_value(request, 'username')
+    username = request_value(request, 'username').strip()
     pwd = request_value(request, 'pwd')
     _user = user.user_login(username, pwd)
 
