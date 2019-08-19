@@ -295,6 +295,58 @@ String.prototype.originalRGSrc = function () {
     return this
 }
 
+String.prototype.isInvalidEmail = function () {
+    if (this.indexOf(' ') >= 0) {
+        return true
+    }
+    let reg = new RegExp("^[a-z0-9]+([._\\-]*[a-z0-9])*@([a-z0-9]+[-a-z0-9]*[a-z0-9]+.){1,63}[a-z0-9]+$"); //正则表达式
+    if(!reg.test(this)){
+        return true
+    }
+    return false
+}
+
+String.prototype.hasEmojiCharacter = function(){
+    let substring = this
+    if(substring){
+        let reg = new RegExp("[~#^$@%&!?%*]", 'g');
+        if (substring.match(reg)) {
+            return true;
+        }
+        for ( let i = 0; i < substring.length; i++) {
+            let hs = substring.charCodeAt(i);
+            if (0xd800 <= hs && hs <= 0xdbff) {
+                if (substring.length > 1) {
+                    let ls = substring.charCodeAt(i + 1);
+                    let uc = ((hs - 0xd800) * 0x400) + (ls - 0xdc00) + 0x10000;
+                    if (0x1d000 <= uc && uc <= 0x1f77f) {
+                        return true;
+                    }
+                }
+            } else if (substring.length > 1) {
+                let ls = substring.charCodeAt(i + 1);
+                if (ls === 0x20e3) {
+                    return true;
+                }
+            } else {
+                if (0x2100 <= hs && hs <= 0x27ff) {
+                    return true;
+                } else if (0x2B05 <= hs && hs <= 0x2b07) {
+                    return true;
+                } else if (0x2934 <= hs && hs <= 0x2935) {
+                    return true;
+                } else if (0x3297 <= hs && hs <= 0x3299) {
+                    return true;
+                } else if (hs === 0xa9 || hs === 0xae || hs === 0x303d || hs === 0x3030
+                    || hs === 0x2b55 || hs === 0x2b1c || hs === 0x2b1b
+                    || hs === 0x2b50) {
+                    return true;
+                }
+            }
+        }
+    }
+};
+
 function styleSafeGet(k) {
     if (this[k])
         return this[k]

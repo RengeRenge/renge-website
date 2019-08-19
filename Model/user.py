@@ -58,7 +58,7 @@ class user:
         :return: True or False
         """
         if self.has_email():
-            return True
+            return False
         code, _users = User.RGOpenIdController.user_list(username=self.username)
         if code == RGResCode.ok and len(_users) > 0:
             open_id_exist = True
