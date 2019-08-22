@@ -32,20 +32,9 @@ def blog_page(other_id):
 
 
 def blog_page_render(art_user_id, view_user_id):
-    t = get_data_with_request(request)
-    page = t['page'] if 'page' in t else 0
-    size = t['size'] if 'size' in t else 10
-
-    arts, page_count, now_page, page_size, count, re_relation = article.page_list(other_id=view_user_id,
-                                                                                  art_user_id=art_user_id, page=page,
-                                                                                  size=size)
     relation = user.get_relation(view_user_id, art_user_id)
+    re_relation = user.get_relation(art_user_id, view_user_id)
     t = {
-        "list": arts,
-        "pageCount": page_count,
-        "pageSize": page_size,
-        "nowPage": now_page,
-        "count": count,
         "user": user.get_user(art_user_id),
         "home": user.isHome(view_user_id, art_user_id),
         "authed": view_user_id is not None,
@@ -53,6 +42,27 @@ def blog_page_render(art_user_id, view_user_id):
         "re_relation": re_relation,
     }
     return RGUIController.ui_render_template("index.html", **t)
+
+
+@RestRouter.route('/home/<art_user_id>', methods=["GET"])
+def home_page(art_user_id):
+    t = get_data_with_request(request)
+    page = t['page'] if 'page' in t else 0
+    size = t['size'] if 'size' in t else 10
+
+    auth, view_user_id = RGUIController.do_auth()
+    arts, page_count, now_page, page_size, count, re_relation = article.page_list(other_id=view_user_id,
+                                                                                  art_user_id=art_user_id, page=page,
+                                                                                  size=size)
+    t = {
+        "list": arts,
+        "pageCount": page_count,
+        "pageSize": page_size,
+        "nowPage": now_page,
+        "count": count,
+        "home": user.isHome(view_user_id, art_user_id),
+    }
+    return RGUIController.ui_render_template("home.html", **t)
 
 
 @RestRouter.route('/view/', methods=["GET"])
@@ -73,13 +83,9 @@ def blog_view_page(other_id):
 
 def blog_view_page_render(view_user_id, art_user_id):
     relation = user.get_relation(view_user_id, art_user_id)
-    re_relation = user.get_relation(art_user_id, view_user_id)
     t = {
         "user": user.get_user(art_user_id),
-        "home": user.isHome(art_user_id, view_user_id),
-        "authed": view_user_id is not None,
         "relation": relation,
-        "re_relation": re_relation,
     }
     return RGUIController.ui_render_template("blogView.html", **t)
 

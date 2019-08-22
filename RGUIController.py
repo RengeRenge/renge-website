@@ -4,14 +4,15 @@ from flask import session, request, jsonify, make_response, redirect, url_for, j
 
 from Model import tokens
 from RGIgnoreConfig.RGGlobalConfigContext import RGJSVersion, RGCSSVersion
-from RGUtil.RGRequestHelp import get_data_with_request
+from RGUtil.RGCodeUtil import RGResCode
+from RGUtil.RGRequestHelp import get_data_with_request, request_value, is_int_number, form_res
 
 
 class RGUIController(object):
     pass
 
 
-def auth_handler(page=False, forceLogin=True):
+def auth_handler(page=False, forceLogin=True, more_info=False, need_email=False):
     """
 
     Decorator for session or token valid required.
@@ -22,18 +23,31 @@ def auth_handler(page=False, forceLogin=True):
         @wraps(func)
         def wrapper(*args, **kwargs):
             try:
-                if user_need_to_bind_page() and page is True:
-                    return redirect(url_for('bind_page'))
+                if more_info:
+                    auth, user_id, email, username = do_auth_more_info(need_request_email=need_email)
+                    params = {
+                        'auth': auth,
+                        'user_id': user_id,
+                        'email': email,
+                        'username': username,
+                    }
+                else:
+                    auth, user_id = do_auth()
+                    params = user_id
 
-                auth, user_id = do_auth()
+                t = get_data_with_request(request)
+                logs = json.dumps(t, sort_keys=True, indent=4, separators=(', ', ': '))
+                print('auth_handler -->\n{}\nuserid:{}\n{}\n'.format(request.path, user_id, logs))
+
                 if forceLogin:
                     if auth:
-                        return func(user_id, *args, **kwargs)
+                        return func(params, *args, **kwargs)
                     else:
+
                         return make_response(jsonify({'error': 'Unauthorized access'}), 401) \
-                            if not page else redirect(url_for('login_page'))
+                            if not page else redirect(request.full_path.replace(request.path, url_for('login_page')))
                 else:
-                    return func(user_id, *args, **kwargs)
+                    return func(params, *args, **kwargs)
             except Exception as ex:
                 print(ex)
                 token_session_remove()
@@ -57,6 +71,11 @@ def check_bind():
         @wraps(func)
         def wrapper(*args, **kwargs):
             try:
+
+                t = get_data_with_request(request)
+                logs = json.dumps(t, sort_keys=True, indent=4, separators=(', ', ': '))
+                print('check_bind -->\n{}\n{}\n'.format(request.path, logs))
+
                 if user_need_to_bind_page():
                     return redirect(url_for('bind_page'))
                 return func(*args, **kwargs)
@@ -95,10 +114,6 @@ def do_auth_more_info(need_request_email=False):
                     email = _user.email
 
             auth = True
-
-            t = get_data_with_request(request)
-            params = json.dumps(t, sort_keys=True, indent=4, separators=(', ', ': '))
-            print('>>>>\nauth:{}\nuserid:{}\n{}\n<<<<'.format(request.path, user_id, params))
     elif 'auth' in request.headers:
         token = request.headers.get('auth')
         user_id, auth = tokens.certify_token(token)
@@ -150,8 +165,31 @@ def token_session_remove():
 
 
 def ui_render_template(template_name_or_list, **context):
+
+    art_user_id = request_value(request, 'user_id', None)
+    need_user = int(request_value(request, 'needUserInfo', 0))
+
+    if need_user > 0 and (art_user_id is None or is_int_number(art_user_id) is False):
+        return jsonify(form_res(RGResCode.lack_param))
+
     params = dict({"js_ver": RGJSVersion, "css_ver": RGCSSVersion}, **context)
-    return render_template(template_name_or_list, **params)
+    render = render_template(template_name_or_list, **params)
+
+    if need_user > 0:
+        from Model import user
+        auth, view_user_id = do_auth()
+        relation = user.get_relation(view_user_id, art_user_id)
+        re_relation = user.get_relation(art_user_id, view_user_id)
+        t = {
+            "user": user.get_user(art_user_id).__dict__,
+            "home": user.isHome(view_user_id, art_user_id),
+            "auth": view_user_id is not None,
+            "relation": relation,
+            "re_relation": re_relation,
+            'render': render
+        }
+        return jsonify(form_res(RGResCode.ok, t))
+    return render
 
 
 # def authorizeRequireWarp(fn):

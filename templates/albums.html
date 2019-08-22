@@ -1,24 +1,10 @@
 <!DOCTYPE html>
 <html lang="zh">
 
-<script>
-    this.ubg = "{{user.bgImage}}"
-    this.style = {{user.style|default('')|tojson}}
-    this.relation = {{relation}}
-    this.re_relation = {{re_relation}}
-    this.userId = "{{user.ID}}"
-</script>
-
 <link href="/static/css/rg_base.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_base">
 <link href="/static/css/rg_config.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_config">
 <link href="/static/css/photos.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
 
-<script type="text/javascript" src="/static/jquery/jquery.min.js?ver={{js_ver}}"></script>
-
-<script type="text/javascript" src="/static/js/rg_base.js?ver={{js_ver}}"></script>
-<script type="text/javascript" src="/static/js/bgLayout.js?ver={{js_ver}}"></script>
-<script type="text/javascript" src="/static/js/timeUtil.js?ver={{js_ver}}"></script>
-<script type="text/javascript" src="/static/js/albumPage.js?ver={{js_ver}}"></script>
 <style>
     .album_wrapper a {
         background: none left;
@@ -72,63 +58,8 @@
     <title>相册</title>
 </head>
 <body>
-<div class="boprt a-control" style="top: 20px; opacity: 1;">
-    <ul>
-        <li>
-            <form>
-                {%- if home -%}
-                <a href="/blog/edit" class="boprt09" target="_top"><em>写日志</em></a>
-                {%- elif authed and user -%}
-                <a id="followItem" target="_top"><em></em></a>
-                {%- endif -%}
-            </form>
-        </li>
-        <li>
-            <form>
-                {%- if home -%}
-                <a href="/user/set" class="boprt05" target="_top"><em>设置</em></a>
-                {%- elif authed -%}
-                <a href="/" class="boprt01" target="_top"><em>回家</em></a>
-                {%- else -%}
-                <a href="/" class="boprt01" target="_top"><em>登陆</em></a>
-                {%- endif -%}
-            </form>
-        </li>
-    </ul>
-</div>
 
-<div id="album_page" class="page_wrapper">
-
-    <div class="main_title_color page_wrapper titleWrapper">
-        <h1 class="auto_text pageTitle {% if home %}editEnableWrapper{% endif %}"
-            contenteditable="{% if home %}true{%else%}false{%endif%}"
-            id='title'
-            onblur="editName(this)"
-            onfocus="recordName(this)"
-            placeholder="博客标题">
-            {{-user.title-}}
-        </h1>
-        <h3 class="auto_text pageTitle {% if home %}editEnableWrapper{% endif %}"
-            contenteditable="{% if home %}true{%else%}false{%endif%}"
-            id='desc'
-            onblur="editDesc(this)"
-            onfocus="recordDesc(this)"
-            placeholder="博客描述">
-            {{-user.desc-}}
-        </h3>
-    </div>
-
-    {%- if user -%}
-    <div style="margin-bottom: 20px;" class="toolBarWrapper">
-        <a href="/blog/{{user.ID}}/" class="toolBarItem">动态</a>
-        <a href="/photo/{{user.ID}}/" class="toolBarItem toolBarItem-selected">相册</a>
-        <a href="/blog/view/{{user.ID}}/" class="toolBarItem">归档</a>
-        {% if home %}
-        <a href="/user/friends" class="toolBarItem">好友</a>
-        {% endif %}
-    </div>
-    {%- endif -%}
-
+<div id="album_page">
     {%- if list -%}
     <div class="wrapperBg wrapperPadding">
         <div style="height: 25px;">

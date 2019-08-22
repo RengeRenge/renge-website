@@ -1,26 +1,12 @@
 <!DOCTYPE html>
 <html lang="zh">
 
-<script>
-    this.pageCount = {{pageCount}}
-    this.artSum = {{count}}
-    this.pageSize = {{pageSize}}
-    this.nowPage = {{nowPage}}
-    this.ubg = "{{user.bgImage}}"
-    this.style = {{user.style|tojson}}
-</script>
-<script type="text/javascript" src="/static/jquery/jquery.min.js?ver={{js_ver}}"></script>
 <link href="/static/css/rg_base.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_base">
 <link href="/static/css/rg_config.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_config">
 
-<!--bg-->
-<script type="text/javascript" src="/static/js/rg_base.js?ver={{js_ver}}"></script>
-<script type="text/javascript" src="/static/js/bgLayout.js?ver={{js_ver}}"></script>
 <!--page-->
 <link href="/static/css/pagination.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
 <script type="text/javascript" src="/static/js/pagination.js?ver={{js_ver}}"></script>
-
-<script type="text/javascript" src="/static/js/timeUtil.js?ver={{js_ver}}"></script>
 
 <head>
     <script type="text/javascript">
@@ -38,8 +24,8 @@
                         'id': e.attributes.name.value
                     },
                     success: function (result) {
-                        if (result.code == 1000) {
-                            window.location.reload()
+                        if (result.code === 1000) {
+                            rgLoadContent('/user/friends?page={0}'.format("{{nowPage}}"))
                         }
                     },
                     error: function () {
@@ -55,97 +41,54 @@
     <title>我的好友</title>
 </head>
 <body>
+<div class="wrapperLR {% if count > 0 %}wrapperPadding{% endif %} wrapperBg">
+    <div class="wrapperFull">
+        {% for item in list %}
+        <div class="wrapperItem wrapperItemBg">
+            <div class="wrapperLR wrapperXYCenter" id={{item.ID}}>
+                <div class="wrapperFlex" style="padding-right: 20px">
+                    <div class="rgIcon rgHover" name={{item.ID}} onclick="goto_blog(this)" style="width: 58px; {% if item.icon %} background-image:url({{ "'"+ item.icon|safe + "'" }}) {% endif %} "></div>
+            </div>
+            <div class="wrapperFull">
+                <div class="articleTitle auto_text" name={{item.ID}} onclick="goto_blog(this)">
+                    {{ item.nickname }}
+                </div>
+                <div class="auto_text artSubTitle">{%- if item.title|length > 0 -%} {{ item.title }} {%- else -%} {{item.desc}} {%- endif -%}</div>
+                <div class="auto_text artSubTitle secondTextColor">
+                    <script>
+                        var timeStamp = {{item.follow_time}}
+                        var time = (new Date(timeStamp)).Format("yyyy-MM-dd hh:mm:ss")
 
-<div class="boprt a-control" style="top: 20px; opacity: 1;">
-    <ul>
-        <li>
-            <form><a href="/blog/edit" class="boprt09" target="_top"><em>写日志</em></a></form>
-        </li>
-        <li>
-            <form><a href="/user/set" class="boprt05" target="_top"><em>设置</em></a></form>
-        </li>
-    </ul>
-</div>
-
-<div class="page_wrapper">
-
-    <div class="main_title_color page_wrapper titleWrapper">
-        <h1 class="auto_text pageTitle"
-            contenteditable="{% if home %}true{%else%}false{%endif%}"
-            id='title'
-            onblur="editName(this)"
-            onfocus="recordName(this)"
-            placeholder="博客标题">
-            {{-user.title-}}
-        </h1>
-        <h3 class="auto_text pageTitle"
-            contenteditable="{% if home %}true{%else%}false{%endif%}"
-            id='desc'
-            onblur="editDesc(this)"
-            onfocus="recordDesc(this)"
-            placeholder="博客描述">
-            {{-user.desc-}}
-        </h3>
-    </div>
-
-
-    {% if user %}
-    <div style="margin-bottom: 20px;" class="toolBarWrapper">
-        <a href="/blog/{{user.ID}}/" class="toolBarItem">动态</a>
-        <a href="/photo/{{user.ID}}/" class="toolBarItem">相册</a>
-        <a href="/blog/view/{{user.ID}}/" class="toolBarItem">归档</a>
-        <a href="/user/friends" class="toolBarItem toolBarItem-selected">好友</a>
-    </div>
-    {% endif %}
-
-    <div class="wrapperLR {% if count > 0 %}wrapperPadding{% endif %} wrapperBg">
-        <div class="wrapperFull">
-            {% for item in list %}
-            <div class="wrapperItem wrapperItemBg">
-                <div class="wrapperLR wrapperXYCenter" id={{item.ID}}>
-                    <div class="wrapperFlex" style="padding-right: 20px">
-                        <div class="rgIcon rgHover" name={{item.ID}} onclick="goto_blog(this)" style="width: 58px; {% if item.icon %} background-image:url({{ "'"+ item.icon|safe + "'" }}) {% endif %} "></div>
-                    </div>
-                    <div class="wrapperFull">
-                        <div class="articleTitle auto_text" name={{item.ID}} onclick="goto_blog(this)">
-                            {{ item.nickname }}
-                        </div>
-                        <div class="auto_text artSubTitle">{%- if item.title|length > 0 -%} {{ item.title }} {%- else -%} {{item.desc}} {%- endif -%}</div>
-                        <div class="auto_text artSubTitle secondTextColor">
-                            <script>
-                                var timeStamp = {{item.follow_time}}
-                                var time = (new Date(timeStamp)).Format("yyyy-MM-dd hh:mm:ss")
-
-                                var dom = document.getElementById('{{item.ID}}').getElementsByClassName('auto_text artSubTitle secondTextColor')[0]
-                                dom.innerText = '添加时间: ' + time
-                            </script>
-                        </div>
-                    </div>
-
-                    <div class="wrapperFlex rgButton" name={{item.ID}} onclick="unfollow(this)">
-                        移除
-                    </div>
+                        var dom = document.getElementById('{{item.ID}}').getElementsByClassName('auto_text artSubTitle secondTextColor')[0]
+                        dom.innerText = '添加时间: ' + time
+                    </script>
                 </div>
             </div>
-            {% endfor %}
-            {% if count == 0 %}
-            <div class="nothing">
-                <a style="background-color: rgba(255,255,255,0.6);">暂时没有好友</a>
+
+            <div class="wrapperFlex rgButton" name={{item.ID}} onclick="unfollow(this)">
+                移除
             </div>
-            {% endif %}
-            {% if count > 0 %}
-            <div class="ht-page"></div>
-            <script>
-                function pageChange(i) {
-                    var nextUrl = '?' + 'page=' + (i + 1)
-                    window.location.href = nextUrl
-                }
-                Pagination.init($(".ht-page"), pageChange);
-                Pagination.Page($(".ht-page"), this.nowPage - 1, this.artSum, this.pageSize);
-            </script>
-            {% endif %}
         </div>
     </div>
+    {% endfor %}
+    {% if count == 0 %}
+    <div class="nothing">
+        <a style="background-color: rgba(255,255,255,0.6);">暂时没有好友</a>
+    </div>
+    {% endif %}
+    {% if count > 0 %}
+    <div class="ht-page"></div>
+    <script>
+        function pageChange(i) {
+            rgLoadContent('/user/friends?page={0}'.format(i + 1))
+        }
+        Pagination.init($(".ht-page"), pageChange);
+        Pagination.Page($(".ht-page"), parseInt("{{nowPage}}") - 1, parseInt("{{count}}"), parseInt("{{pageSize}}"));
+        Pagination.bindListener($(".ht-page"), function (page) {
+            $("html,body").animate({scrollTop: $(".toolBarWrapper").offset().top - 60}, 0);
+        }, false)
+    </script>
+    {% endif %}
 </div>
 </body>
 </html>

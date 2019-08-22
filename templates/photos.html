@@ -4,11 +4,7 @@
 {%- macro selectIfNeed(selectedV)-%}{%- if album.level == selectedV -%}selected="selected"{%- endif -%}{%- endmacro -%}
 
 <script>
-    this.ubg = "{{user.bgImage}}"
-    this.style = {{user.style|default('')|tojson}}
-    this.relation = {{relation}}
-    this.re_relation = {{re_relation}}
-    this.isHome = {{home|int}}
+    this.isHome = parseInt("{{home|int}}")
     this.albumId = "{{album.id}}"
     this.coverId = "{{album.cover}}"
     this.iconId = "{{user.iconId}}"
@@ -17,31 +13,22 @@
     this.recordABDesc = "{{album.description}}"
     this.albumLevel = "{{album.level}}"
     this.picList = null
-
-    this.pageCount = {{pageCount}}
-    this.picSum = {{count}}
-    this.pageSize = {{pageSize}}
-    this.nowPage = {{nowPage}}
 </script>
-
-<script type="text/javascript" src="/static/jquery/jquery.min.js?ver={{js_ver}}"></script>
 
 <link href="/static/css/rg_base.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_base">
 <link href="/static/css/rg_config.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_config">
 <link href="/static/font-awesome/css/font-awesome.min.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
-<script type="text/javascript" src="/static/js/rg_base.js?ver={{js_ver}}"></script>
-<script type="text/javascript" src="/static/js/bgLayout.js?ver={{js_ver}}"></script>
 
 {%- if album -%}
 <link rel="stylesheet" type="text/css" href="/static/css/weui-for-work.min.css?ver={{css_ver}}" />
 <link rel="stylesheet" type="text/css" href="/static/css/photos.css?ver={{css_ver}}" />
 
-<script type="text/javascript" src="/static/js/timeUtil.js?ver={{js_ver}}"></script>
 <script type="text/javascript" src="/static/js/rgbaster.min.js?ver={{js_ver}}"></script>
 
 <!--select-->
 <link rel="stylesheet" type="text/css" href="/static/select/css/cs-select.css?ver={{css_ver}}" />
 <link rel="stylesheet" type="text/css" href="/static/select/css/cs-skin-border.css?ver={{css_ver}}" />
+
 <script type="text/javascript" src="/static/select/js/classie.js?ver={{js_ver}}"></script>
 <script type="text/javascript" src="/static/select/js/selectFx.js?ver={{js_ver}}"></script>
 
@@ -59,6 +46,7 @@
         cursor: pointer;
     }
     .back {
+        cursor: pointer;
         padding-left: {% if album %}0{% else %}20{% endif %}px;
     }
 </style>
@@ -69,142 +57,126 @@
     <title>相册</title>
 </head>
 <body>
-<div class="boprt a-control" style="top: 20px; opacity: 1;">
-    <ul>
-        <li>
-            <form>
-                {%- if home -%}
-                <a href="/blog/edit" class="boprt09" target="_top"><em>写日志</em></a>
-                {%- elif authed and user -%}
-                <a id="followItem" target="_top"><em></em></a>
-                {%- endif -%}
-            </form>
-        </li>
-        <li>
-            <form>
-                {%- if home -%}
-                <a href="/user/set" class="boprt05" target="_top"><em>设置</em></a>
-                {%- elif authed -%}
-                <a href="/" class="boprt01" target="_top"><em>回家</em></a>
-                {%- else -%}
-                <a href="/" class="boprt01" target="_top"><em>登陆</em></a>
-                {%- endif -%}
-            </form>
-        </li>
-    </ul>
-</div>
 
-<div class="page_wrapper">
-
-    <div class="main_title_color page_wrapper titleWrapper">
-        <h1 class="auto_text pageTitle {% if home %}editEnableWrapper{% endif %}"
-            contenteditable="{% if home %}true{%else%}false{%endif%}"
-            id='title'
-            onblur="editName(this)"
-            onfocus="recordName(this)"
-            placeholder="博客标题">
-            {{-user.title-}}
-        </h1>
-        <h3 class="auto_text pageTitle {% if home %}editEnableWrapper{% endif %}"
-            contenteditable="{% if home %}true{%else%}false{%endif%}"
-            id='desc'
-            onblur="editDesc(this)"
-            onfocus="recordDesc(this)"
-            placeholder="博客描述">
-            {{-user.desc-}}
-        </h3>
+<div class="wrapperBg {% if album %} wrapperPadding {% else %} wrapperPaddingOnlyTop {% endif %}">
+    <div style="margin-bottom: 20px; margin-top: 10px">
+        <a onclick="rgLoadContent('/photo/{{user.ID}}')" class="back">返回</a>
     </div>
 
+    {%-if album-%}
+    <h2 class="auto_text"
+        contenteditable="{% if home %}true{% else %}false{% endif %}"
+        onblur="onBlurTitle(this)"
+        style="margin-bottom: 10px;">
+        {{-album.title-}}
+    </h2>
+    <a class="auto_text"
+       contenteditable="{% if home %}true{% else %}false{% endif %}"
+       onblur="onBlurDesc(this)"
+       style="margin-top: 20px;padding-left: 3px;display: block">
+        {{-album.description-}}
+    </a>
 
-    {%- if user -%}
-    <div style="margin-bottom: 20px;" class="toolBarWrapper">
-        <a href="/blog/{{user.ID}}/" class="toolBarItem">动态</a>
-        <a href="/photo/{{user.ID}}/" class="toolBarItem toolBarItem-selected">相册</a>
-        <a href="/blog/view/{{user.ID}}/" class="toolBarItem">归档</a>
-        {%- if home -%}
-        <a href="/user/friends" class="toolBarItem">好友</a>
+    {%- if home and user -%}
+    <div class="rgButton" style="width: 200px;min-height: 40px; margin-top: 20px;">上传照片</div>
+
+    <div class="privacyWrapper" style="margin-top: 20px;">隐私设置 :
+        <select id="privacy" style="min-height: 40px" class="cs-select cs-skin-border">
+            <option value="0" {{selectIfNeed(0)}}>所有人可见</option>
+            <option value="1" {{selectIfNeed(1)}}>仅好友可见</option>
+            <option value="2" {{selectIfNeed(2)}}>仅自己可见</option>
+        </select>
+        {%- if home|int -%}
+        <script>
+            $(function () {
+                let album_level = that.albumLevel
+                new SelectFx($('#privacy')[0], {
+                    stickyPlaceholder: true,
+                    onChange: function (val) {
+                        if (album_level === val)
+                            return
+                        $.ajax({
+                            type: 'POST',
+                            dataType: "json",
+                            url: "/photo/album/edit",
+                            data: {
+                                'id': that.albumId,
+                                'level': val
+                            },
+                            success: function (result) {
+                                if (result.code !== 1000) {
+                                    alert('修改失败')
+                                } else {
+                                    album_level = val
+                                }
+                            },
+                            error: function () {
+                            },
+                        })
+                    }
+                });
+            })
+        </script>
         {%- endif -%}
+    </div>
+
+    <div style="height: 1px;width: 100%; margin-top: 20px;background-color: rgba(255,255,255,0.6)">
     </div>
     {%- endif -%}
 
-    <div class="wrapperBg {% if album %} wrapperPadding {% else %} wrapperPaddingOnlyTop {% endif %}">
-        <div style="margin-bottom: 20px; margin-top: 10px">
-            <a href="./" class="back">返回</a>
+    <div class="collectionView" style="margin-top: 30px">
+        {%- for item in list -%}
+        <div id={{item.id}} class="collectionCell collectionWrap wrapperItemBg" style="margin: 10px;">
+            <div id="{{item.qUrl}}" name="{{item.url}}" onclick="show_oPic(this)" class="bgNoRepeatImage" style="background-image: url('{{item.url}}'); width: 100%;">
+
+            </div>
+            <div id={{item.id|string+'title'}} class="p_title nowrapText">
+                {%- if item.title -%}
+                {{- item.title -}}
+                {%- else -%}
+                {{- item.file_name -}}
+                {%- endif -%}
+            </div>
+            <div id={{item.id|string+'description'}} class="p_desc nowrapText">
+                {{-item.description-}}
+            </div>
+            <div class="p_desc nowrapText secondTextColor">
+                <script>
+                    var timeStamp = '未知';
+                    {% if item.exif_timestamp %}
+                    timeStamp = (new Date({{item.exif_timestamp}})).Format("yyyy MM dd hh:mm:ss")
+                    {% endif %}
+                    var dom = document.getElementById('{{item.id}}').getElementsByClassName('p_desc nowrapText secondTextColor')[0]
+                    dom.innerText = '拍摄时间:' + timeStamp
+                </script>
+            </div>
+            <div class="p_desc nowrapText secondTextColor" style="margin-top: 10px">
+                上传时间:
+                <script>
+                    var timeStamp = {{item.timestamp}}
+                    var time = (new Date(timeStamp)).Format("yyyy MM dd hh:mm:ss")
+                    var dom = document.getElementById('{{item.id}}').getElementsByClassName('p_desc nowrapText secondTextColor')[1]
+                    dom.innerText = time
+                </script>
+            </div>
         </div>
-
-         {%-if album-%}
-        <h2 class="auto_text"
-            contenteditable="{% if home %}true{% else %}false{% endif %}"
-            onblur="onBlurTitle(this)"
-            style="margin-bottom: 10px;">
-            {{-album.title-}}
-        </h2>
-        <a class="auto_text"
-           contenteditable="{% if home %}true{% else %}false{% endif %}"
-           onblur="onBlurDesc(this)"
-           style="margin-top: 20px;padding-left: 3px;display: block">
-            {{-album.description-}}
-        </a>
-
-        {%- if home and user -%}
-            <div class="rgButton" style="width: 200px;min-height: 40px; margin-top: 20px;">上传照片</div>
-
-            <div class="privacyWrapper" style="margin-top: 20px;">隐私设置 :
-                <select id="privacy" style="min-height: 40px" class="cs-select cs-skin-border">
-                    <option value="0" {{selectIfNeed(0)}}>所有人可见</option>
-                    <option value="1" {{selectIfNeed(1)}}>仅好友可见</option>
-                    <option value="2" {{selectIfNeed(2)}}>仅自己可见</option>
-                </select>
-            </div>
-
-            <div style="height: 1px;width: 100%; margin-top: 20px;background-color: rgba(255,255,255,0.6)">
-            </div>
-        {%- endif -%}
-
-        <div class="collectionView" style="margin-top: 30px">
-            {%- for item in list -%}
-            <div id={{item.id}} class="collectionCell collectionWrap wrapperItemBg" style="margin: 10px;">
-                <div id="{{item.qUrl}}" name="{{item.url}}" onclick="show_oPic(this)" class="bgNoRepeatImage" style="background-image: url('{{item.url}}'); width: 100%;">
-
-                </div>
-                <div id={{item.id|string+'title'}} class="p_title nowrapText">
-                    {%- if item.title -%}
-                        {{- item.title -}}
-                    {%- else -%}
-                        {{- item.file_name -}}
-                    {%- endif -%}
-                </div>
-                <div id={{item.id|string+'description'}} class="p_desc nowrapText">
-                    {{-item.description-}}
-                </div>
-                <div class="p_desc nowrapText secondTextColor">
-                    <script>
-                        var timeStamp = '未知';
-                        {% if item.exif_timestamp %}
-                        timeStamp = (new Date({{item.exif_timestamp}})).Format("yyyy MM dd hh:mm:ss")
-                        {% endif %}
-                        var dom = document.getElementById('{{item.id}}').getElementsByClassName('p_desc nowrapText secondTextColor')[0]
-                        dom.innerText = '拍摄时间:' + timeStamp
-                    </script>
-                </div>
-                <div class="p_desc nowrapText secondTextColor" style="margin-top: 10px">
-                    上传时间:
-                    <script>
-                        var timeStamp = {{item.timestamp}}
-                        var time = (new Date(timeStamp)).Format("yyyy MM dd hh:mm:ss")
-                        var dom = document.getElementById('{{item.id}}').getElementsByClassName('p_desc nowrapText secondTextColor')[1]
-                        dom.innerText = time
-                    </script>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-
-        <div class="ht-page"></div>
-        {%- else -%}
-            <div class="nothing"><a style="background-color: rgba(255,255,255,0.3);">内容不见了</a></div>
-        {%- endif -%}
+        {% endfor %}
     </div>
+
+    <div class="ht-page"></div>
+    <script>
+        function pageChange(i) {
+            rgLoadContent('/photo/{0}/{1}?page={2}'.format(that.userId, that.albumId, i+1))
+        }
+        Pagination.init($(".ht-page"), pageChange);
+        Pagination.Page($(".ht-page"), parseInt("{{nowPage}}" - 1), parseInt("{{count}}"), parseInt("{{pageSize}}"));
+        Pagination.bindListener($(".ht-page"), function (page) {
+            $("html,body").animate({scrollTop: $(".toolBarWrapper").offset().top - 60}, 0);
+        }, false)
+    </script>
+    {%- else -%}
+    <div class="nothing"><a style="background-color: rgba(255,255,255,0.3);">内容不见了</a></div>
+    {%- endif -%}
 </div>
 
 <div class="fullScreen" style="display: none;">

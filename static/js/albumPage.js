@@ -35,7 +35,8 @@ function goto_album(e) {
     }
     // var url = '/photo/' + this.userId +'/' + e.id
     // window.open(url)
-    window.location.href = '' + id
+    rgLoadContent('/photo/{0}/{1}'.format(that.userId, id))
+    // window.location.href = '/photo/' + id
 }
 
 function new_album(e) {
@@ -70,7 +71,7 @@ function do_new_album(e) {
             'level': 2
         },
         success: function (result) {
-            if (result.code != 1000) {
+            if (result.code !== 1000) {
                 alert('创建失败')
             } else {
                 let album = result.data

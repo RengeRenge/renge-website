@@ -34,15 +34,10 @@ def photo_page(other_id):
 
 def photo_page_render(user_id, other_id):
     albums, re_relation = album.album_list(user_id, other_id)
-    relation = user.get_relation(user_id, other_id)
-
     t = {
         "list": albums,
         "user": user.get_user(other_id),
         "home": user.isHome(user_id, other_id),
-        "authed": user_id is not None,
-        "relation": relation,
-        "re_relation": re_relation,
     }
     return RGUIController.ui_render_template("albums.html", **t)
 
@@ -62,7 +57,6 @@ def photos_page_render(user_id, other_id, album_id):
     size = t['size'] if 'size' in t else 10
 
     relation = user.get_relation(user_id, other_id)
-    re_relation = user.get_relation(other_id, user_id)
 
     flag, album_detail = album.album_detail(album_id=album_id, relation=relation)
 
@@ -81,9 +75,6 @@ def photos_page_render(user_id, other_id, album_id):
         "count": count,
         "user": user.get_user(other_id, need_icon=True),
         "home": user.isHome(user_id, other_id),
-        "authed": user_id is not None,
-        "relation": relation,
-        "re_relation": re_relation,
         'album': album_detail
     }
     return RGUIController.ui_render_template("photos.html", **t)

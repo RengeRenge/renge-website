@@ -112,11 +112,11 @@ function loadjscssfile(filename, filetype) {
     if (window.location.pathname.split('/' >= 2)) {
         filename = '../' + filename
     }
-    if (filetype == "js") {
+    if (filetype === "js") {
         var fileref = document.createElement('script');
         fileref.setAttribute("type", "text/javascript");
         fileref.setAttribute("src", filename);
-    } else if (filetype == "css") {
+    } else if (filetype === "css") {
 
         var fileref = document.createElement('link');
         fileref.setAttribute("rel", "stylesheet");
@@ -128,7 +128,73 @@ function loadjscssfile(filename, filetype) {
     }
 }
 
-function init() {
+function rgSetBgUrl(url) {
+    this.ubg = url
+
+    let body = document.body
+    if (!body)
+        return false
+
+    let bg = document.getElementById('rg_bgId')
+    if (bg) {
+        if (url.length) {
+            bg.style.backgroundImage = "url('" + url + "')"
+        } else {
+            bg.style.backgroundImage = null
+        }
+        return true
+    }
+
+    let first = body.firstChild
+    if (first.className === 'hina_bg') {
+        return false
+    }
+
+    bg = document.createElement('div')
+    bg.className = 'hina_bg'
+    bg.id = 'rg_bgId'
+    if (url.length) {
+        bg.style.backgroundImage = "url('" + this.ubg + "')"
+    } else {
+        bg.style.backgroundImage = null
+    }
+    document.body.insertBefore(bg, first)
+    return true
+}
+
+function configMarginBottom(editCSS=false) {
+    let css = document.getElementById("rg_base");
+    let height = $(".titleWrapper").height()
+    let bottom = getCurrentTitleMarginBottom(height)
+    if (editCSS) {
+        $(".titleWrapper").css("margin-bottom", '' + bottom + 'px')
+    } else {
+        editRule(css.sheet, '.titleWrapper', 'margin-bottom:{0}'.format(bottom + 'px'))
+    }
+
+    if (this.sceenHeightCallback)
+        this.sceenHeightCallback(scH, parseInt(scH - height))
+}
+
+function getCurrentTitleMarginBottom(height) {
+    if (this.style && this.style.marginBottom) {
+        if (this.style.marginBottom === 'onepage') {
+            // full screen
+            let top = this.style.styleSafeGet('marginTop')
+            if (!top.length)
+                top = '0'
+            return Math.max(0, scH - parseInt(top) - height)
+        } else {
+            return parseInt(this.style.marginBottom)
+        }
+    }
+}
+
+function bg_layout_init() {
+    applyStyle(true)
+}
+
+function applyStyle(autoHeightObs=false) {
     let css = document.getElementById("rg_base")
 
     if (this.style) {
@@ -149,70 +215,15 @@ function init() {
         }
         autoHeight()
     }
-}
-
-function rgSetBgUrl(url) {
-    this.ubg = url
-
-    let body = document.body
-    if (!body)
-        return false
-
-    let bg = document.getElementById('rg_bgId')
-    if (bg) {
-        bg.style.backgroundImage = "url('" + url + "')"
-        return true
-    }
-
-    let first = body.firstChild
-    if (first.className === 'hina_bg') {
-        return false
-    }
-
-    bg = document.createElement('div')
-    bg.className = 'hina_bg'
-    bg.id = 'rg_bgId'
-    if (url) {
-        bg.style.backgroundImage = "url('" + this.ubg + "')"
-    }
-    document.body.insertBefore(bg, first)
-    return true
-}
-
-function configMarginBottom() {
-    let css = document.getElementById("rg_base");
-    let height = $(".titleWrapper").height()
-    let bottom = getCurrentTitleMarginBottom(height)
-    editRule(css.sheet, '.titleWrapper', 'margin-bottom:{0}'.format(bottom + 'px'))
-    // $(".titleWrapper").css("margin-bottom", '' + bottom + 'px')
-
-    if (this.sceenHeightCallback)
-        this.sceenHeightCallback(scH, parseInt(scH - height))
-}
-
-function getCurrentTitleMarginBottom(height) {
-    if (this.style && this.style.marginBottom) {
-        if (this.style.marginBottom == 'onepage') {
-            // full screen
-            let top = this.style.styleSafeGet('marginTop')
-            if (!top.length)
-                top = '0'
-            return Math.max(0, scH - parseInt(top) - height)
-        } else {
-            return parseInt(this.style.marginBottom)
+    $(function () {
+        if (!rgSetBgUrl(that.ubg)) {
+            // return
         }
-    }
+        autoHeight()
+        if (autoHeightObs)
+            $(window).resize(autoHeight);
+    })
 }
-
-init()
-
-$(function () {
-    if (!rgSetBgUrl(that.ubg)) {
-        // return
-    }
-    autoHeight()
-    $(window).resize(autoHeight);
-})
 
 function isPhoneView() {
     if (/Android|webOS|iPhone|iPod|BlackBerry/i.test(navigator.userAgent)) {

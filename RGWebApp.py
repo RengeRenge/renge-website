@@ -6,7 +6,7 @@ import RGUIController
 from Blog import RGBlogApp
 from Files import RGFileUpDownApp
 from Photos import RGPhotoApp
-from RGIgnoreConfig.RGGlobalConfigContext import RGHost, RGPort
+from RGIgnoreConfig.RGGlobalConfigContext import RGHost, RGPort, RGDebug
 from RGUtil.RGCodeUtil import RGVerifyType
 from User import RGUserApp
 
@@ -88,4 +88,4 @@ def login_page():
 if __name__ == '__main__':
     # app.debug = True
     app.config['JSON_AS_ASCII'] = False
-    app.run(host=RGHost, port=RGPort, debug=False)
+    app.run(host=RGHost, port=RGPort, debug=RGDebug)

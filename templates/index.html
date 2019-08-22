@@ -2,24 +2,12 @@
 <html lang="zh">
 
 <script type="text/javascript">
-        this.pageCount = {{pageCount}}
-        this.artSum = {{count}}
-        this.pageSize = {{pageSize}}
-        this.nowPage = {{nowPage}}
         this.userId = {{user.ID}}
         this.relation = {{relation}}
         this.re_relation = {{re_relation}}
         this.ubg = "{{user.bgImage}}"
+        this.home = {{home|int}}
         this.style = {{user.style|default('')|tojson}}
-
-        function goto_blog(e) {
-            let url = e.id
-            if (!url) {
-                url = e.attributes.name.value
-            }
-            url = '/blog/art/' + url
-            window.open(url)
-        }
 </script>
 
 <link href="/static/css/rg_base.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_base">
@@ -27,17 +15,23 @@
 <link href="/static/css/blog.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
 
 <script type="text/javascript" src="/static/jquery/jquery.min.js?ver={{js_ver}}"></script>
-
 <!--bg-->
 <script type="text/javascript" src="/static/js/rg_base.js?ver={{js_ver}}"></script>
 <script type="text/javascript" src="/static/js/bgLayout.js?ver={{js_ver}}"></script>
-<!--page-->
-<link href="/static/css/pagination.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
-<script type="text/javascript" src="/static/js/pagination.js?ver={{js_ver}}"></script>
 
 <script type="text/javascript" src="/static/js/timeUtil.js?ver={{js_ver}}"></script>
+<script type="text/javascript" src="/static/js/albumPage.js?ver={{js_ver}}"></script>
+
+<script type="text/javascript" src="/static/js/groupModal.js?ver={{js_ver}}"></script>
+
 <script>
+    bg_layout_init()
+    keyboardInit()
     autoTitleEnable('{{user.title}}', '{{user.desc}}')
+    if (isPhoneView()) {
+        let css = document.getElementById("rg_base");
+        editRule(css.sheet, '.blogListCoverWrapper', 'display:none')
+    }
 </script>
 <head>
     <meta charset="UTF-8">
@@ -46,36 +40,6 @@
     <title></title>
 </head>
 <body>
-<script>
-    if (isPhoneView()) {
-        let css = document.getElementById("rg_base");
-        editRule(css.sheet, '.blogListCoverWrapper', 'display:none')
-    }
-</script>
-<div class="boprt a-control" style="top: 20px; opacity: 1;">
-    <ul>
-        <li>
-            <form>
-                {%- if home -%}
-                <a href="/blog/edit" class="boprt09" target="_top"><em>写日志</em></a>
-                {%- elif authed and user -%}
-                <a id="followItem" target="_top"><em></em></a>
-                {%- endif -%}
-            </form>
-        </li>
-        <li>
-            <form>
-                {%- if home -%}
-                <a href="/user/set" class="boprt05" target="_top"><em>设置</em></a>
-                {%- elif authed -%}
-                <a href="/" class="boprt01" target="_top"><em>回家</em></a>
-                {%- else -%}
-                <a href="/" class="boprt01" target="_top"><em>登陆</em></a>
-                {%- endif -%}
-            </form>
-        </li>
-    </ul>
-</div>
 
 <div class="page_wrapper">
 
@@ -100,72 +64,68 @@
 
 
     {%- if user -%}
-    <div style="margin-bottom: 20px;" class="toolBarWrapper">
-        <a href="/blog/{{user.ID}}/" class="toolBarItem toolBarItem-selected">动态</a>
-        <a href="/photo/{{user.ID}}/" class="toolBarItem">相册</a>
-        <a href="/blog/view/{{user.ID}}/" class="toolBarItem">归档</a>
-        {% if home %}
-        <a href="/user/friends" class="toolBarItem">好友</a>
-        {% endif %}
+    <div style="margin-bottom: 20px; opacity: 0" class="toolBarWrapper">
+        <a id="tool-0" class="toolBarItem toolBarItem-selected" onclick="onChangeToolBar(this)">动态</a>
+        <a id="tool-1" class="toolBarItem" onclick="onChangeToolBar(this)">相册</a>
+        <a id="tool-2" class="toolBarItem" onclick="onChangeToolBar(this)">归档</a>
     </div>
     {%- endif -%}
 
-    <div class="wrapperLR wrapperBg {% if count > 0 %}wrapperPadding{% endif %}">
-        <div class="wrapperFull">
-            {%- for item in list -%}
-            <div class="wrapperLR wrapperItem wrapperItemBg">
-                <div class="">
-                    <div class="articleTitle auto_text" id="{{item.id}}" onclick="goto_blog(this)">
-                        {%- if item.title -%}
-                            {{ item.title }}
-                        {%- else -%}
-                            <script>
-                            var timeStamp = {{item.addtime}}
-                            var time = (new Date(timeStamp)).Format("yyyy年 MM月 dd日")
-                            var dom = document.getElementById('{{item.id}}')
-                            dom.innerText = time
-                            </script>
-                        {%- endif -%}
-                    </div>
-                    <div class="auto_text artSubTitle"> {{ item.summary }}</div>
-                    <div class="auto_text artSubTitle secondTextColor" style="margin-top: 10px">
-                    <script>
-                        var timeStamp = {{item.addtime}}
-                        var time = (new Date(timeStamp)).Format("yyyy-MM-dd hh:mm:ss")
-                        var dom = document.getElementById('{{item.id}}').parentElement.getElementsByClassName('auto_text artSubTitle secondTextColor')[0]
-                        dom.innerText = time
-                    </script>
-                </div>
-                </div>
-                <div class="blogListCoverWrapper">
-                    <div class="bgNoRepeatImage blogListCover"
-                         style='background-image: url("{{item.cover|safe}}");'
-                         onclick="goto_blog(this)"
-                         name="{{item.id}}"
-                    >
-                    </div>
-                </div>
-            </div>
+    <div id="rg_content" style="opacity: 0"></div>
 
-            {% endfor %}
-            {% if count == 0 %}
-                <div class="nothing">
-                    <div style="background-color: rgba(255,255,255,0.3);">暂时没有内容 {% if home %}<a style="text-decoration: #bbb9b4; color: inherit;" href="/blog/edit"> 去写日志</a>{% endif %}</div>
-                </div>
-            {% else %}
-            <div class="ht-page"></div>
-            <script>
-                function pageChange(i) {
-                    var nextUrl = '?' + 'page=' + (i + 1)
-                    window.location.href = nextUrl
-                }
+    <script type="text/javascript">
 
-                Pagination.init($(".ht-page"), pageChange);
-                Pagination.Page($(".ht-page"), this.nowPage - 1, this.artSum, this.pageSize);
-            </script>
-            {% endif %}
-        </div>
-    </div>
+        $(function () {
+            $('.toolBarWrapper').animate({opacity: 1}, 1000, function () {})
+            $('#rg_content').animate({opacity: 1}, 1000, function () {})
+            let contentId = getContentIdCookie()
+            let tools = []
+            if (contentId) {
+                tools = $('#{0}'.format(contentId))
+            }
+            if (tools.length) {
+                loadContent(tools[0])
+            } else {
+                loadContent($('#tool-0')[0])
+            }
+        })
+
+        function onChangeToolBar(e) {
+            loadContent(e, false)
+        }
+
+        function onChangeLoginToolBar(e) {
+            loadContent(e, true)
+        }
+
+        function loadContent(e, needLogin) {
+            setContentIdCookie(e.id)
+            let url = '/blog/home/{{user.ID}}'
+            switch (parseInt(e.id.split('-')[1])) {
+                case 0:
+                    url = '/blog/home/{{user.ID}}'
+                    break;
+                case 1:
+                    url = '/photo/{{user.ID}}'
+                    break;
+                case 2:
+                    url = '/blog/view/{{user.ID}}'
+                    break;
+                case 3:
+                    if (that.home) {url = '/user/friends'}
+                    break;
+            }
+            $(".toolBarItem-selected").removeClass('toolBarItem-selected')
+            $(e).addClass('toolBarItem-selected')
+            rgLoadContent(url, needLogin)
+        }
+
+        function configHeight() {
+            $('#rg_content').css('minHeight', '{0}px'.format(scH*0.8))
+        }
+        configHeight()
+        $(window).resize(configHeight);
+    </script>
 </div>
 </body>
 </html>
