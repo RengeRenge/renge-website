@@ -1,27 +1,13 @@
 // loadjscssfile("../static/js/rg_base.js", "js")
 // loadjscssfile("../static/css/rg_base.css", "css")
 
-var scH
+var scH = window.screen.availHeight
+var scW = window.screen.availWidth
 
 function autoHeight() {
     let css = document.getElementById("rg_base");
     let h = window.screen.availHeight
-
-    if (isPhoneView()) {
-        let vertical = document.documentElement.clientHeight > document.documentElement.clientWidth
-        h = vertical ? window.screen.availHeight : window.screen.availWidth;
-        let last = $(".hina_bg").css('height');
-        if (last !== '' + h + 'px') {
-
-            editRule(css.sheet, '.hina_bg', 'height:{0}'.format(h + 'px'))
-
-            // $(".hina_bg").css('height', h);
-
-            let w = vertical ? window.screen.availWidth : window.screen.availHeight;
-            editRule(css.sheet, '.hina_bg', 'width:{0}'.format(w + 'px'))
-            // $(".hina_bg").css('width', '' + w + 'px');
-        }
-    }
+    scW = window.screen.availWidth
     if (scH !== h) {
         editRule(css.sheet, '.articleWrapper', 'min-height:{0}'.format(h * 0.7 + 'px'))
         editRule(css.sheet, '.nothing', 'min-height: {0}'.format(h * 0.5 + 'px'))
