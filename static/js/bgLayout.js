@@ -1,8 +1,8 @@
 // loadjscssfile("../static/js/rg_base.js", "js")
 // loadjscssfile("../static/css/rg_base.css", "css")
 
-var scH = window.screen.availHeight
-var scW = window.screen.availWidth
+var scH = 0
+var scW = 0
 
 function autoHeight() {
     let css = document.getElementById("rg_base");
