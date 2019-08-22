@@ -21,6 +21,10 @@
 <script type="text/javascript" src="/static/color/spectrum.min.js?ver={{js_ver}}"></script>
 
 <script type="text/javascript" src="/static/js/login.js?ver={{js_ver}}"></script>
+<script>
+    bg_layout_init()
+    keyboardInit()
+</script>
 <style>
     .fullScreen {
         background-color: rgba(255, 255, 255, 0.6);
@@ -564,11 +568,11 @@
     }
 
     function adjustHeight(e) {
-        if (e.id == 'marginBottom') {
+        if (e.id === 'marginBottom') {
             marginBottom = e.value
             this.style.marginBottom = marginBottom
-            configMarginBottom()
-        } else if (e.id == 'onepage'){
+            configMarginBottom(true)
+        } else if (e.id === 'onepage'){
             if (!marginBottom) marginBottom = this.style.marginBottom
 
             if (e.checked) {
@@ -595,7 +599,9 @@
 
                 $("html,body").animate({scrollTop: 0}, 500, function () {
                     // configMarginBottom()
-                    $(".titleWrapper").animate({marginBottom: bottom}, 500)
+                    $(".titleWrapper").animate({marginBottom: bottom}, 500, function () {
+                      $(".titleWrapper").css('marginBottom', null)
+                    })
                 })
             }
 

@@ -1,6 +1,114 @@
 that = this
 that.isEditing = false
 that.bdapi = 'QU2tzWyb5MoEcgv54sijXzruRKLTy5gL'
+that.rg_contentUrl = null
+
+function rgLoadContent(url, need_login=false) {
+    that.rg_contentUrl = url
+    function handleRes(res) {
+        if (that.rg_contentUrl !== url)
+            return
+        if (res.code !== 1000) {
+            return
+        }
+        let data = res["data"]
+        that.auth = data['auth']
+
+        if (need_login) {
+            if (!that.auth) {
+                document.location.href = '/loginPage'
+                return
+            }
+        }
+
+        let oldStyle = that.style
+
+        that.userId = data['user']['ID']
+        that.home = data['home']
+        that.relation = data['relation']
+        that.re_relation = data['re_relation']
+        that.ubg = data['user']['bgImage']
+        that.style = data['user']['style']
+
+        that.title = data['user']['title']
+        that.desc = data['user']['desc']
+
+
+        let controlH5 =
+        '<div id="topControl" class="boprt a-control" style="top: 20px; opacity: 1;">\
+            <ul>\
+                <li>\
+                    <form>{0}\
+                    </form>\
+                </li>\
+                <li>\
+                    <form>{1}\
+                    </form>\
+                </li>\
+            </ul>\
+        </div>'
+
+        let a = that.home ? '<a href="/blog/edit" class="boprt09" target="_top"><em>写日志</em></a>':
+            that.auth&&that.userId ?
+                '<a id="followItem" target="_top"><em></em></a>' :
+                ''
+        let b = that.home ? '<a href="/user/set" class="boprt05" target="_top"><em>设置</em></a>':
+            that.auth ?
+                '<a href="/" class="boprt01" target="_top"><em>回家</em></a>':
+                '<a href="/" class="boprt01" target="_top"><em>登陆</em></a>'
+        $('#topControl').remove()
+        $(document.body).append($(controlH5.format(a, b)))
+
+        let equal = getJSONLength(oldStyle) === getJSONLength(that.style)
+        if (equal) {
+            for(let key in oldStyle) {
+
+                let value = oldStyle[key]
+                if (typeof (value) === 'function') continue
+
+                if (that.style.hasOwnProperty(key)) {
+                    if (that.style[key] !== value) {
+                        equal = false
+                        break
+                    }
+                } else {
+                    equal = false
+                    break;
+                }
+            }
+        }
+
+        that.style.styleSafeGet = styleSafeGet
+        if (!equal) {
+            applyStyle()
+        }
+
+        $('#title').text(that.title)
+        $('#desc').text(that.desc)
+        configTitle()
+
+        configToolBarItem()
+        configFollowItem()
+        $("#rg_content").html(data['render'])
+    };
+
+    $.ajax({
+        type: 'GET',
+        dataType: "json",
+        url: url,
+        data: {'user_id': that.userId, 'needUserInfo':1},
+        success: handleRes,
+        error: function (e) {
+
+        },
+    })
+}
+
+function getJSONLength(object) {
+    let count = 0;
+    for(let key in object) { if (typeof(object[key]) !== 'function') count++;}
+    return count;
+}
 
 function webpload() {
     let WebP = new Image();
@@ -19,40 +127,46 @@ function webpload() {
 
 webpload()
 
-window.onload = function () {
-    document.body.onkeypress =
-        function (e) {
-            if (that.onkeypressCallback) {
-                if (!that.onkeypressCallback(e)) {
-                    return false
+function keyboardInit(mWindow=null) {
+    if (!mWindow) mWindow = window
+    window.document
+    let _that = this
+    mWindow.onload = function () {
+        mWindow.document.body.onkeypress =
+            function (e) {
+                if (e.target.id === 'pageInput') {return true}
+                if (_that.onkeypressCallback) {
+                    if (!_that.onkeypressCallback(e)) {
+                        return false
+                    }
                 }
-            }
-            if (that.preventEnter && event.keyCode === 13) {
-                if (that.callback) {
-                    if (that.callback(e)) {
+                if (_that.preventEnter && event.keyCode === 13) {
+                    if (_that.callback) {
+                        if (_that.callback(e)) {
+                            e.target.blur()
+                            return false
+                        }
+                    } else {
                         e.target.blur()
                         return false
                     }
-                } else {
-                    e.target.blur()
-                    return false
+                    return true
                 }
-                return true
             }
-        }
 
-    document.body.onkeyup =
-        function (e) {
-            if (that.onkeyupCallback) {
-                return that.onkeyupCallback(e)
+        mWindow.document.body.onkeyup =
+            function (e) {
+                if (_that.onkeyupCallback) {
+                    return _that.onkeyupCallback(e)
+                }
             }
-        }
-    document.body.onkeydown =
-        function (e) {
-            if (that.onkeydownCallback) {
-                return that.onkeydownCallback(e)
+        mWindow.document.body.onkeydown =
+            function (e) {
+                if (_that.onkeydownCallback) {
+                    return _that.onkeydownCallback(e)
+                }
             }
-        }
+    }
 }
 
 /*
@@ -96,7 +210,7 @@ function follow(e) {
             'id': this.userId
         },
         success: function (result) {
-            if (result.code == 1000) {
+            if (result.code === 1000) {
                 that.relation = result.data['relation']
                 that.re_relation = result.data['re_relation']
                 configFollowItem()
@@ -111,6 +225,7 @@ function follow(e) {
 $(function () {
     configTitle()
     configFollowItem()
+    configToolBarItem()
 })
 
 function configFollowItem() {
@@ -118,22 +233,34 @@ function configFollowItem() {
     if (!item)
         return
     item.removeClass('')
-    if (this.relation == 0) {
+    if (this.relation === 0) {
         item.attr('onClick', 'follow(this)')
         item.addClass('boprt02')
         item.html('<em>好友</em>')
-    } else if (this.relation == 1) {
+    } else if (this.relation === 1) {
         item.attr('onClick', '')
-        if (this.re_relation == 1) {
+        if (this.re_relation === 1) {
             item.addClass('boprt07')
         } else {
             item.addClass('boprt06')
         }
         item.html('<em>好友</em>')
-    } else if (this.relation == 2) {
+    } else if (this.relation === 2) {
         e.attr('onClick', '')
         item.addClass('boprt14')
         item.html('<em>已拉黑</em>')
+    }
+}
+
+function configToolBarItem() {
+    let controlH5 = null
+    if (that.home) {
+        if (!$('.toolBarLogin').length) {
+            controlH5 = '<a id="tool-3" class="toolBarItem toolBarLogin" onclick="onChangeLoginToolBar(this)">好友</a>'
+            $('.toolBarWrapper').append($(controlH5))
+        }
+    } else {
+        $('.toolBarLogin').remove()
     }
 }
 
@@ -151,7 +278,7 @@ function editName(e) {
     that.isEditing = false
     var record = that.record_name
 
-    if (record == null || record == e.innerText)
+    if (record == null || record === e.innerText)
         return
 
     that.record_name = null
@@ -166,7 +293,7 @@ function editName(e) {
             'name': resultStr
         },
         success: function (result) {
-            if (result.code != 1000) {
+            if (result.code !== 1000) {
                 e.innerText = record
             } else {
                 e.innerText = resultStr
@@ -184,7 +311,7 @@ function editDesc(e) {
     that.isEditing = false
     let record = that.record_desc
 
-    if (record == null || record == e.innerText)
+    if (record == null || record === e.innerText)
         return
 
     that.record_desc = null
@@ -199,7 +326,7 @@ function editDesc(e) {
             'desc': resultStr
         },
         success: function (result) {
-            if (result.code != 1000) {
+            if (result.code !== 1000) {
                 e.innerText = record
             } else {
                 e.innerText = resultStr
@@ -216,12 +343,26 @@ function editDesc(e) {
 function configTitle() {
     if (!that.autoTitle)
         return
-    var title
+    let title
     if (this.title && this.title.length)
         title = this.title.decodeHtml() + ' ' + this.desc.decodeHtml()
     else
         title = "My Blog" + ' ' + this.desc
     $("title").text(title)
+}
+
+function getContentIdCookie()  {
+    if (document.cookie.match(/contentId=([^;]+)(;|$)/)!=null){
+        let arr=document.cookie.match(/contentId=([^;]+)(;|$)/); //cookies中不为空，则读取iframe的src
+        let contentId = arr[1]
+        if (contentId.length)
+            return contentId
+    }
+    return null
+}
+
+function setContentIdCookie(contentId)  {
+    document.cookie = "contentId={0}".format(contentId)
 }
 
 String.prototype.format = function () {

@@ -482,43 +482,9 @@ function pageChange(i) {
 }
 
 $(function () {
-
-    Pagination.init($(".ht-page"), pageChange);
-    Pagination.Page($(".ht-page"), that.nowPage - 1, that.picSum, that.pageSize);
-
     $('.nav span').hover(function () {
         $(this).find('ul').show();
     }, function () {
         $(this).find('ul').hide();
-    });
-
-    if (!that.isHome) {
-        return
-    }
-    let album_level = that.albumLevel
-    new SelectFx($('#privacy')[0], {
-        stickyPlaceholder: true,
-        onChange: function (val) {
-            if (album_level === val)
-                return
-            $.ajax({
-                type: 'POST',
-                dataType: "json",
-                url: "/photo/album/edit",
-                data: {
-                    'id': that.albumId,
-                    'level': val
-                },
-                success: function (result) {
-                    if (result.code !== 1000) {
-                        alert('修改失败')
-                    } else {
-                        album_level = val
-                    }
-                },
-                error: function () {
-                },
-            })
-        }
     });
 })

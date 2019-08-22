@@ -1,27 +1,12 @@
 <!DOCTYPE html>
 <html lang="zh">
 
-<script>
-    this.userId = {{user.ID}}
-    this.relation = {{relation}}
-    this.re_relation = {{re_relation}}
-    this.ubg = "{{user.bgImage}}"
-    this.style = {{user.style|default('')|tojson}}
-</script>
 <link href="/static/css/rg_base.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_base">
 <link href="/static/css/rg_config.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_config">
 <link href="/static/css/photos.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
 <link href="/static/css/timeline.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
 
-<script type="text/javascript" src="/static/jquery/jquery.min.js?ver={{js_ver}}"></script>
-
-<!--bg-->
-<script type="text/javascript" src="/static/js/rg_base.js?ver={{js_ver}}"></script>
-<script type="text/javascript" src="/static/js/bgLayout.js?ver={{js_ver}}"></script>
-<script type="text/javascript" src="/static/js/timeUtil.js?ver={{js_ver}}"></script>
-
 <link rel="stylesheet" type="text/css" href="/static/css/groupModal.css?ver={{css_ver}}" />
-<script type="text/javascript" src="/static/js/groupModal.js?ver={{js_ver}}"></script>
 
 <head>
     <meta charset="UTF-8">
@@ -138,32 +123,29 @@
     }
 </style>
 <script>
-    let d = rg_getTimezone()
-    let that = this
-
     preventEnterEnable(true, function (e) {
         return true
     })
 
     $(function () {
-        initGroupModal(groupSelf.modal_selected_groupId, 'groupNameButton', '全部分类', that.relation < 0,
+        initGroupModal(null, 'groupNameButton', '全部分类', that.relation < 0,
             function (id, name, level) {
                 $('#groupNameButton').text(name)
                 loadTimeLine(id)
             }, function (group) {
                 $('#groupNameButton').text(group.name)
             })
+        this.timezone = rg_getTimezone()
         loadTimeLine(null)
     })
 
     function loadTimeLine (groupId) {
-        let d = rg_getTimezone()
         $.ajax({
             type: 'GET',
             url: "/blog/month/view",
             data: {
                 'user_id': that.userId,
-                'timezone': d,
+                'timezone': this.timezone,
                 'group_id': groupId,
             },
             success: function (result) {
@@ -273,8 +255,8 @@
             type: 'GET',
             url: "/blog/month/list",
             data: {
-                user_id: this.userId,
-                timezone: d,
+                user_id: that.userId,
+                timezone: this.timezone,
                 year: year,
                 month: month,
                 group_id: groupSelf.modal_selected_groupId
@@ -324,83 +306,31 @@
     }
 </script>
 
-<div class="boprt a-control" style="top: 20px; opacity: 1;">
-    <ul>
-        <li>
-            <form>
-                {%- if home -%}
-                <a href="/blog/edit" class="boprt09" target="_top"><em>写日志</em></a>
-                {%- elif authed and user -%}
-                <a id="followItem" target="_top"><em></em></a>
-                {%- endif -%}
-            </form>
-        </li>
-        <li>
-            <form>
-                {%- if home -%}
-                <a href="/user/set" class="boprt05" target="_top"><em>设置</em></a>
-                {%- elif authed -%}
-                <a href="/" class="boprt01" target="_top"><em>回家</em></a>
-                {%- else -%}
-                <a href="/" class="boprt01" target="_top"><em>登陆</em></a>
-                {%- endif -%}
-            </form>
-        </li>
-    </ul>
-</div>
-
-<div class="page_wrapper">
-
-    <div class="main_title_color page_wrapper titleWrapper">
-        <h1 class="auto_text pageTitle {% if home %}editEnableWrapper{% endif %}"
-            contenteditable="{% if home %}true{%else%}false{%endif%}"
-            id='title'
-            onblur="editName(this)"
-            onfocus="recordName(this)"
-            placeholder="博客标题">
-            {{-user.title-}}
-        </h1>
-        <h3 class="auto_text pageTitle {% if home %}editEnableWrapper{% endif %}"
-            contenteditable="{% if home %}true{%else%}false{%endif%}"
-            id='desc'
-            onblur="editDesc(this)"
-            onfocus="recordDesc(this)"
-            placeholder="博客描述">
-            {{-user.desc-}}
-        </h3>
-    </div>
-
-
-    {%- if user -%}
-    <div style="margin-bottom: 20px;" class="toolBarWrapper">
-        <a href="/blog/{{user.ID}}/" class="toolBarItem">动态</a>
-        <a href="/photo/{{user.ID}}/" class="toolBarItem">相册</a>
-        <a href="/blog/view/{{user.ID}}/" class="toolBarItem toolBarItem-selected">归档</a>
-        {% if home %}
-        <a href="/user/friends" class="toolBarItem">好友</a>
-        {% endif %}
-    </div>
-    {%- endif -%}
-    <div class="wrapperBg wrapperPadding">
-
-        <div class="privacyWrapper" style="margin-top: 10px; margin-left: 10px">
-            日志分类 :
-            <div id="groupNameButton" class="groupButton">
-                全部日志
-            </div>
+<div class="wrapperBg wrapperPadding">
+    <div class="privacyWrapper" style="margin-top: 10px; margin-left: 10px">
+        日志分类 :
+        <div id="groupNameButton" class="groupButton">
+            全部日志
         </div>
-        <div class="wrapperLR" style="padding-bottom: 160px">
-            <div class="timeline" style="margin-top: 10px">
-                <ul id="timeLineYearWrapper" class="year">
-                </ul>
-            </div>
-            <div style="width: 100%">
-                <div id="artCollectionView" class="collectionView">
+    </div>
+    <div class="wrapperLR" style="padding-bottom: 160px;">
+        <div class="timeline" style="margin-top: 10px">
+            <ul id="timeLineYearWrapper" class="year">
+            </ul>
+        </div>
+        <div style="width: 100%">
+            <div id="artCollectionView" class="collectionView">
 
-                </div>
             </div>
         </div>
     </div>
 </div>
+<script>
+    function configHeight() {
+        $('#blogViewContent').css('minHeight', '{0}px'.format(scH*0.6))
+    }
+    configHeight()
+    $(window).resize(configHeight);
+</script>
 </body>
 </html>

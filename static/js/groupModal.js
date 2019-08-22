@@ -1,11 +1,17 @@
-groupSelf = this
-groupSelf.groupData = null
-groupSelf.showGroup = false
+let groupSelf = {}
 
-groupSelf.customGroup = null
-groupSelf.groupSelectCallBack = null
-groupSelf.groupChangeCallBack = null
-groupSelf.modal_selected_groupId = null
+function groupSelfInit() {
+    groupSelf = {}
+    groupSelf.groupData = null
+    groupSelf.showGroup = false
+    groupSelf.DOM = null
+
+    groupSelf.customGroup = null
+    groupSelf.groupSelectCallBack = null
+    groupSelf.groupChangeCallBack = null
+    groupSelf.modal_selected_groupId = null
+}
+
 
 /*
     groupSelectCallBack(groupId, name, level);
@@ -15,6 +21,8 @@ groupSelf.modal_selected_groupId = null
     groupChangeCallBack(group) 服务器返回的结构
 */
 function initGroupModal(defaultId, triggerDomId, customGroup, showTool, groupSelectCallBack, groupChangeCallBack) {
+
+    groupSelfInit()
 
     let toolh5 =
         '<img src="/static/image/add_group.png" class="toolIcon toolIconPoint RGTransition disblur" id="addGroupIcon" onclick="addGroup()" style="right: 170px">\n' +
@@ -35,14 +43,12 @@ function initGroupModal(defaultId, triggerDomId, customGroup, showTool, groupSel
     container.id = 'GroupFullScreen'
     container.style.display = 'none'
     container.innerHTML = h5string
-
-    document.body.appendChild(container)
+    groupSelf.DOM = container
 
     groupSelf.groupSelectCallBack = groupSelectCallBack
     groupSelf.groupChangeCallBack = groupChangeCallBack
     groupSelf.modal_selected_groupId = defaultId
     groupSelf.customGroup = customGroup
-
     $('#'+triggerDomId).click(loadGroup)
 }
 
@@ -54,6 +60,9 @@ function loadGroup() {
     $('.hina_bg').addClass('blur')
     // $('.hina_bg').css('transform', 'scale(1.01)')
     $('.page_wrapper').addClass('blur')
+
+    document.body.appendChild(groupSelf.DOM)
+
     $('#GroupFullScreen').show()
     $('.weui-loading').show()
     $.ajax({
@@ -110,12 +119,15 @@ function hideGroup() {
     $('.hina_bg').addClass('disblur')
     $('.hina_bg').css('transform', '')
     $('.page_wrapper').removeClass('blur')
+
     $('#GroupFullScreen').hide()
-    $('#groupWrapper').html('')
+
     endDrag()
     endEditGroup()
     dismissEditGroupModal()
+    $('#groupWrapper').html('')
     groupSelf.groupData = null
+    document.body.removeChild(groupSelf.DOM)
 }
 
 function addGroup() {
@@ -462,6 +474,7 @@ function configDrag() {
 
     groupSelf.recycle.style.display = ''
 
+    let source = groupSelf.source
     for (let i = 0; i < source.length; i++) {
         if (source[i].className.indexOf('staticGroup') >= 0) {
             continue
@@ -506,7 +519,7 @@ function groupDragEnd(ev) {
     $(ev.target).addClass('RGTransition')
     ev.preventDefault()
 
-    if (!changeElement)
+    if (!groupSelf.changeElement)
         return
 
     let id1 = parseInt(groupSelf.dragElement.attributes.name.value)
@@ -519,7 +532,7 @@ function groupDragEnd(ev) {
     groupSelf.groupData.splice(index1, 1)
 
     // insert
-    if (!lock) {
+    if (!groupSelf.lock) {
         groupSelf.groupData.push(dragItem)
         dragItem.order = 0 // 修改order，触发请求（顺序不正确）
     } else {
@@ -542,7 +555,7 @@ function groupDragEnter(ev) {
 
 function groupDragLeave(ev) {
     if (groupSelf.dragElement !== this) {
-        if (lock && (this === this.parentNode.lastElementChild || this === this.parentNode.lastChild)) {    // 当前元素时最后一个元素
+        if (groupSelf.lock && (this === this.parentNode.lastElementChild || this === this.parentNode.lastChild)) {    // 当前元素时最后一个元素
             this.parentNode.appendChild(dragElement);       // 把拖动元素添加最后面
             groupSelf.lock = false;
         } else {

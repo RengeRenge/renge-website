@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<link href="/static/css/rg_base.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_base">
+<link href="/static/css/rg_config.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_config">
+<link href="/static/css/blog.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
+
+<!--page-->
+<link href="/static/css/pagination.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="/static/js/pagination.js?ver={{js_ver}}"></script>
+
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+<script>
+    function goto_blog(e) {
+        let url = e.id
+        if (!url) {
+            url = e.attributes.name.value
+        }
+        url = '/blog/art/' + url
+        window.open(url)
+    }
+</script>
+
+<div class="wrapperLR wrapperBg {% if count > 0 %}wrapperPadding{% endif %}">
+        <div class="wrapperFull">
+            {%- for item in list -%}
+            <div class="wrapperLR wrapperItem wrapperItemBg">
+                <div class="">
+                    <div class="articleTitle auto_text" id="{{item.id}}" onclick="goto_blog(this)">
+                        {%- if item.title -%}
+                            {{ item.title }}
+                        {%- else -%}
+                            <script>
+                            var time = (new Date(parseInt("{{item.addtime}}"))).Format("yyyy年 MM月 dd日")
+                            var dom = document.getElementById('{{item.id}}')
+                            dom.innerText = time
+                            </script>
+                        {%- endif -%}
+                    </div>
+                    <div class="auto_text artSubTitle"> {{ item.summary }}</div>
+                    <div class="auto_text artSubTitle secondTextColor" style="margin-top: 10px">
+                    <script>
+                        var time = (new Date(parseInt("{{item.addtime}}"))).Format("yyyy-MM-dd hh:mm:ss")
+                        var dom = document.getElementById('{{item.id}}').parentElement.getElementsByClassName('auto_text artSubTitle secondTextColor')[0]
+                        dom.innerText = time
+                    </script>
+                </div>
+                </div>
+                <div class="blogListCoverWrapper">
+                    <div class="bgNoRepeatImage blogListCover"
+                         {% if item.cover %} style='background-image: url("{{item.cover|safe}}");' {% endif %}
+                         onclick="goto_blog(this)"
+                         name="{{item.id}}"
+                    >
+                    </div>
+                </div>
+            </div>
+
+            {% endfor %}
+            {% if count == 0 %}
+                <div class="nothing">
+                    <div style="background-color: rgba(255,255,255,0.3);">暂时没有内容 {% if home %}<a style="text-decoration: #bbb9b4; color: inherit;" href="/blog/edit"> 去写日志</a>{% endif %}</div>
+                </div>
+            {% else %}
+            <div class="ht-page"></div>
+            <script>
+                function pageChange(i) {
+                    let nextUrl = '/blog/home/{0}?'.format(that.userId) + 'page=' + (i + 1)
+                    rgLoadContent(nextUrl)
+                }
+                Pagination.init($(".ht-page"), pageChange);
+                Pagination.Page($(".ht-page"), parseInt("{{nowPage}}") - 1, parseInt("{{count}}"), parseInt("{{pageSize}}"));
+                Pagination.bindListener($(".ht-page"), function (page) {
+                    $("html,body").animate({scrollTop: $(".toolBarWrapper").offset().top - 60}, 0);
+                }, false)
+            </script>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

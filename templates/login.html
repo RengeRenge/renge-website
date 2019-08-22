@@ -157,7 +157,7 @@
 </div>
 
 <script>
-
+    keyboardInit()
     preventEnterEnable(true, function (e) {
         if (e.target.id === 'user') {
             check_user()
@@ -605,7 +605,8 @@
         if ($.trim(prevLink) === '') {
             location.href = default_href
         } else {
-            if (prevLink.indexOf('renged.xyz') === -1) {	//来自其它站点
+
+            if (prevLink.indexOf(window.location.host) === -1) {	//来自其它站点
                 location.href = default_href
             } else if (prevLink.indexOf('passwordPage') !== -1) {		//来自注册页面
                 location.href = default_href

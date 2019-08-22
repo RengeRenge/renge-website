@@ -12,7 +12,7 @@ from Model import user, tokens
 from RGIgnoreConfig.RGGlobalConfigContext import RGFullThisServerHost
 from RGUtil import RGTimeUtil
 from RGUtil.RGCodeUtil import RGResCode, RGVerifyType
-from RGUtil.RGRequestHelp import get_data_with_request, form_res, request_value
+from RGUtil.RGRequestHelp import get_data_with_request, form_res, request_value, is_int_number
 
 RestRouter = Blueprint('RGUser', __name__, url_prefix='/user', static_folder='../static')
 
@@ -42,8 +42,6 @@ def friend_page(user_id):
         "pageSize": page_size,
         "nowPage": now_page,
         "count": count,
-        "user": user.get_user(user_id),
-        "home": True,
     }
 
     return RGUIController.ui_render_template("friends.html", **t)
@@ -367,6 +365,25 @@ def cancel_follow(user_id):
     else:
         code = RGResCode.del_fail
     return jsonify(form_res(code, None))
+
+
+@RestRouter.route('/visitPageInfo', methods=['GET'])
+@RGUIController.auth_handler(page=False, forceLogin=False)
+def user_visit_page_info(view_user_id):
+    art_user_id = request_value(request, 'user_id', None)
+    if art_user_id is None or is_int_number(art_user_id) is False:
+        return jsonify(form_res(RGResCode.lack_param))
+
+    relation = user.get_relation(view_user_id, art_user_id)
+    re_relation = user.get_relation(art_user_id, view_user_id)
+    t = {
+        "user": user.get_user(art_user_id).__dict__,
+        "home": user.isHome(view_user_id, art_user_id),
+        "auth": view_user_id is not None,
+        "relation": relation,
+        "re_relation": re_relation,
+    }
+    return jsonify(form_res(RGResCode.ok, t))
 
 
 @RestRouter.route('/editname', methods=['POST'])
