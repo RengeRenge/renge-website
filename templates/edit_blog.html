@@ -42,7 +42,7 @@
 <script type="text/javascript" src="/static/select/js/selectFx.js?ver={{js_ver}}"></script>
 
 <link rel="stylesheet" type="text/css" href="/static/css/weui-for-work.min.css?ver={{css_ver}}" />
-
+<script>bg_layout_init()</script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport"
@@ -112,30 +112,17 @@
         });
     })();
 
-    let tools = new Array();//此处要注意不能用var tools=new Array("title","bold");定义,我这样做了，页面报错。
-    tools.push("title");
-    tools.push("bold");
-    tools.push("italic");
-    tools.push("underline");
-    tools.push("strikethrough");
-    tools.push("fontScale");
-    tools.push("color");
-    tools.push("ol");
-    tools.push("ul");
-    tools.push("blockquote");
-    tools.push("code");
-    tools.push("table");
-    tools.push("link");
-    tools.push("image");
-    tools.push("hr");
-    tools.push("indent");
-    tools.push("outdent");
-    tools.push("alignment");
+    let toolbar;
+    if (mobilecheck()) {
+        toolbar = ['fontScale', "color", "bold", "ul", "ol", 'title', "blockquote", 'link', 'image', 'hr']
+    } else {
+        toolbar = ['title', 'bold', 'italic', 'underline', 'strikethrough', 'fontScale', 'color', '|', 'ol', 'ul', 'blockquote', 'code', 'table', '|', 'link', 'image', 'hr', '|', 'indent', 'outdent', 'alignment']
+    }
 
     let editor = new Simditor({
         textarea: $('#editor'),
-        autosave: (window.location.pathname == '/blog/edit') ? 'editor-content': false,
-        toolbar: tools,
+        autosave: (window.location.pathname === '/blog/edit') ? 'editor-content': false,
+        toolbar: toolbar,
         toolbarFloat: true,
         toolbarFloatOffset: 0,
         toolbarHidden: false,

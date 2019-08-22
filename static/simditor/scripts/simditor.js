@@ -1,18 +1,23 @@
+/*!
+* Simditor v2.3.19
+* http://simditor.tower.im/
+* 2018-08-14
+*/
 (function (root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module unless amdModuleId is set
-    define('simditor', ["../../static/jquery/dist/jquery","simple-module","simple-hotkeys","simple-uploader","dompurify"], function ($, SimpleModule, simpleHotkeys, simpleUploader, DOMPurify) {
-      return (root['Simditor'] = factory($, SimpleModule, simpleHotkeys, simpleUploader, DOMPurify));
+    define('simditor', ["jquery","simple-module","simple-hotkeys","simple-uploader"], function ($, SimpleModule, simpleHotkeys, simpleUploader) {
+      return (root['Simditor'] = factory($, SimpleModule, simpleHotkeys, simpleUploader));
     });
   } else if (typeof exports === 'object') {
     // Node. Does not work with strict CommonJS, but
     // only CommonJS-like environments that support module.exports,
     // like Node.
-    module.exports = factory(require("../../static/jquery/dist/jquery"),require("simple-module"),require("simple-hotkeys"),require("simple-uploader"),require("dompurify"));
+    module.exports = factory(require("jquery"),require("simple-module"),require("simple-hotkeys"),require("simple-uploader"));
   } else {
-    root['Simditor'] = factory(jQuery,SimpleModule,simple.hotkeys,simple.uploader,window.DOMPurify);
+    root['Simditor'] = factory(jQuery,SimpleModule,simple.hotkeys,simple.uploader);
   }
-}(this, function ($, SimpleModule, simpleHotkeys, simpleUploader, DOMPurify) {
+}(this, function ($, SimpleModule, simpleHotkeys, simpleUploader) {
 
 var AlignmentButton, BlockquoteButton, BoldButton, Button, Clipboard, CodeButton, CodePopover, ColorButton, FontScaleButton, Formatter, HrButton, ImageButton, ImagePopover, IndentButton, Indentation, InputManager, ItalicButton, Keystroke, LinkButton, LinkPopover, ListButton, OrderListButton, OutdentButton, Popover, Selection, Simditor, StrikethroughButton, TableButton, TitleButton, Toolbar, UnderlineButton, UndoManager, UnorderListButton, Util,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -905,7 +910,6 @@ InputManager = (function(superClass) {
     submitKey = this.editor.util.os.mac ? 'cmd+enter' : 'ctrl+enter';
     return this.editor.hotkeys.add(submitKey, (function(_this) {
       return function(e) {
-        _this.editor.sync();
         _this.editor.el.closest('form').find('button:submit').click();
         return false;
       };
@@ -2337,7 +2341,7 @@ Clipboard = (function(superClass) {
       return function() {
         var pasteContent;
         _this.editor.hidePopover();
-        _this.editor.body.get(0).innerHTML = DOMPurify ? DOMPurify.sanitize(state.html) : state.html;
+        _this.editor.body.get(0).innerHTML = state.html;
         _this.editor.undoManager.caretPosition(state.caret);
         _this.editor.body.focus();
         _this.editor.selection.reset();
@@ -2644,7 +2648,7 @@ Simditor = (function(superClass) {
   Simditor.prototype.setValue = function(val) {
     this.hidePopover();
     this.textarea.val(val);
-    this.body.get(0).innerHTML = DOMPurify ? DOMPurify.sanitize(val) : val;
+    this.body.get(0).innerHTML = val;
     this.formatter.format();
     this.formatter.decorate();
     this.util.reflow(this.body);
@@ -3152,7 +3156,7 @@ Popover = (function(superClass) {
     }
     this.el.siblings('.simditor-popover').each(function(i, popover) {
       popover = $(popover).data('popover');
-      if (popover && popover.active) {
+      if (popover.active) {
         return popover.hide();
       }
     });
@@ -4484,7 +4488,7 @@ ImageButton = (function(superClass) {
         return;
       }
       $img = $mask.data('img');
-      if (!($img && $img.hasClass('uploading') && $img.parent().length > 0)) {
+      if (!($img.hasClass('uploading') && $img.parent().length > 0)) {
         $mask.remove();
         return;
       }
