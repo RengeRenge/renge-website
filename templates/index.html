@@ -69,7 +69,6 @@
         <a id="tool-1" class="toolBarItem" onclick="onChangeToolBar(this)">相册</a>
         <a id="tool-2" class="toolBarItem" onclick="onChangeToolBar(this)">归档</a>
     </div>
-    {%- endif -%}
 
     <div id="rg_content" style="opacity: 0"></div>
 
@@ -126,6 +125,7 @@
         configHeight()
         $(window).resize(configHeight);
     </script>
+    {%- endif -%}
 </div>
 </body>
 </html>
