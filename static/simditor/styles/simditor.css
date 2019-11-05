@@ -676,9 +676,12 @@
   list-style: decimal;
 }
 .simditor-body blockquote, .editor-style blockquote {
-  border-left: 6px solid #ddd;
-  padding: 5px 0 5px 10px;
-  margin: 15px 0 15px 15px;
+  border-left: 3px solid rgba(0, 0, 0, 0.1);
+  padding: 0 0 0 16px;
+  margin: 15px 6px 15px 2px;
+}
+.simditor-body blockquote p {
+  color: rgba(0, 0, 0, 0.65);
 }
 .simditor-body blockquote > :first-child, .editor-style blockquote > :first-child {
   margin-top: 0;
