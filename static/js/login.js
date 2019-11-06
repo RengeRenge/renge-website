@@ -37,7 +37,6 @@ function login(username, pwd, remember, callback) {
             'pwd': pwd,
             'remember': remember,
             'type': 0,
-            'ip': that.userIP,
             'channel': 'web'
         },
         success: function (data) {
@@ -104,7 +103,6 @@ function userVerify(username, pwd, code, remember, verifyType, callback) {
                     'code': code,
                     'remember': remember,
                     'type': 0,
-                    'ip': that.userIP,
                     'channel': 'web'
                 },
                 success: function (result) {
@@ -127,7 +125,6 @@ function userVerify(username, pwd, code, remember, verifyType, callback) {
                     'username': username,
                     'pwd': pwd,
                     'code': code,
-                    'ip': that.userIP,
                     'channel': 'web'
                 },
                 success: function (result) {
@@ -155,7 +152,6 @@ function bindEmail(username, email, email_code, pwd, callback) {
             'pwd': pwd,
             'type': 0,
             'code': email_code,
-            'ip': that.userIP,
             'channel': 'web'
         },
         success: function (result) {

@@ -7,7 +7,7 @@ from flask import request
 from RGIgnoreConfig.RGGlobalConfigContext import RGPublicHost
 from RGUtil import RGTimeUtil
 from RGUtil.RGCodeUtil import RGResCode
-from RGUtil.RGRequestHelp import request_value
+from RGUtil.RGRequestHelp import request_value, request_ip
 
 CTOpenIdUserApi = "http://127.0.0.1:20721/api/user"
 CTOpenIdUserAuthApi = "http://127.0.0.1:20721/api/sauth"
@@ -166,7 +166,7 @@ def openid_base_params(extra=None):
         'timestamp': RGTimeUtil.timestamp(),
         'login_channel': request_value(request, 'channel', default=''),
         # 'extra_payload': '用户名',
-        'user_ip': request_value(request, 'ip', default=''),
+        'user_ip': request_ip(request, default=''),
         'remote_ip': RGPublicHost
     }
     if extra is not None:
