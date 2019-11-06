@@ -2,10 +2,12 @@ from flask import Blueprint, request, jsonify, url_for, redirect
 
 import RGUIController
 from Model import article, user
+from RGUtil import RGTimeUtil
 from RGUtil.RGCodeUtil import RGResCode
-from RGUtil.RGRequestHelp import get_data_with_request, form_res, is_int_number
+from RGUtil.RGRequestHelp import get_data_with_request, form_res, is_int_number, request_ip
 
 RestRouter = Blueprint('RGBlog', __name__, url_prefix='/blog', static_folder='../static')
+ReadCountMap = {}
 
 """
 page
@@ -99,6 +101,9 @@ def art_detail(art_id):
         a_user_id = art['user_id']
         _user = user.get_user(a_user_id)
         home = a_user_id == user_id
+
+        if home is False:
+            collect_read_count(art_id=art_id, user_id=user_id)
     else:
         _user = None
         home = False
@@ -454,4 +459,75 @@ def art_month_list(user_id):
                                 timezone=timezone)
 
     res = form_res(1000, result)
+    return jsonify(res)
+
+
+def collect_read_count(art_id, user_id):
+    timestamp = RGTimeUtil.timestamp()
+    remote_addr = request_ip(request, default='')
+
+    if art_id not in ReadCountMap:
+        read_item = {
+            'count': 1,
+            'readers': {
+                remote_addr: {
+                    'time': timestamp,
+                }
+            }
+        }
+        if user_id is not None:
+            read_item['readers'][user_id] = {'time': timestamp}
+        ReadCountMap[art_id] = read_item
+    else:
+
+        read_item = ReadCountMap[art_id]
+        readers = read_item['readers']
+        reader = None
+
+        if user_id is not None:
+            if user_id in readers:
+                reader = readers[user_id]
+            else:
+                reader = {'time': 0}
+                readers[user_id] = reader
+
+        if remote_addr in readers:
+            reader_ip = readers[remote_addr]
+        else:
+            reader_ip = {'time': 0}
+            readers[remote_addr] = reader_ip
+
+        read_time = timestamp
+        if reader is not None:
+            read_time = reader['time']
+        elif reader_ip is not None:
+            read_time = reader_ip['time']
+
+        if timestamp - read_time > 60 * 60 * 1000:
+            read_item['count'] = read_item['count'] + 1
+            reader_ip['time'] = timestamp
+            if reader is not None:
+                reader['time'] = timestamp
+
+    # print(ReadCountMap)
+
+
+@RestRouter.route('/applyReadCount', methods=['POST'])
+def apply_read_count():
+    if request_ip(request, default=request.remote_addr) != '127.0.0.1':
+        return jsonify(form_res(-1))
+
+    ids = []
+    counts = []
+
+    for art_id, read_item in ReadCountMap.items():
+        # readers = read_item['readers']
+        count = read_item['count']
+        if count > 0:
+            counts.append(count)
+            ids.append(art_id)
+            read_item['count'] = 0
+
+    article.add_art_read_count(ids, counts)
+    res = form_res(1000)
     return jsonify(res)

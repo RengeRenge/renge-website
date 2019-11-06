@@ -340,7 +340,7 @@ def art_detail(user_id, art_id):
     sql = \
         'SELECT art.id, art.title, art.summary, \
             art.cate, art.user_id, art.cover, \
-            art.content, art.addtime, art.updatetime, \
+            art.content, art.addtime, art.updatetime, art.read_count, \
             art_group.name as "group_name", art_group.id as "group_id", art_group.level as "group_level"\
         FROM art \
             left join art_group on art_group.id = art.group_id\
@@ -481,4 +481,35 @@ def delete_group(user_id=None, g_id=None):
     if result is not None:
         return True
     else:
+        return False
+
+
+def add_art_read_count(ids=None, counts=None):
+    try:
+        sql = "UPDATE art SET `read_count` = `read_count` + case id \
+        {} where id in ({})".format('{}', '{}')
+
+        case = ''
+        update_ids = ''
+
+        for index in range(len(ids)):
+            a_id = int(ids[index])
+            count = int(counts[index])
+            if count is not 0:
+                case += ('when %ld then %ld ' % (a_id, count))
+                if index is 0:
+                    update_ids += '{}'.format(a_id)
+                else:
+                    update_ids += ',{}'.format(a_id)
+
+        if len(update_ids) <= 0:
+            return True
+
+        case += 'end'
+
+        sql = sql.format(case, update_ids)
+        print(sql)
+        dao.execute_sql(sql, needret=False)
+        return True
+    except:
         return False

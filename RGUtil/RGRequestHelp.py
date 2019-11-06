@@ -18,6 +18,14 @@ def request_value(_request, key, default=None):
         return default
 
 
+def request_ip(_request, default=None):
+    headers = _request.headers
+    if 'X-Real-Ip' in headers:
+        return headers['X-Real-Ip']
+    else:
+        return default
+
+
 def form_res(code, data=None):
     if code == 0:
         code = RGResCode.not_existed if data is None else RGResCode.ok

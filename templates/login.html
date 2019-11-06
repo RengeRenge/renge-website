@@ -6,7 +6,6 @@
 <link href="/static/css/login.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
 <link href="/static/css/weui-for-work.min.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
 
-<script src="https://pv.sohu.com/cityjson?ie=utf-8"></script>
 <script type="text/javascript" src="/static/js/login.js?ver={{js_ver}}"></script>
 <script type="text/javascript" src="/static/jquery/jquery.min.js?ver={{js_ver}}"></script>
 <script type="text/javascript" src="/static/js/rg_base.js?ver={{js_ver}}"></script>
@@ -182,7 +181,6 @@
 
     var that = this
     $(function () {
-        onGetIP()
         that.registMode = parseInt('{%- if coll_user_email -%} 2 {%- else -%} 0 {%- endif -%}')
         that.remember = 0
 
@@ -658,9 +656,6 @@
             return true
         }
         return false
-    }
-    function onGetIP() {
-        this.userIP = returnCitySN?returnCitySN["cip"]:''
     }
 </script>
 </body>
