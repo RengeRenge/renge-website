@@ -127,6 +127,7 @@ class Art(Base):
     addtime = Column(BigInteger, nullable=False, comment='ms')
     updatetime = Column(BigInteger, nullable=False, comment='ms')
     create_time = Column(TIMESTAMP, nullable=False, default=datetime.utcnow, onupdate=None)
+    read_count = Column(BigInteger, nullable=False, default=0)
 
 
 """
