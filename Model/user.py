@@ -211,7 +211,7 @@ def new_user_and_save_verify_code(username, email, verify_code, verify_type=RGVe
                 raise Exception
 
         # OPEN ID
-        if verify_code == RGVerifyType.bind and verify_code == RGVerifyType.new:
+        if verify_code == RGVerifyType.bind or verify_code == RGVerifyType.new:
             res_code, data = User.RGOpenIdController.user_list(username=username)
             if res_code != RGResCode.ok:
                 raise Exception

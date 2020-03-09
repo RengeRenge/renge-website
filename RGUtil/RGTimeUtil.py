@@ -11,7 +11,6 @@ def timestamp(date=None):
         time_array = date.timetuple()
         # time_array = date.utctimetuple()
         t = time.mktime(time_array)
-        t = int(t)
     return int(round(t * 1000))
 
 
