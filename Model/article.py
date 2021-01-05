@@ -31,7 +31,7 @@ def id_list(user_id, last_id=None, size=10):
         dao.close(conn, cursor)
 
     sql = 'SELECT * FROM art where user_id=%(user_id)s AND id < %(last_id)s order by id desc limit %(size)s'
-    result, count, new_id = dao.execute_sql(sql, needdic=True,
+    result, count, new_id = dao.execute_sql(sql, kv=True,
                                             args={'user_id': user_id, 'last_id': last_id, 'size': size})
 
     last_id = 0
@@ -76,14 +76,14 @@ def page_list(other_id=None, art_user_id=-1, page=1, size=10):
         'art_user': art_user_id,
         'other_id': other_id,
     }
-    result, count, new_id = dao.execute_sql(sql, needret=False, args=args)
+    result, count, new_id = dao.execute_sql(sql, ret=False, args=args)
 
     page_count = int(operator.truediv(count - 1, size)) + 1
     page = min(page, page_count)
 
     sql += ' limit %d offset %d' % (size, (page - 1) * size)
 
-    result, this_page_count, new_id = dao.execute_sql(sql, needdic=True, args=args)
+    result, this_page_count, new_id = dao.execute_sql(sql, kv=True, args=args)
 
     page = page if this_page_count > 0 else page_count
 
@@ -135,7 +135,7 @@ def months_list_view(art_user=None, other_id=None, group_id=None, timezone=8):
     else:
         sql = sql.format('and group_id=%(group_id)s')
 
-    result, count, new_id = dao.execute_sql(sql, needdic=True, args={
+    result, count, new_id = dao.execute_sql(sql, kv=True, args={
         'art_user': art_user,
         'other_id': other_id,
         'group_id': group_id,
@@ -190,7 +190,7 @@ def month_list(art_user, other_id, group_id, year, month, timezone=8):
     else:
         sql = sql.format('and group_id=%(group_id)s')
 
-    result, count, new_id = dao.execute_sql(sql, needdic=True, args={
+    result, count, new_id = dao.execute_sql(sql, kv=True, args={
         'art_user': art_user,
         'other_id': other_id,
         'group_id': group_id,
@@ -285,33 +285,14 @@ def add_or_update_art(user_id, title=None, content='', cate=0, group_id=None, ar
         'art_id': art_id,
     }
 
-    if conn is None:
-        try:
-            conn = dao.get()
-            result, count, new_id, err = dao.do_execute_sql_with_connect(
-                sql=sql,
-                needdic=True,
-                neednewid=True,
-                conn=conn,
-                commit=commit,
-                args=args
-            )
-        except Exception as e:
-            conn.rollback()
-            conn.commit()
-            result, count, new_id = None, 0, -1
-        finally:
-            if conn:
-                conn.close()
-    else:
-        result, count, new_id, err = dao.do_execute_sql_with_connect(
-            sql=sql,
-            needdic=True,
-            neednewid=True,
-            conn=conn,
-            commit=commit,
-            args=args
-        )
+    result, count, new_id, err = dao.do_execute_sql(
+        sql=sql,
+        kv=True,
+        new_id=True,
+        conn=conn,
+        commit=commit,
+        args=args
+    )
 
     if count > 0:
         return True, art_id if art_id is not None else new_id
@@ -358,7 +339,7 @@ def art_detail(user_id, art_id):
             art.cate <= r.relation \
             ))'
 
-    result, count, new_id = dao.execute_sql(sql, needdic=True, args={
+    result, count, new_id = dao.execute_sql(sql, kv=True, args={
         'art_id': art_id,
         'other_id': user_id
     })
@@ -375,7 +356,7 @@ def new_group_sql():
 
 def new_group(user_id=None, name='', order=0, level=0):
     sql = new_group_sql()
-    result, count, new_id = dao.execute_sql(sql, neednewid=True, args={
+    result, count, new_id = dao.execute_sql(sql, new_id=True, args={
         'name': name,
         'user_id': user_id,
         'order': order,
@@ -406,7 +387,7 @@ def update_group_info(user_id=None, g_id=None, name=None, level=None):
         params += item
 
     sql = sql.format(params)
-    result, count, new_id = dao.execute_sql(sql, needret=False, args={
+    result, count, new_id = dao.execute_sql(sql, ret=False, args={
         'level': level,
         'name': name,
         'user_id': user_id,
@@ -434,7 +415,7 @@ def update_group_order(user_id=None, ids=None, orders=None):
         update_ids = ",".join(str(i) for i in ids)
 
         sql = sql.format(case, update_ids)
-        dao.execute_sql(sql, needret=False, args={
+        dao.execute_sql(sql, ret=False, args={
             'user_id': user_id
         })
         return True
@@ -454,7 +435,7 @@ def group_list(other_id=None, relation=0):
         sql = 'SELECT * FROM art_group where user_id=%(other_id)s'
 
     sql += " order by `order` desc, id asc"
-    result, count, new_id = dao.execute_sql(sql, needdic=True, args={
+    result, count, new_id = dao.execute_sql(sql, kv=True, args={
         'other_id': other_id
     })
     if count:
@@ -508,8 +489,7 @@ def add_art_read_count(ids=None, counts=None):
         case += 'end'
 
         sql = sql.format(case, update_ids)
-        print(sql)
-        dao.execute_sql(sql, needret=False)
+        dao.execute_sql(sql, ret=False)
         return True
     except:
         return False

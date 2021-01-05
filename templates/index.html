@@ -24,6 +24,7 @@
 
 <script type="text/javascript" src="/static/js/groupModal.js?ver={{js_ver}}"></script>
 
+<script type="text/javascript" src="/static/js/file.js?ver={{js_ver}}"></script>
 <script>
     bg_layout_init()
     keyboardInit()
@@ -75,8 +76,8 @@
     <script type="text/javascript">
 
         $(function () {
-            $('.toolBarWrapper').animate({opacity: 1}, 1000, function () {})
-            $('#rg_content').animate({opacity: 1}, 1000, function () {})
+            $('.toolBarWrapper').animate({opacity: 1}, 1000)
+            $('#rg_content').animate({opacity: 1}, 1000)
             let contentId = getContentIdCookie()
             let tools = []
             if (contentId) {

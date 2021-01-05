@@ -256,6 +256,8 @@ function configToolBarItem() {
     let controlH5 = null
     if (that.home) {
         if (!$('.toolBarLogin').length) {
+            controlH5 = '<a id="tool-100" class="toolBarItem toolBarLogin" onclick="onChangeToolBar(this)">文件</a>'
+            $('.toolBarWrapper').append($(controlH5))
             controlH5 = '<a id="tool-3" class="toolBarItem toolBarLogin" onclick="onChangeLoginToolBar(this)">好友</a>'
             $('.toolBarWrapper').append($(controlH5))
         }
@@ -582,13 +584,21 @@ function getQueryVariable(variable) {
 
 jQuery.fn.shake = function (intShakes /*Amount of shakes*/, intDistance /*Shake distance*/, intDuration /*Time duration*/) {
     this.each(function () {
-        var jqNode = $(this);
+        let jqNode = $(this);
         jqNode.css({position: 'relative'});
-        for (var x = 1; x <= intShakes; x++) {
+        for (let x = 1; x <= intShakes; x++) {
             jqNode.animate({left: (intDistance * -1)}, (((intDuration / intShakes) / 4)))
                 .animate({left: intDistance}, ((intDuration / intShakes) / 2))
                 .animate({left: 0}, (((intDuration / intShakes) / 4)));
         }
     });
     return this;
+}
+
+function rg_merge(obj, other) {
+    for (const key in other) {
+        if (other.hasOwnProperty(key)) {
+            obj[key] = other[key]
+        }
+    }
 }

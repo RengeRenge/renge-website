@@ -441,40 +441,73 @@ def user_edit_desc(user_id):
 def user_set_info(user_id):
     t = get_data_with_request(request)
 
-    file_stream = {}
-
+    url = RGFullThisServerHost + '/file/fastUpload'
     re_files = request.files
-    for name in re_files:
-        stream = re_files[name]
-        value = (stream.filename, stream.stream, stream.content_type)
-        file_stream[name] = value
+    fast_json = {}
+    for file_key in re_files:
+        file_hash = request_value(request, file_key + '_md5')
+        if file_hash is None:
+            return RGResCode.lack_param, None
+        else:
+            fast_json[file_key] = {
+                "md5": file_hash
+            }
 
-    url = RGFullThisServerHost + '/file/upload/'
-    req = requests.post(url=url, files=file_stream, data=request.form, params=None,
-                        auth=request.authorization, cookies=request.cookies, hooks=None, json=request.json, stream=True)
+    bg_id = None
+    icon_id = None
+    req = requests.post(url=url, auth=request.authorization, cookies=request.cookies, hooks=None,
+                        json={"files": fast_json})
+    if req.status_code != 200:
+        return jsonify(form_res(RGResCode.server_error, None))
 
     res_json = req.json()
-    print(res_json)
+    code = res_json['code']
+    if code != RGResCode.ok:
+        return jsonify(form_res(code, None))
+
+    data = res_json['data']
+    need_upload = False
+    file_stream = {}
+    for key in data:
+        result = data[key]
+        if result['code'] == RGResCode.ok:
+            file = result['file']['id']
+            if key == "background":
+                bg_id = file
+            elif key == "icon":
+                icon_id = file
+        elif result['code'] == RGResCode.not_existed:
+            stream = re_files[key]
+            value = (stream.filename, stream.stream, stream.content_type)
+            file_stream[key] = value
+            need_upload = True
+        else:
+            return jsonify(form_res(result['code'], None))
+
+    if need_upload:
+        url = RGFullThisServerHost + '/file/upload'
+        req = requests.post(url=url, files=file_stream, data=request.form, params=None, auth=request.authorization,
+                            cookies=request.cookies, hooks=None, json=request.json, stream=True)
+        res_json = req.json()
+
+        code = res_json['code']
+        if code != RGResCode.ok:
+            return jsonify(form_res(code, None))
+        data = res_json['data']
+        for key in data:
+            result = data[key]
+            if result['code'] == RGResCode.ok:
+                file = result['file']['id']
+                if key == "background":
+                    bg_id = file
+                elif key == "icon":
+                    icon_id = file
+            else:
+                return jsonify(form_res(result['code'], None))
 
     tag = None
     nickname = None
     style = None
-    bg_id = None
-    icon_id = None
-
-    if 'data' in res_json:
-        data = res_json['data']
-        if 'background' in data:
-            bg_file = data['background']
-            if bg_file['success'] is False:
-                return jsonify(form_res(RGResCode.insert_fail, None))
-            bg_id = bg_file['file']['ID']
-
-        if 'icon' in data:
-            icon_file = data['icon']
-            if icon_file['success'] is False:
-                return jsonify(form_res(RGResCode.insert_fail, None))
-            icon_id = icon_file['file']['ID']
 
     if 'nickname' in t:
         nickname = t['nickname']

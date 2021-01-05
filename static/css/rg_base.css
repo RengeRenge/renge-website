@@ -470,18 +470,18 @@ body {
 
     text-decoration: none;
 
-    background: dimgray;
+    background: #696969;
     color: #f2f2f2;
 
     padding: 0 2px 0px 2px;
     font-size: 16px;
-    font-weight: bold;
+    font-weight: normal;
     border-radius: 3px;
     text-align: center;
 
-    -webkit-transition: all linear 0.30s;
-    -moz-transition: all linear 0.30s;
-    transition: all linear 0.30s;
+    -webkit-transition: all linear 0.20s;
+    -moz-transition: all linear 0.20s;
+    transition: all linear 0.20s;
 
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -492,6 +492,37 @@ body {
 .rgButton:hover {
     background: gray;
     cursor: pointer;
+}
+
+.rgButton-anti {
+    background: transparent;
+    color: #696969;
+    border: #696969 solid 1px;
+}
+
+.rgButton-anti:hover {
+    background:transparent;
+    cursor: pointer;
+    color: #4a4a4a;
+}
+
+.rgButton-disable {
+    background: #69696977;
+}
+
+.rgButton-disable:hover {
+    background: #69696977;
+    cursor: default;
+}
+
+.rgButton-anti-disable {
+    color: #69696977;
+    border: #69696977 solid 1px;
+}
+
+.rgButton-anti-disable:hover {
+    color: #69696977;
+    cursor: default;
 }
 
 .weui-cell {

@@ -126,64 +126,37 @@ Uploader = (function(superClass) {
   };
 
   Uploader.prototype._xhrUpload = function(file) {
-    var formData, k, ref, v;
-    formData = new FormData();
-    formData.append(file.fileKey, file.obj);
-    formData.append("original_filename", file.name);
-    if (file.params) {
-      ref = file.params;
-      for (k in ref) {
-        v = ref[k];
-        formData.append(k, v);
-      }
-    }
-    return file.xhr = $.ajax({
-      url: file.url,
-      data: formData,
-      processData: false,
-      contentType: false,
-      type: 'POST',
-      headers: {
-        'X-File-Name': encodeURIComponent(file.name)
+    file_upload({
+      in_album: 1,
+      album_id: -1,
+      file:file.obj,
+      file_key: file.fileKey,
+      params: file.params,
+      request:(request)=>{
+        file.xhr = request
       },
-      xhr: function() {
-        var req;
-        req = $.ajaxSettings.xhr();
-        if (req) {
-          req.upload.onprogress = (function(_this) {
-            return function(e) {
-              return _this.progress(e);
-            };
-          })(this);
+      progress:(progress, desc, loaded, total)=>{
+        this.trigger('uploadprogress', [file, loaded, total]);
+      },
+      success:(result)=>{
+        result = {
+            success: true,
+            msg: '',
+            file_path: result.file.url,
         }
-        return req;
+        this.trigger('uploadprogress', [file, file.size, file.size]);
+        this.trigger('uploadsuccess', [file, result]);
+        $(document).trigger('uploadsuccess', [file, result, this]);
       },
-      progress: (function(_this) {
-        return function(e) {
-          if (!e.lengthComputable) {
-            return;
-          }
-          return _this.trigger('uploadprogress', [file, e.loaded, e.total]);
-        };
-      })(this),
-      error: (function(_this) {
-        return function(xhr, status, err) {
-          return _this.trigger('uploaderror', [file, xhr, status]);
-        };
-      })(this),
-      success: (function(_this) {
-        return function(result) {
-          _this.trigger('uploadprogress', [file, file.size, file.size]);
-          _this.trigger('uploadsuccess', [file, result]);
-          return $(document).trigger('uploadsuccess', [file, result, _this]);
-        };
-      })(this),
-      complete: (function(_this) {
-        return function(xhr, status) {
-          return _this.trigger('uploadcomplete', [file, xhr.responseText]);
-        };
-      })(this)
-    });
+      complete: (xhr, status)=>{
+        this.trigger('uploadcomplete', [file, xhr.responseText]);
+      },
+      error:({xhr, status, code})=>{
+        if (code > 0) {
+          xhr.statusText = '服务器错误'
+        }
+        this.trigger('uploaderror', [file, xhr, status]);
+      }});
   };
 
   Uploader.prototype.cancel = function(file) {
