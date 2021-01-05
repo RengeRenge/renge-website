@@ -59,3 +59,26 @@ var createDate = function (time) {
     var ss = time.substring(17, 19);
     return new Date(yyyy, mth, dd, hh, mm, ss);
 }
+
+
+Number.prototype.toHHMMSS = function () {
+    let hour = Math.floor(this/3600)
+    let min = Math.floor((this - hour*3600)/60)
+    let s = Math.floor((this - hour*3600 - min*60))
+    let desc = ''
+    if (hour) {
+        desc += (pad(hour, 2) + ':')
+    }
+    desc += (pad(min, 2) + ':')
+    desc += pad(s, 2)
+    return desc
+}
+
+function pad(num, n) {
+    let len = num.toString().length;
+    while(len < n) {
+        num = "0" + num;
+        len++;
+    }
+    return num;
+}

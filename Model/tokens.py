@@ -9,7 +9,7 @@ def generate_token_ifneed(user_id, token_type):
     sql = "INSERT INTO tokens (user_id, type, token, timestamp) \
             VALUES (%(user_id)s, %(token_type)s, %(new_token)s, %(new_time)s) \
             ON DUPLICATE KEY UPDATE token=%(new_token)s, timestamp=%(new_time)s"
-    result, count, new_id = dao.execute_sql(sql, neednewid=True, args={
+    result, count, new_id = dao.execute_sql(sql, new_id=True, args={
         'user_id': user_id,
         'token_type': token_type,
         'new_token': new_token,

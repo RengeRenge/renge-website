@@ -21,6 +21,7 @@
 <link rel="stylesheet" type="text/css" href="/static/css/groupModal.css?ver={{css_ver}}" />
 <script type="text/javascript" src="/static/js/groupModal.js?ver={{js_ver}}"></script>
 
+<script type="text/javascript" src="/static/js/file.js?ver={{js_ver}}"></script>
 <!--simditor-->
 <link rel="stylesheet" type="text/css" href="/static/simditor/styles/simditor.css?ver=1"/>
 
@@ -127,10 +128,10 @@
         toolbarFloatOffset: 0,
         toolbarHidden: false,
         upload: {
-            url: '/file/upload/',
-            params: {"simditor": true},
+            url: '/file/pic/simditorUpload',
+            params: null,
             fileKey: 'file',
-            connectionCount: 1,
+            connectionCount: 3,
             leaveConfirm: 'Uploading is in progress, are you sure to leave this page?'
         }
     });

@@ -1,40 +1,80 @@
 import operator
 
 from DAO import rg_dao as dao
-from RGIgnoreConfig.RGFileGlobalConfigContext import url_with_name, path_with_name
+from RGIgnoreConfig.RGFileGlobalConfigContext import url_with_name, path_with_name, support_image
 from Model import album, user
 
 
-class pic:
-    def __init__(self, ID, albumId, url, exif_timestamp, timestamp):
-        self.ID = ID
-        self.albumId = albumId
-        self.url = url
-        self.exif_timestamp = exif_timestamp
-        self.timestamp = timestamp
-
-
-def new_pic(user_id, pic_file, album_id=None, title='', desc='', level=0, needFullUrl=True, original=False):
-    if album_id is None:
-        de_album = album.default_album(user_id)
+def new_pic(user_id, pic_file, conn=None, album_id=-1, title='', desc='', level=0, needFullUrl=False, original=False):
+    if album_id is None or int(album_id) == -1:
+        de_album = album.default_album(user_id, conn=conn)
         album_id = de_album.ID
 
     sql = "INSERT INTO pic (user_id, album_id, file_id, title, description, level) VALUES \
     (%(user_id)s, %(album_id)s, %(file_id)s, %(title)s, %(desc)s, %(level)s)"
-
-    result, count, new_id = dao.execute_sql(sql, neednewid=True, args={
+    args = {
         'user_id': user_id,
         'album_id': album_id,
-        'file_id': pic_file.ID,
+        'file_id': pic_file['id'],
         'title': title,
         'desc': desc,
         'level': level
-    })
+    }
 
-    if count is 0:
-        new_id = -1
-    url = url_with_name(pic_file.name, needhost=needFullUrl, original=original)
-    return pic(new_id, album_id, url, pic_file.exif_timestamp, pic_file.timestamp)
+    result, count, new_id, err = dao.do_execute_sql(sql=sql, conn=conn, new_id=True, args=args, commit=False)
+
+    if err is not None:
+        return None
+
+    url = url_with_name(pic_file['filename'], needhost=needFullUrl, original=original)
+    return {
+        'id': new_id,
+        'album_id': album_id,
+        'url': url,
+        'exif_timestamp': pic_file['exif_timestamp'],
+        'timestamp': pic_file['timestamp']
+    }
+
+
+def check_and_new_pic_with_hash(user_id, file_hash, filename, album_id=-1, needFullUrl=False):
+    conn = None
+    pic = None
+    from RGUtil.RGCodeUtil import RGResCode
+    code = RGResCode.server_error
+    try:
+        conn = dao.get()
+        from Model import files
+        file_info = files.check_file(file_hash=file_hash, conn=conn)
+        if file_info is None:
+            code = RGResCode.not_existed
+            raise Exception('file not existed')
+
+        if file_info['forever'] == 0:
+            if not files.file_set(id=file_info['id'], conn=conn, args={'forever': 1}):
+                code = RGResCode.update_fail
+                raise Exception('update failed')
+
+        if support_image(filename=file_info['filename']):
+            if album_id is None or int(album_id) == -1:
+                de_album = album.default_album(user_id, conn=conn)
+                album_id = de_album.ID
+            pic = new_pic(user_id, file_info, album_id=album_id, conn=conn, title=filename, needFullUrl=needFullUrl)
+            if pic is None:
+                code = RGResCode.insert_fail
+                raise Exception('insert failed')
+        else:
+            code = RGResCode.param_error
+            raise Exception('format error')
+        code = RGResCode.ok
+        conn.commit()
+    except Exception as e:
+        print(e)
+        conn.rollback()
+        conn.commit()
+    finally:
+        if conn:
+            conn.close()
+        return pic, code
 
 
 def page_list(other_id, album_id, page=1, size=10, relation=0):
@@ -49,7 +89,7 @@ def page_list(other_id, album_id, page=1, size=10, relation=0):
     if page < 1:
         page = 1
 
-    sql = "SELECT pic.id, pic.title, pic.description, pic.level, file.timestamp, file.exif_timestamp, file.file_name\
+    sql = "SELECT pic.id, pic.title, pic.description, pic.level, file.timestamp, file.exif_timestamp, file.filename\
             FROM pic\
             left join file on pic.file_id = file.id\
           where user_id=%(other_id)s and album_id=%(album_id)s {} order by pic.id desc".format('{}')
@@ -63,7 +103,7 @@ def page_list(other_id, album_id, page=1, size=10, relation=0):
     else:
         return None, 0, 0, 0, 0
 
-    result, count, new_id = dao.execute_sql(sql, needret=False, args={
+    result, count, new_id = dao.execute_sql(sql, ret=False, args={
         'other_id': other_id,
         'album_id': album_id
     })
@@ -72,9 +112,8 @@ def page_list(other_id, album_id, page=1, size=10, relation=0):
     page = min(page, page_count)
 
     sql += ' limit %d offset %d' % (size, (page - 1) * size)
-    print(sql)
 
-    result, this_page_count, new_id = dao.execute_sql(sql, needdic=True, args={
+    result, this_page_count, new_id = dao.execute_sql(sql, kv=True, args={
         'other_id': other_id,
         'album_id': album_id
     })
@@ -82,8 +121,8 @@ def page_list(other_id, album_id, page=1, size=10, relation=0):
     page = page if this_page_count > 0 else page_count
 
     for row in result:
-        row['url'] = url_with_name(row['file_name'], thumb=True)
-        row['qUrl'] = url_with_name(row['file_name'])
+        row['url'] = url_with_name(row['filename'], thumb=True)
+        row['qUrl'] = url_with_name(row['filename'])
 
     return result, page_count, page, size, count
 
@@ -109,7 +148,7 @@ def id_list(user_id, album_id, current_id=1, size=1, relation=0):
 
     sql_format = \
         '(' + 'SELECT pic.id, pic.title, pic.description, pic.level, \
-        file.id as "fileId", file.file_name as "url", \
+        file.id as "fileId", file.filename as "url", \
         file.exif_timestamp as `exif_timestamp`, file.exif_lalo as `exif_lalo` \
         FROM pic left join file on pic.file_id = file.id \
         where pic.user_id=%(user_id)s and pic.album_id=%(album_id)s {} and {}  \
@@ -119,9 +158,7 @@ def id_list(user_id, album_id, current_id=1, size=1, relation=0):
     sql += 'UNION'
     sql += sql_format.format(level_sql, 'pic.id >= %ld' % current_id, 'order by pic.id', size + 1)
 
-    print(sql)
-
-    result, count, new_id = dao.execute_sql(sql, needdic=True, args={
+    result, count, new_id = dao.execute_sql(sql, kv=True, args={
         'user_id': user_id,
         'album_id': album_id
     })
@@ -167,7 +204,7 @@ def update_info(p_id=None, user_id=None, title=None, desc=None, level=None):
         params += item
 
     sql = sql.format(params)
-    result, count, new_id = dao.execute_sql(sql, needret=False, args={
+    result, count, new_id = dao.execute_sql(sql, ret=False, args={
         'p_id': p_id,
         'user_id': user_id,
         'title': title,
@@ -193,7 +230,7 @@ def info(p_id=None, user_id=None):
         return False, None
 
     sql = "select * from pic where id=%(p_id)s and user_id=%(user_id)s"
-    result, count, new_id = dao.execute_sql(sql, needdic=True, args={
+    result, count, new_id = dao.execute_sql(sql, kv=True, args={
         'p_id': p_id,
         'user_id': user_id
     })

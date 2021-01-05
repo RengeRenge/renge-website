@@ -29,9 +29,11 @@ def album_obj_with_result(result):
     return _album
 
 
-def default_album(user_id):
+def default_album(user_id, conn=None):
     sql = "Select * from album where user_id=%(user_id)s order by id limit 1"
-    result, count, new_id = dao.execute_sql(sql, args={'user_id': user_id})
+    result, count, new_id, err = dao.do_execute_sql(
+        sql=sql, conn=conn, args={'user_id': user_id}, commit=False)
+
     if count is 0:
         return new_album(user_id=user_id, title='默认相册', desc='默认相册', level=2)
     else:
@@ -67,11 +69,7 @@ def new_album(user_id, title='', desc='', cover=None, level=0, timestamp=None, c
         'timestamp': timestamp
     }
 
-    if conn:
-        result, count, new_id, error = dao.do_execute_sql_with_connect(sql, neednewid=True, conn=conn, commit=commit,
-                                                                       args=args)
-    else:
-        result, count, new_id, error = dao.do_execute_sql(sql, neednewid=True, commit=commit, args=args)
+    result, count, new_id, error = dao.do_execute_sql(sql, new_id=True, conn=conn, commit=commit, args=args)
 
     if count > 0:
         return album(new_id, user_id, title, desc, cover, level, timestamp)
@@ -91,15 +89,15 @@ def album_list(user_id, other_id):
     lastPicUrl = 'lastPicUrl'
     coverUrl = 'coverUrl'
 
-    sql = "SELECT ab.*, covers.file_name as '{}', jp.file_name as '{}' \
+    sql = "SELECT ab.*, covers.filename as '{}', jp.filename as '{}' \
                     FROM \
                     album as ab \
-                    left join (select file.file_name, pic.album_id \
+                    left join (select file.filename, pic.album_id \
                         from pic, file \
                         where pic.file_id = file.id and pic.user_id = %(other_id)s \
                         order by file.timestamp desc limit 1) as jp \
                             on jp.album_id = ab.id \
-                    left join (select file.file_name, pic.id \
+                    left join (select file.filename, pic.id \
                           from pic, file \
                           where pic.file_id = file.id and pic.user_id = %(other_id)s) as covers \
                           on covers.id = ab.cover \
@@ -115,8 +113,7 @@ def album_list(user_id, other_id):
             sql = sql.format('and level<=1')
         else:
             return None, relation
-    print(sql)
-    result, count, new_id = dao.execute_sql(sql, needret=True, needdic=True, args={'other_id': other_id})
+    result, count, new_id = dao.execute_sql(sql, ret=True, kv=True, args={'other_id': other_id})
 
     if count > 0:
         for row in result:
@@ -143,7 +140,7 @@ def album_detail(album_id, relation):
     else:
         return False, None
 
-    result, count, new_id = dao.execute_sql(sql, needdic=True, needret=True, args={'album_id': album_id})
+    result, count, new_id = dao.execute_sql(sql, kv=True, ret=True, args={'album_id': album_id})
 
     if result is not None and count > 0:
         return True, result[0]
@@ -179,7 +176,7 @@ def update_info(album_id=None, user_id=None, title=None, desc=None, cover=None, 
         params += item
 
     sql = sql.format(params)
-    result, count, new_id = dao.execute_sql(sql, needret=False, args={
+    result, count, new_id = dao.execute_sql(sql, ret=False, args={
         'user_id': user_id,
         'album_id': album_id,
         'title': title,
@@ -199,10 +196,8 @@ def update_owner(album_id=None, user_id=None, conn=None, commit=True):
         'user_id': user_id,
         'album_id': album_id,
     }
-    if conn:
-        result, count, new_id, error = dao.do_execute_sql_with_connect(sql=sql, conn=conn, args=args, commit=commit)
-    else:
-        result, count, new_id, error = dao.do_execute_sql(sql=sql, args=args, commit=commit)
+
+    result, count, new_id, error = dao.do_execute_sql(sql=sql, args=args, conn=conn, commit=commit)
 
     if count:
         return True

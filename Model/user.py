@@ -130,12 +130,12 @@ def user_is_timeout(add_time, check_time=None):
 def user_with_db_result(result=None, need_pwd=False, need_username=False, need_icon=False, icon_name=None, need_bg=False,
                         bg_name=None, need_email=False):
     if need_icon:
-        icon = files.file_name(result[6], needUrl=True) if icon_name is None else url_with_name(icon_name, thumb=True)
+        icon = files.filename(result[6], needUrl=True) if icon_name is None else url_with_name(icon_name, thumb=True)
     else:
         icon = None
 
     if need_bg:
-        bg = files.file_name(result[7], needUrl=True) if bg_name is None else url_with_name(bg_name, original=True)
+        bg = files.filename(result[7], needUrl=True) if bg_name is None else url_with_name(bg_name, original=True)
     else:
         bg = None
 
@@ -170,7 +170,7 @@ def user_with_db_result(result=None, need_pwd=False, need_username=False, need_i
 
 def login_sign_check(username):
     sql = "SELECT * FROM user where username=%(username)s"
-    result, count, new_id = dao.execute_sql(sql, needret=True, args={'username': username})
+    result, count, new_id = dao.execute_sql(sql, ret=True, args={'username': username})
 
     _user = None
     if count > 0:
@@ -222,7 +222,7 @@ def new_user_and_save_verify_code(username, email, verify_code, verify_type=RGVe
         sql = "SELECT * FROM user where username=%(username)s"
         result, count, new_id, err = dao.do_execute_sql_with_connect(
             sql=sql,
-            needret=True,
+            ret=True,
             commit=False,
             conn=conn,
             args={'username': username}
@@ -300,7 +300,7 @@ def verify_user(username, email, pwd, verify_code, verify_type, title='Title', d
         sql = "SELECT * FROM user where username=%(username)s"
         result, count, new_id, err = dao.do_execute_sql_with_connect(
             sql=sql,
-            needret=True,
+            ret=True,
             commit=False,
             conn=conn,
             args={'username': username}
@@ -389,7 +389,7 @@ def verify_user(username, email, pwd, verify_code, verify_type, title='Title', d
             args=args,
             conn=conn,
             commit=False,
-            needret=True,
+            ret=True,
         )
 
         if err:
@@ -522,17 +522,17 @@ def get_user(user_id, need_icon=False, need_bg=True, need_email=False, need_user
 
     bgindex = -1
     if need_icon and need_bg:
-        sql = "SELECT user.*, bgFIle.file_name as 'bg', icFile.file_name as 'icon' \
+        sql = "SELECT user.*, bgFIle.filename as 'bg', icFile.filename as 'icon' \
               FROM user \
               left join file icFile on icFile.id = user.icon \
               left join file bgFIle on bgFIle.id = user.bg_image \
               where user.id=%(user_id)s"
         bgindex = -2
     elif need_icon:
-        sql = "SELECT user.*, file.file_name as 'icon' FROM user \
+        sql = "SELECT user.*, file.filename as 'icon' FROM user \
         left join file on file.id = user.icon where user.id=%(user_id)s"
     elif need_bg:
-        sql = "SELECT user.*, file.file_name as 'bg' FROM user \
+        sql = "SELECT user.*, file.filename as 'bg' FROM user \
         left join file on file.id = user.bg_image where user.id=%(user_id)s"
     else:
         sql = "SELECT * FROM user where id=%(user_id)s"
@@ -550,7 +550,7 @@ def get_user(user_id, need_icon=False, need_bg=True, need_email=False, need_user
 
 
 def get_user_icon_name(user_id):
-    sql = """SELECT file.file_name FROM user
+    sql = """SELECT file.filename FROM user
         left join file on file.id = user.icon where user.id=%(user_id)s"""
 
     result, count, new_id = dao.execute_sql(sql, args={'user_id': user_id})
@@ -596,7 +596,7 @@ def change_relation(my_id, other_id, relation=0):
         ON DUPLICATE KEY UPDATE relation=%(relation)s, addtime=%(timestamp)s"""
 
     result, count, new_id = dao.execute_sql(sql=sql,
-                                            needret=False,
+                                            ret=False,
                                             args={'my_id': my_id,
                                                   'other_id': other_id,
                                                   'relation': relation,
@@ -620,7 +620,7 @@ def get_relation(my_id, other_id):
     if my_id == other_id:
         return -1
     sql = "SELECT * FROM user_relation where m_user_id =%(my_id)s AND o_user_id=%(other_id)s"
-    result, count, new_id = dao.execute_sql(sql, needdic=True, args={'my_id': my_id, 'other_id': other_id})
+    result, count, new_id = dao.execute_sql(sql, kv=True, args={'my_id': my_id, 'other_id': other_id})
     if count > 0:
         return result[0]['relation']
     else:
@@ -635,7 +635,7 @@ def isHome(my_id, other_id):
 
 def update_name(user_id, name):
     sql = "UPDATE user SET nickname = %(name)s where id=%(user_id)s"
-    result, count, new_id = dao.execute_sql(sql, needret=False, args={'name': name, 'id': user_id})
+    result, count, new_id = dao.execute_sql(sql, ret=False, args={'name': name, 'id': user_id})
     if count > 0:
         return True
     else:
@@ -644,7 +644,7 @@ def update_name(user_id, name):
 
 def update_title(user_id, title):
     sql = "UPDATE user SET title = %(title)s where id=%(user_id)s"
-    result, count, new_id = dao.execute_sql(sql, needret=False, args={'title': title, 'user_id': user_id})
+    result, count, new_id = dao.execute_sql(sql, ret=False, args={'title': title, 'user_id': user_id})
     if count > 0:
         return True
     else:
@@ -653,7 +653,7 @@ def update_title(user_id, title):
 
 def update_desc(user_id, desc):
     sql = "UPDATE user SET description = %(desc)s where id=%(user_id)s"
-    result, count, new_id = dao.execute_sql(sql, needret=False, args={'desc': desc, 'user_id': user_id})
+    result, count, new_id = dao.execute_sql(sql, ret=False, args={'desc': desc, 'user_id': user_id})
     if count > 0:
         return True
     else:
@@ -702,7 +702,7 @@ def update_user_info(user_id=None, username=None,
         'user_id': user_id,
         'username': username
     }
-    result, count, new_id, error = dao.execute_sql_err(sql, needret=False, args=args)
+    result, count, new_id, error = dao.do_execute_sql(sql, ret=False, args=args)
     return True if error is None else False
 
 
@@ -718,8 +718,8 @@ def friend_page_list(user_id, page=1, size=10):
     order by %s DESC" % ('%s', '%s', '%s', '%s')
 
     sql = sql_temp % ('count(*)', '', '%(user_id)s', 're.addtime')
-    print(sql)
-    result, count, new_id = dao.execute_sql(sql, needret=True, args={
+
+    result, count, new_id = dao.execute_sql(sql, ret=True, args={
         'user_id': user_id,
     })
 
@@ -729,7 +729,7 @@ def friend_page_list(user_id, page=1, size=10):
     page = min(page, page_count)
 
     sql = sql_temp % (
-        "re.addtime as 'follow_time', file.file_name as 'icon', \
+        "re.addtime as 'follow_time', file.filename as 'icon', \
         u.nickname, u.tag, u.id as 'ID', u.title as 'title', u.description as 'desc', u.addtime as 'addTime'",
         ' left join file on file.id = u.icon',
         '%(user_id)s',
@@ -738,9 +738,8 @@ def friend_page_list(user_id, page=1, size=10):
 
     offset = (size, (page - 1) * size)
     sql += (' limit %d offset %d' % offset)
-    print(sql)
 
-    result, this_page_count, new_id = dao.execute_sql(sql, needdic=True, args={
+    result, this_page_count, new_id = dao.execute_sql(sql, kv=True, args={
         'user_id': user_id,
     })
 
@@ -756,4 +755,4 @@ def friend_page_list(user_id, page=1, size=10):
 
 def icon_url(user_id):
     get_user(user_id)
-    files.file_name()
+    files.filename()

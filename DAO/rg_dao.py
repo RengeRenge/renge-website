@@ -5,7 +5,7 @@ from flask import json
 
 from RGUtil.RGLogUtil import LogUtil
 
-with open('RGIgnoreConfig/rg_database.json', 'r') as f:
+with open('./RGIgnoreConfig/rg_database.json', 'r') as f:
     config = json.loads(f.read())
 
 executeMutex = threading.RLock()
@@ -46,54 +46,67 @@ def get_last_insert(cursor):
     return cursor.fetchone()
 
 
-def execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0, args=None):
+def execute_sql(sql, ret=True, kv=False, new_id=False, dp=0, args=None):
     """
     Execute a specific SQL and update data version if need.
     :param sql: sql string
-    :param needret: need return execution result
+    :param ret: need return execution result
+    :param kv: 需要将结果转换成字典键值对
+    :param new_id: 需要查询最新的ID
     :param dp: depth of exception stack
+    :param args: sql 参数
     :return: execution result table
     """
-    res, count, new_id, err = do_execute_sql(sql, needret=needret, needdic=needdic, neednewid=neednewid, dp=dp,
-                                             args=args, commit=True)
+    res, count, new_id, err = do_execute_sql(sql, ret=ret, kv=kv, new_id=new_id, dp=dp,
+                                             args=args)
     return res, count, new_id
 
 
-def execute_sql_err(sql, needret=True, needdic=False, neednewid=False, dp=0, args=None):
+def do_execute_sql(sql, ret=True, kv=False, new_id=False, dp=0, args=None, conn=None, commit=False):
     """
-    Execute a specific SQL and update data version if need.
-    :param sql: sql string
-    :param needret: need return execution result
-    :param dp: depth of exception stack
-    :return: execution result table
+    执行SQL语句
+
+    :param sql: sql语句
+    :param ret: 需要执行返回的结果
+    :param kv: 需要将结果转换成字典键值对
+    :param new_id: 需要查询最新的ID
+    :param dp:
+    :param args: sql 参数
+    :param conn: 为空时会自己创建一个连接
+    :param commit: 只有当连接为外部创建（conn 非空）时才生效
+    :return: result, count, new_id, error
     """
-    return do_execute_sql(sql, needret=needret, needdic=needdic, neednewid=neednewid, dp=dp, args=args, commit=True)
-
-
-def do_execute_sql(sql, needret=True, needdic=False, neednewid=False, dp=0, args=None, commit=True):
-    conn = None
+    auto_conn = True if conn is None else False
     try:
-        conn = get()
+        if auto_conn:
+            conn = get()
         return \
-            do_execute_sql_with_connect(sql=sql, needret=needret, needdic=needdic, neednewid=neednewid, dp=dp,
+            do_execute_sql_with_connect(sql=sql, ret=ret, kv=kv, new_id=new_id, dp=dp,
                                         args=args,
-                                        conn=conn, commit=commit)
+                                        conn=conn,
+                                        commit=True if auto_conn else commit)
     except Exception as e:
-        conn.rollback()
-        conn.commit()
+        if auto_conn:
+            conn.rollback()
+            conn.commit()
         return None, 0, -1, e
     finally:
-        if conn:
+        if conn and auto_conn:
             conn.close()
 
 
-def do_execute_sql_with_connect(sql, needret=True, needdic=False, neednewid=False, dp=0, args=None, conn=None,
+def do_execute_sql_with_connect(sql, ret=True, kv=False, new_id=False, dp=0, args=None, conn=None,
                                 commit=True):
     """
         Execute a specific SQL.
         :param sql: sql string
-        :param needret: need return execution result
+        :param ret: need return execution result
+        :param kv: need dict result
+        :param new_id: need new Id
+        :param args: sql params
+        :param conn: sql connection
         :param dp: depth of exception stack
+        :param commit: auto commit
         :return: execution result table
         """
     executeMutex.acquire()
@@ -101,29 +114,29 @@ def do_execute_sql_with_connect(sql, needret=True, needdic=False, neednewid=Fals
     try:
         cursor = conn.cursor()
         count = cursor.execute(query=sql, args=args)
-        new_id = -1
-        if needret is True:
-            if needdic is True and cursor.description is not None:
+        find_new_id = -1
+        if ret is True:
+            if kv is True and cursor.description is not None:
                 values = cursor.fetchall()
                 names = [cd[0] for cd in cursor.description]
 
-                if count > 0 and neednewid:
+                if count > 0 and new_id:
                     cursor.execute('SELECT LAST_INSERT_ID();')
                     result = cursor.fetchone()
-                    new_id = result[0]
+                    find_new_id = result[0]
 
                 if commit:
                     conn.commit()
-                return [dict(zip(names, v)) for v in values], count, new_id, None
+                return [dict(zip(names, v)) for v in values], count, find_new_id, None
             else:
-                if count > 0 and neednewid:
+                if count > 0 and new_id:
                     cursor.execute('SELECT LAST_INSERT_ID();')
                     result = cursor.fetchone()
-                    new_id = result[0]
+                    find_new_id = result[0]
 
                 if commit:
                     conn.commit()
-                return cursor.fetchall(), count, new_id, None
+                return cursor.fetchall(), count, find_new_id, None
         else:
             if commit:
                 conn.commit()
@@ -146,11 +159,13 @@ def do_execute_sql_with_connect(sql, needret=True, needdic=False, neednewid=Fals
         executeMutex.release()
 
 
-def execute_sqls(sqls, needret=True, needdic=False, neednewid=False, dp=0):
+def execute_sqls(sqls, ret=True, kv=False, new_id=False, dp=0):
     """
     Execute a specific SQLs.
     :param sqls: tuple or string Array like-> [(sql1, args1), (sql2, args2)] or [sql1, (sql2, args2)]
-    :param needret: need return execution result
+    :param ret: need return execution result
+    :param kv: need dict result
+    :param new_id: need new Id
     :param dp: depth of exception stack
     :return: execution result table
     """
@@ -171,29 +186,29 @@ def execute_sqls(sqls, needret=True, needdic=False, neednewid=False, dp=0):
 
             count = cursor.execute(sql, args)
             result = None
-            new_id = -1
-            if needret is True:
-                if needdic is True and cursor.description is not None:
+            find_new_id = -1
+            if ret is True:
+                if kv is True and cursor.description is not None:
 
                     values = cursor.fetchall()
                     names = [cd[0] for cd in cursor.description]
 
-                    if count > 0 and neednewid:
+                    if count > 0 and new_id:
                         cursor.execute('SELECT LAST_INSERT_ID();')
                         result = cursor.fetchone()
-                        new_id = result[0]
+                        find_new_id = result[0]
 
                     result = [dict(zip(names, v)) for v in values]
                 else:
-                    if count > 0 and neednewid:
+                    if count > 0 and new_id:
                         cursor.execute('SELECT LAST_INSERT_ID();')
                         result = cursor.fetchone()
-                        new_id = result[0]
+                        find_new_id = result[0]
 
             item = {
                 'result': result,
                 'count': count,
-                'newId': new_id
+                'newId': find_new_id
             }
             results.append(item)
         conn.commit()

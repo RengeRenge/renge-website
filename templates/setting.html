@@ -21,6 +21,7 @@
 <script type="text/javascript" src="/static/color/spectrum.min.js?ver={{js_ver}}"></script>
 
 <script type="text/javascript" src="/static/js/login.js?ver={{js_ver}}"></script>
+<script type="text/javascript" src="/static/js/file.js?ver={{js_ver}}"></script>
 <script>
     bg_layout_init()
     keyboardInit()
@@ -614,13 +615,54 @@
     function save() {
         let tags = getTagString($('#tag')[0])
 
-        var formData = new FormData();
+        let formData = new FormData();
+        let waitCount = 1;
 
-        if (iconFile)
+        let do_setInfo = ()=> {
+            if (waitCount) return;
+            $.ajax({
+                url: '/user/setInfo',
+                processData: false,
+                contentType: false,
+                type: "POST",
+                data: formData,
+                success: function (res) {
+                    dismiss_loading()
+                    if (res.code === 1000) {
+                        iconFile = null
+                        bgFile = null
+                        alert('修改成功')
+                        // window.location.href = '/'
+                    } else {
+                        alert('修改失败 请重试')
+                    }
+                },
+                error: function (e) {
+                    alert(e.errorText)
+                    dismiss_loading()
+                }
+            })
+        };
+
+        if (iconFile) {
+            waitCount++;
             formData.append('icon', iconFile, iconFile.filename)
+            file_md5(iconFile, (md5)=>{
+                formData.append('icon_md5', md5)
+                waitCount--;
+                do_setInfo()
+            })
+        }
 
-        if (bgFile)
+        if (bgFile) {
+            waitCount++;
             formData.append('background', bgFile, bgFile.filename)
+            file_md5(bgFile, (md5)=>{
+                formData.append('background_md5', md5)
+                waitCount--;
+                do_setInfo()
+            })
+        }
 
         let json = this.style
         if (rgba && rgba.length)
@@ -644,29 +686,8 @@
             formData.append('nickname', nick)
 
         show_loading()
-
-        $.ajax({
-            url: '/user/setInfo',
-            processData: false,
-            contentType: false,
-            type: "POST",
-            data: formData,
-            success: function (res) {
-                dismiss_loading()
-                if (res.code == 1000) {
-                    iconFile = null
-                    bgFile = null
-                    alert('修改成功')
-                    // window.location.href = '/'
-                } else {
-                    alert('修改失败 请重试')
-                }
-            },
-            error: function (e) {
-                alert(e.errorText)
-                dismiss_loading()
-            }
-        })
+        waitCount--
+        do_setInfo()
     }
 </script>
 </body>

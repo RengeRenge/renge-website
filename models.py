@@ -7,11 +7,11 @@
 from datetime import datetime
 
 from flask import Flask, json
-from sqlalchemy import create_engine, Column, BigInteger, String, Text, Integer, TIMESTAMP
+from sqlalchemy import create_engine, Column, INTEGER, BigInteger, String, Text, Integer, TIMESTAMP, BOOLEAN, ForeignKey
 from sqlalchemy.databases import mysql
 from sqlalchemy.ext.declarative import declarative_base
 
-with open('rg_database.json', 'r') as f:
+with open('RGIgnoreConfig/rg_database.json', 'r') as f:
     config = json.loads(f.read())
 
 DB_URI = "mysql+pymysql://{user}:{passwd}@{host}:{port}/{database}?charset={charset}".format(**config)
@@ -227,13 +227,32 @@ class file(Base):
     __table_args__ = {'mysql_collate': 'utf8mb4_unicode_ci'}
 
     id = Column(BigInteger, primary_key=True)
-    file_name = Column(Text, nullable=False)
-    type = Column(String(20), comment='image/jpg')
+    filename = Column(Text, nullable=False)
+    mime = Column(String(100), comment='image/jpg')
 
     exif_timestamp = Column(BigInteger, nullable=True)
     timestamp = Column(BigInteger, nullable=False)
     exif_info = Column(Text, nullable=True, comment='EXIF original json info')
     exif_lalo = Column(String(50), nullable=True, comment='EXIF gps position')
+    hash = Column(String(33), index=True, comment='MD5')
+    size = Column(String(16), comment='byte')
+    extension = Column(String(10), comment='.gif/.png')
+    forever = Column(BOOLEAN, comment='provide permalink')
+
+
+class user_file(Base):
+    __tablename__ = "user_file"
+    __table_args__ = {'mysql_collate': 'utf8mb4_unicode_ci'}
+
+    relation_id = Column(BigInteger, primary_key=True, autoincrement=True)
+    user_id = Column(BigInteger, index=True, nullable=False)
+    file_id = Column(BigInteger, index=True, nullable=False)
+    type = Column(INTEGER, comment='0 file, 1 directory')
+    directory_id = Column(BigInteger, nullable=False, default=-1,
+                          comment='The ID of the directory this file belongs to. -1 is root')
+    personal_name = Column(String(100), nullable=True)
+    add_timestamp = Column(BigInteger, nullable=True)
+    update_timestamp = Column(BigInteger, nullable=True)
 
 
 if __name__ == "__main__":

@@ -23,3 +23,5 @@ class RGResCode(IntEnum):
     verify_code_incorrect = 1012
     password_incorrect = 1013
     user_has_existed = 1014
+    full_size = 1015
+    param_error = 1016

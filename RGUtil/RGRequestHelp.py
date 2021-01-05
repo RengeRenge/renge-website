@@ -1,7 +1,10 @@
 from RGUtil.RGCodeUtil import RGResCode
+import magic
 
 
 def get_data_with_request(_request):
+    if _request.is_json:
+        return _request.json
     return _request.values
     # if _request.method == "POST":
     #     return _request.form
@@ -60,3 +63,25 @@ def is_int_number(s):
         pass
 
     return False
+
+
+def request_file_size(request):
+    re_files = request.files
+    size = 0
+    for file_key in re_files:
+        file = re_files[file_key]
+        file.seek(0)
+        size += len(file.read())
+        file.seek(0)
+    return size
+
+
+def request_file_mine(request):
+    re_files = request.files
+    size = 0
+    for file_key in re_files:
+        file = re_files[file_key]
+        file.seek(0)
+        size += len(file.read())
+        file.seek(0)
+    return size
