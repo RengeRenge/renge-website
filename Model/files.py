@@ -554,7 +554,7 @@ def user_file_move(user_id, move_id, to_id):
 
 def user_file_size(user_id, id, conn=None):
     sql = "SELECT \
-                sum(size) as size\
+                sum(ifnull(size, 0)) as size\
                 from user_file \
                 left join file on user_file.file_id = file.id\
                 where ((find_in_set(%(id)s, user_file.directory_path) or (user_file.id=%(id)s)) \
@@ -572,7 +572,7 @@ def user_file_size(user_id, id, conn=None):
 
 
 def use_capacity(user_id, conn=None):
-    sql = 'SELECT sum(size) as sum from user_file left join file on user_file.file_id = file.id \
+    sql = 'SELECT sum(ifnull(size, 0)) as sum from user_file left join file on user_file.file_id = file.id \
     where user_file.type = 0 and user_id = %(user_id)s'
     result, count, new_id, error = dao.do_execute_sql(sql=sql, args={'user_id': user_id}, conn=conn, kv=True)
     capacity = RGFileMaxCapacity
