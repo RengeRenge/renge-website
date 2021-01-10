@@ -401,9 +401,12 @@ def user_file_get(id):
 def handle_download_file(filename):
     remote_url = RemoteFileHost + '/' + FilePreFix + "download/" + filename
     req = requests.get(remote_url, stream=True)
-    content_type = req.headers['content-type']
-    print(remote_url)
-    return Response(stream_with_context(req.iter_content(chunk_size=1024)), content_type=content_type)
+    # content_type = req.headers['content-type']
+    # size = req.headers['content-length']
+    response = Response(stream_with_context(req.iter_content(chunk_size=1024)))
+    for key in req.headers:
+        response.headers[key] = req.headers[key]
+    return response
 
 
 # 博客日志导入产生的图片存放的文件
