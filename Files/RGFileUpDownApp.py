@@ -4,7 +4,6 @@ import os
 import requests
 from flask import Blueprint, request, jsonify, stream_with_context, Response, json, abort, render_template
 from concurrent.futures import ThreadPoolExecutor
-import magic
 
 import RGUIController
 from Model import files, pic
