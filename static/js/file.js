@@ -96,12 +96,14 @@ function file_search({name, success,error}) {
 function file_new_directory({parent_directory_id, name, success, error}) {
     $.ajax({
         type: 'POST',
+        contentType: "application/json",
         url: "/file/upload",
-        data: {
+        data: JSON.stringify({
             name,
             'type': 1,
+            'in_file': 1,
             'directory_id': parent_directory_id,
-        },
+        }),
         success:success,
         error:error
     })
