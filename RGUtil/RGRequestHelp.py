@@ -1,6 +1,4 @@
 from RGUtil.RGCodeUtil import RGResCode
-import magic
-
 
 def get_data_with_request(_request):
     if _request.is_json:
