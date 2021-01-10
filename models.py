@@ -236,7 +236,6 @@ class file(Base):
     exif_lalo = Column(String(50), nullable=True, comment='EXIF gps position')
     hash = Column(String(33), index=True, comment='MD5')
     size = Column(String(16), comment='byte')
-    extension = Column(String(10), comment='.gif/.png')
     forever = Column(BOOLEAN, comment='provide permalink')
 
 
@@ -244,7 +243,7 @@ class user_file(Base):
     __tablename__ = "user_file"
     __table_args__ = {'mysql_collate': 'utf8mb4_unicode_ci'}
 
-    relation_id = Column(BigInteger, primary_key=True, autoincrement=True)
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
     user_id = Column(BigInteger, index=True, nullable=False)
     file_id = Column(BigInteger, index=True, nullable=False)
     type = Column(INTEGER, comment='0 file, 1 directory')
