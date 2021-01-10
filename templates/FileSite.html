@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<link href="/static/css/rg_base.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_base">
+<link rel="stylesheet" type="text/css" href="/static/css/FileSite.css?ver={{css_ver+1}}" />
+
+<head>
+    <meta charset="UTF-8">
+    <title>文件中转站</title>
+</head>
+
+<style>
+    .file-list {
+        display: flex;
+        flex-wrap: wrap;
+        align-content: flex-start;
+        color:#666;
+        padding-left: 0;
+        padding-top: 20px;
+        list-style-type: none;
+        list-style-image:none;
+        min-height: 600px;
+    }
+    .file-list li {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 10px 13px;
+        width: 115px;
+        height: 85px;
+        text-align: center;
+        /*overflow: visible;*/
+        /*overflow: hidden;*/
+        border: 1px dashed transparent;
+        border-radius:5px
+    }
+    .icon-wrap {
+        /*-webkit-user-select: text;*/
+        /*-moz-user-select: text;*/
+        /*-ms-user-select: text;*/
+        /*overflow: hidden;*/
+    }
+    .icon-wrap .icon {
+        font-size: 36px;
+        height: 1em;
+        vertical-align: middle;
+        fill: currentColor;
+        max-width: 115px;
+        max-height: 85px;
+    }
+    .file-list li .file-name {
+        display: flex;
+        max-width: 100%;
+        font-size: 12px;
+        padding-top: 8px;
+    }
+    .edit_filename {
+        border:1px solid #6a808d;
+        padding-left: 10px;
+        padding-right: 10px;
+        overflow : hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+    }
+    .two_line {
+        max-lines: 2;
+        overflow : hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        word-break: break-all;
+        text-shadow: 0 1px 1px #88888850, 1px 0px 2px #cccccc50;
+    }
+    .file_input_wrap {
+        display: inline-block;
+        overflow: hidden;
+        position: relative;
+        margin: 0 0;
+        cursor: pointer;
+    }
+    .hide_file_input {
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        opacity: 0;
+        cursor: pointer;
+        font-size: 0;
+        width: 100%;
+    }
+    .file-tool {
+        margin-top: 20px;
+    }
+    .file-tool i {
+        cursor: pointer;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+    }
+    .sort-menu {
+        margin-top: 10px;
+    }
+
+    .file-searchWrap {
+        padding: 2px 0;
+        background-color: rgba(255,255,255, 0.8);
+        position: relative;
+        margin-left: 10px;
+    }
+    .file-searchWrap input {
+        text-indent: 26px;
+        width: 100%;
+        height: 100%;
+        background-color: transparent;
+        border: none;
+        outline: none;
+        font-size: 15px;
+    }
+    .file-searchWrap i {
+        position: absolute;
+        color: #000000;
+        top: 4px;
+        left: 6px;
+    }
+    .first-tool-wrap {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+    }
+    .file-pathWrap {
+        display: flex;
+        flex-wrap: nowrap;
+        height: 25px;
+        max-width: 80%;
+        overflow: hidden;
+        align-items: center;
+    }
+    .file-pathWrap .path-one {
+        margin-right:10px;
+        cursor: pointer;
+        max-width: 120px;
+        color: white;
+        white-space: nowrap;
+    }
+    .file-pathWrap i {
+        color: black;
+        margin-right: 5px;
+        cursor: pointer
+    }
+    .path-one .path-bg {
+        background-color: rgba(0, 0, 0, 0.65);
+        border-radius: 5px;
+        padding: 0 6px;
+        line-height: 22px;
+    }
+    .path-one .path-ellipsis {
+        max-lines: 1;
+        overflow : hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        white-space: nowrap;
+    }
+
+    #file-select-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255,255,255,0.5);
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .file-select-view {
+        max-width: 400px;
+        height: 400px;
+        background-color: white;
+        border-radius: 5px;
+        display: flex;
+        flex-direction: column;
+    }
+    .file-select-cell {
+        display: flex;
+        align-items: center;
+        padding-top: 10px;
+        padding-left: 10px;
+        padding-bottom: 10px;
+        cursor: pointer;
+    }
+    .file-select-cell:hover {
+        background-color: #5496f522;
+    }
+    .file-select-button {
+        font-style: initial;
+        border-radius: 5px;
+        margin-right: 10px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        padding-left: 8px;
+        padding-right: 8px;
+        cursor: pointer;
+    }
+    .file-upload-bar-wrapper {
+        width: 23px;
+        height: 10px;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin-left: auto;
+        margin-right: auto;
+    }
+</style>
+
+<body>
+
+{% raw %}
+<div class="wrapperBg wrapperPadding" id="FileApp" @click="hideMenu">
+    <div class="first-tool-wrap" style="justify-content: space-between;">
+        <div v-if="searchString.length <= 0" class="file-pathWrap">
+            <i class="fa fa-desktop" aria-hidden="true" @click="loadDirectoryList(-1)"></i>
+            <div class="path-one" @click="loadDirectoryList(d.id)" v-for="d in path" :key="d.id">
+                <a class="path-bg path-ellipsis">{{d.name}}</a>
+            </div>
+        </div>
+        <div v-else class="file-pathWrap">
+            <i class="fa fa-desktop" aria-hidden="true" @click="search"></i>
+            <div class="path-one" @click="search">
+                <a v-if="searchType == 0" class="path-bg path-ellipsis">{{path.length > 0 ? path[path.length - 1].name : ''}}</a>
+                <a v-else style="color: #f25d8e"  @click="search">全部文件</a>
+            </div>
+            <a style="color: #0F769F">搜索: {{searchString}}</a>
+        </div>
+
+        <div class="file-searchWrap">
+            <input type="text"
+                   v-bind:placeholder=" searchType == 0 ? ((path.length > 0) ? '在' + path[path.length - 1].name + '中搜索' : '') : '在全部文件中搜索'"
+                   v-bind:value="searchString"
+                   @change="search"
+            >
+            <i class="fa fa-search" aria-hidden="true" style="cursor: pointer;" @click="showSearchMenu"></i>
+
+            <div class="sort-menu menuWrap"
+                 v-bind:style="{ display: searchMenuShow ? 'block' : 'none'}"
+            >
+                <div class="menu" @click="searchTypeSet(0)">在{{path.length > 0 ? path[path.length - 1].name : ''}}中搜索</div>
+                <div class="menu" @click="searchTypeSet(1)">在全部文件中搜索</div>
+            </div>
+        </div>
+
+    </div>
+    <div class="file-tool">
+        <i v-bind:class="!sortDesc ? 'fa fa-sort-desc' : 'fa fa-sort-asc' " style="position: absolute; color: gray"></i>
+        <i v-bind:class="sortDesc ? 'fa fa-sort-desc' : 'fa fa-sort-asc' " aria-hidden="true" @click="showSortMenu" id="sortButton" style="position: absolute;"> {{sortTypes[sortSelect].title}}</i>
+        <i class="fa fa-sort-desc" style="color: transparent"> </i>
+
+        <div class="sort-menu menuWrap"
+             v-bind:style="{ display: sortMenuShow ? 'block' : 'none'}"
+        >
+            <div v-for="(sortType, index) in sortTypes" class="menu" @click="sort(index)">{{sortType.title}}</div>
+        </div>
+    </div>
+    <ul id="desktop" class="file-list" onclick="onPhoneClick(event)">
+        <li v-for="(file, index) in fileList"
+            v-bind:key="file.id"
+            v-bind:title="file.name"
+            v-bind:id="file.id"
+            v-bind:index="index"
+        >
+            <div class="icon-wrap userSelectNone" style="position: relative">
+
+                <img class="icon userSelectNone"
+                     ondblclick="onDoubleClick(event)"
+                     onclick="onPhoneClick(event)"
+                     v-bind:src="file.thumbUrl"
+                />
+                <div class="userSelectNone file-upload-bar-wrapper"
+                     v-if="file.uploadFile && file.uploading"
+                >
+                    <bar-progress
+                            :progress="file.progress"
+                            :height="6"
+                            :fill-color="'#585554'"
+                            :bg-color="'rgba(0, 0, 0, 0.2)'"
+                            :text="file.uploadDesc"
+                            :text-center="file.textCenter"
+                            :text-style="{fontSize: '8px', marginTop: '2px', color:'#6a808d', fontWeight: 'bold', whiteSpace:'nowrap'}"
+                    >
+                    </bar-progress>
+                </div>
+                <!--<circle-progress-->
+                        <!--class="icon userSelectNone"-->
+                        <!--v-else-->
+                        <!--:plan="file.progress"-->
+                        <!--:text="file.progress.toFixed(1)+'%'"-->
+                        <!--:width="36"-->
+                        <!--:height="36"-->
+                        <!--:fontsize="'12px'"-->
+                        <!--:circle="{background: 'rgba(0,0,0,1)', boxShadow: '0 0 2px #ccc'}"-->
+                <!--/>-->
+            </div>
+            <span class="file-name">
+                <div v-if="index == renameIndex"
+                      class="edit_filename"
+                      id="edit_filename"
+                      contenteditable="true"
+                      v-on:blur="doRename"
+                      style="white-space: normal"
+                >
+                    {{file.name}}
+                </div>
+                <span class="two_line" v-else>{{file.name}}</span>
+            </span>
+        </li>
+    </ul>
+    <div id="menu" class="menuWrap"
+         v-bind:style="{ top: menuY+'px', left: menuX + 'px', display: menuShow? 'block' : 'none'}"
+    >
+        <a v-if="menuFile && !menuFile.uploadFile && menuFile.type == 0"
+           class="menu"
+           v-bind:href="'/file/user/get/' + menuFile.id"
+           v-bind:download="menuFile.downloadName">
+            下载
+        </a>
+        <div v-if="menuFile && !menuFile.uploadFile && menuFile.type == 1"
+             class="menu"
+             @click="loadDirectoryList(menuFile.id)">
+            打开
+        </div>
+        <div v-if="menuFile && menuFile.uploadFile && menuFile.uploading"
+             class="menu"
+             @click="onUserStopUpload(menuFile)">
+            停止上传
+        </div>
+        <div v-if="menuFile && menuFile.uploadFile && !menuFile.uploading"
+             class="menu"
+             @click="onReUpload(menuFile)">
+            重新上传
+        </div>
+        <div v-if="menuFile && menuFile.uploadFile && !menuFile.uploading"
+             class="menu"
+             @click="onUserStopUpload(menuFile)">
+            取消上传
+        </div>
+
+        <div v-if="menuFile && !menuFile.uploadFile" class="line"></div>
+        <div v-if="menuFile && !menuFile.uploadFile" class="menu" @click="rename()">重命名</div>
+        <div v-if="menuFile && !menuFile.uploadFile" class="menu" @click="remove()">删除</div>
+        <div v-if="menuFile && !menuFile.uploadFile" class="line"></div>
+        <div v-if="menuFile && !menuFile.uploadFile" class="menu" @click="moveto()">移动到...</div>
+        <!--<div v-if="menuFile && !menuFile.uploadFile" class="menu">分享</div>-->
+
+        <p v-if="!menuFile" class="menu file_input_wrap" type="file">上传文件<input type="file" class="hide_file_input" @change="menu_upload($event)"></p>
+        <div v-if="!menuFile" class="menu" @click="do_new_directory()">新建文件夹</div>
+
+        <div v-if="!menuFile || !menuFile.uploadFile" class="line"></div>
+        <div v-if="!menuFile || !menuFile.uploadFile" class="menu" @click="detail()">属性</div>
+    </div>
+
+    <div id="file-select-bg" v-if="directoryViewShow">
+        <div class="menuWrap file-select-view">
+
+            <div style="padding: 10px">
+                <a>移动到</a>
+                <i class="fa fa-window-close" aria-hidden="true" style="float: right; cursor: pointer;" @click='moveToViewClose'></i>
+            </div>
+            <div class="line"></div>
+
+            <div style="overflow:auto; flex: 1;">
+                <template>
+                    <v-tree :data="directoryViewData" :async="tree_directoryGetData" @select="tree_directorySelect" ref="tree"></v-tree>
+                </template>
+            </div>
+            <div style="display: flex; justify-content: space-between;padding-left: 10px;padding-right: 10px;">
+                <a class="file-select-button rgButton rgButton-anti"
+                   @click="tree_new_directory"
+                   v-bind:class="treeSelectedDirectoryId === undefined ? 'rgButton-anti-disable' : ''"
+                >
+                    新建文件夹
+                </a>
+                <i>
+                    <a class="file-select-button rgButton"
+                       style="display: inline-flex"
+                       @click="doMove"
+                       v-bind:class="treeSelectedDirectoryId === undefined ? 'rgButton-disable' : ''"
+                    >
+                        确定
+                    </a>
+                    <a class="file-select-button rgButton rgButton-anti" style="display: inline-flex" @click='moveToViewClose'>取消</a>
+                </i>
+            </div>
+            <!--<div v-for="file in directoryViewData" class="file-select-cell">-->
+                <!--<i class="fa fa-plus-square-o" aria-hidden="true" style="margin-right: 5px"></i>-->
+                <!--<img style="width: 20px; height: 20px"-->
+                     <!--src="/static/image/fileType/directory.svg"-->
+                <!--/><a>{{file.name}}</a>-->
+            <!--</div>-->
+        </div>
+    </div>
+
+    <template>
+        <v-modal title="新建文件夹" :visible="inputModalShow" @ok="tree_onInputModalSure" @cancel="inputModalShow = false">
+            <v-input placeholder="请输入文件夹名称" v-model="inputText"></v-input>
+        </v-modal>
+    </template>
+</div>
+{% endraw %}
+
+</body>
+</html>
+
+<script type="text/javascript">
+    fileApp = new Vue({
+        el: '#FileApp',
+        data: {
+            fileList: [],
+            originFileList: [],
+            path: [],
+            directory_id:-1,
+            menuShow: false,
+            sortMenuShow: false,
+            searchMenuShow: false,
+            inputModalShow: false,
+            inputText: '',
+            inputModalSure: undefined,
+            menuX: 0,
+            menuY: 0,
+            menuIndex: -1,
+            menuFile: undefined,
+            renameIndex: -1,
+            sortTypes: [
+                {'title': '日期排序'},
+                {'title': '名称排序'},
+                {'title': '大小排序'},
+                {'title': '类型排序'},
+            ],
+            sortSelect: 0,
+            sortDesc: true,
+            searchString: '',
+            searchType: 0,
+
+            directoryViewShow: false,
+            directoryViewData: [],
+            treeSelectedDirectoryId: undefined
+        },
+        methods:{
+            hideMenu(e){
+                let tid = e.target.id;
+                fileApp.sortMenuShow = false;
+                fileApp.searchMenuShow = false;
+                if (tid === 'edit_filename') {
+                    return
+                }
+                //用户触发click事件就可以关闭了，因为绑定在window上，按事件冒泡处理，不会影响菜单的功能
+                fileApp.menuShow = false;
+
+                let className = e.target.className
+                if (className.indexOf('menu') < 0) {
+                    fileApp.renameIndex = -1;
+                }
+            },
+            showSortMenu(e){
+                e.cancelBubble = true;
+                fileApp.sortMenuShow = true;
+                fileApp.searchMenuShow = false;
+                fileApp.menuShow = false;
+            },
+            hideSortMenu(){
+                fileApp.sortMenuShow = false;
+            },
+            rename(){
+                fileApp.renameIndex = fileApp.menuIndex;
+                this.$nextTick(function(){
+                    document.getElementById('edit_filename').focus()
+                })
+            },
+            doRename(e){
+                let target = e.target;
+                let new_name = target.innerText.replace(/\s+/g,"").trim()
+                target.innerText = new_name;
+                let file = fileApp.fileList[fileApp.renameIndex];
+                if (file.name !== new_name) {
+                    file_rename({
+                        file_id: file.id,
+                        name:new_name,
+                        success:(data)=>{
+                            if (data.code === 1000) {
+                                file.name = new_name
+                                iconFormat(file)
+                            }
+                            fileApp.renameIndex = -1
+                        },
+                        error:()=>{
+                            fileApp.renameIndex = -1
+                        }})
+                }
+            },
+            remove(){
+                let file = fileApp.menuFile;
+                if (confirm('确定要删除「{0}」吗?'.format(file.name))) {
+                    file_del({
+                        file_id:file.id,
+                        success:(data)=>{
+                            if (data.code !== 1000) {
+                                alert('删除失败')
+                                return
+                            }
+                            this.removeFileFromFileList(file)
+                        },
+                        error:()=>{
+                            alert('删除失败')
+                        }
+                    })
+                }
+            },
+            do_new_directory(name='新建文件夹') {
+                file_new_directory({
+                    parent_directory_id:fileApp.directory_id,
+                    name,
+                    success:(data) => {
+                        if (data.code !== 1000) {
+                            return
+                        }
+                        this.addIntoFileList(data.data)
+                    }})
+            },
+            menu_upload(event) {
+                let target = event.target;
+                let files = target.files;
+                let file = files[0];
+
+                let tempModel = new_file_upload_mode({
+                    name: file.name,
+                    fileData: file,
+                    type:0,
+                });
+                iconFormat(tempModel)
+                this.originFileList.splice(0, 0, tempModel);
+                if (this.originFileList !== this.fileList) {
+                    this.fileList.splice(0, 0, tempModel);
+                }
+                target.value = null
+                this.do_upload(tempModel)
+            },
+            do_upload(file) {
+                file_upload({
+                    in_file: 1,
+                    parent_directory_id: fileApp.directory_id,
+                    file:file.fileData,
+                    request:(request)=>{
+                        file.request = request
+                    },
+                    progress:(progress, desc)=>{
+                        file.progress = progress*100
+                        file.uploadDesc = desc
+                        file.textCenter = progress >= 1
+                    },
+                    success:(data)=>{
+                        file.top = false
+                        file.uploadFile = false
+                        file.request = undefined
+                        rg_merge(file, data.file)
+                        iconFormat(file)
+                    },
+                    error:({code})=>{
+                        if (file.userStop) {
+                            return
+                        }
+                        file.uploading = false
+                        file.request = undefined
+                        iconFormat(file, true)
+                        if (code === 1015) {
+                            alert('空间不足')
+                        }
+                    }})
+            },
+            onUserStopUpload(file) {
+                file.userStop = true
+                if (file.request) {
+                    file.request.abort()
+                }
+                this.removeFileFromFileList(file)
+            },
+            onReUpload(file) {
+                iconFormat(file)
+                file.uploading = true
+                file.uploadDesc = ''
+                file.textCenter = false
+                file.progress = 0
+                this.do_upload(file)
+            },
+            loadDirectoryList(id) {
+                fileApp.searchString = ''
+                file_list({
+                    id,
+                    success: function (result) {
+                        if (result.code === 1000) {
+                            fileApp.directory_id = id
+                            let fileList = result.data.files
+                            fileApp.handleFileList(fileList)
+                            fileApp.originFileList = fileList
+                            fileApp.fileList = [...fileList]
+                            result.data.path.splice(0, 0, {
+                                "id": -1,
+                                "name": "桌面",
+                                "type": 1
+                            })
+                            fileApp.path = result.data.path
+                            fileApp.sort(fileApp.sortSelect, false)
+                        } else {
+                            alert('加载失败')
+                        }
+                    },
+                    error: function (e) {
+                        alert(e.errorText)
+                    },
+                })
+            },
+            handleFileList(fileList) {
+                for (let i = 0; i < fileList.length; i++) {
+                    iconFormat(fileList[i])
+                }
+            },
+            sort(index, changeDesc=true) {
+                let list = fileApp.fileList;
+                let desc = fileApp.sortDesc;
+
+                if (changeDesc) {
+                    if (fileApp.sortSelect === index) {
+                        desc = !desc
+                    } else {
+                        desc = true
+                    }
+                }
+                list = this.doSort(index, list, desc)
+                fileApp.sortSelect = index;
+                fileApp.fileList = list;
+                fileApp.sortDesc = desc;
+            },
+            doSort(type, list, desc) {
+                switch (type) {
+                    case 0:
+                        list.sort((a, b)=> {
+                            if (b.add_timestamp === a.add_timestamp) {
+                                return ('' + b.name).localeCompare(a.name);
+                            }
+                            return b.add_timestamp - a.add_timestamp
+                        });
+                        break;
+                    case 1:
+                        list.sort((a, b)=> {
+                            return ('' + b.name).localeCompare(a.name);
+                        });
+                        break;
+                    case 2:
+                        list.sort((a, b)=> {
+                            if (b.size === a.size) {
+                                return ('' + b.name).localeCompare(a.name);
+                            }
+                            return b.size - a.size
+                        });
+                        break;
+                    case 3:
+                        list.sort((a, b)=> {
+                            if (b.mime === a.mime) {
+                                return ('' + b.name).localeCompare(a.name);
+                            }
+                            return ('' + b.mime).localeCompare(a.mime);
+                        });
+                        break;
+                }
+                if (!desc) {
+                    list.reverse()
+                }
+                list.sort((a, b)=>{
+                    if (a.top && b.top) {
+                        return b.add_timestamp - a.add_timestamp
+                    }
+                    if (!a.top && b.top) {
+                        return 1
+                    }
+                    if (a.top && !b.top) {
+                        return -1
+                    }
+                    return 0
+                })
+                return list
+            },
+            showSearchMenu(e){
+                e.cancelBubble = true;
+                fileApp.searchMenuShow = true
+                fileApp.sortMenuShow = false;
+                fileApp.menuShow = false;
+            },
+            hideSearchMenu() {
+                fileApp.searchMenuShow = false;
+            },
+            searchTypeSet(type) {
+                fileApp.searchType = type
+                this.doSearch(fileApp.searchString)
+            },
+            search(e) {
+                let input = e.target.value
+                if (!input) {
+                    fileApp.fileList = fileApp.originFileList
+                    fileApp.searchString = ''
+                    return;
+                }
+                this.doSearch(input)
+            },
+            doSearch(input) {
+                const searchType = fileApp.searchType
+                if (searchType === 0) {
+                    let list = fileApp.originFileList
+                    list = list.filter(((value, index, array) => {
+                        return value.name.indexOf(input) >= 0
+                    }))
+                    fileApp.fileList = list
+                } else {
+                    file_search({
+                        name: input,
+                        success:(data)=>{
+                            if (data.code !== 1000) {
+                                fileApp.fileList = []
+                                return;
+                            }
+                            let files = data.data.files
+                            fileApp.handleFileList(files)
+                            fileApp.fileList = files
+                        },
+                        error:()=>{
+                            fileApp.fileList = []
+                        }
+                    })
+                }
+                fileApp.sort(fileApp.sortSelect, false)
+                fileApp.searchString = input
+            },
+            moveto(){
+                $('html,body').addClass('overHidden');
+                file_list({
+                    id: -1,
+                    directory: true,
+                    success:(data) => {
+                        let files = data.data.files;
+                        for (let file of files) {
+                            file.title = file.name;
+                            file.children = [];
+                        }
+                        files = files.filter(((value, index, array) => {
+                            return value.id !== fileApp.menuFile.id;
+                        }));
+                        this.doSort(0, files, true);
+                        this.treeSelectedDirectoryId = -1;
+                        fileApp.directoryViewData = [
+                            {title: '桌面', children:files, id:-1, expanded:true, selected: true}
+                        ];
+                        this.selectNode = fileApp.directoryViewData[0];
+                    }
+                });
+                fileApp.directoryViewShow = true;
+            },
+            moveToViewClose() {
+                fileApp.directoryViewShow = false;
+                fileApp.directoryViewData = [];
+                $('html,body').removeClass('overHidden');
+            },
+            doMove() {
+                if (this.treeSelectedDirectoryId === undefined || this.waiting) {
+                    return;
+                }
+                let file = fileApp.menuFile
+                if (this.treeSelectedDirectoryId === file.directory_id) {
+                    this.moveToViewClose()
+                    return;
+                }
+                this.waiting = true
+                file_move({
+                    file_id: file.id,
+                    to_id: this.treeSelectedDirectoryId,
+                    success:()=>{
+                        this.waiting = false
+                        this.removeFileFromFileList(file)
+                        this.moveToViewClose()
+                    },
+                    error:()=>{
+                        this.waiting = false
+                    }
+                })
+            },
+            tree_directoryGetData(node) {
+                return new Promise(resolve => {
+                    file_list({
+                        id: node.id,
+                        directory: true,
+                        success:(data) => {
+                            let files = data.data.files;
+                            for (let file of files) {
+                                file.title = file.name;
+                                file.children = [];
+                            }
+                            files = files.filter(((value, index, array) => {
+                                return value.id !== fileApp.menuFile.id;
+                            }));
+                            this.doSort(0, files, true);
+                            resolve(files)
+                        }
+                    });
+                })
+            },
+            tree_onInputModalSure() {
+                if (!this.inputText) return this.$message.warning('输入不能为空');
+                this.inputModalSure && this.inputModalSure(this.inputText);
+                this.inputModalSure = undefined;
+                this.inputText = '';
+                this.inputModalShow = false;
+            },
+            tree_directorySelect(selectedNodes) {
+                this.selectNode = selectedNodes[0]
+                if (selectedNodes.length) {
+                    this.treeSelectedDirectoryId = selectedNodes[0].id;
+                } else {
+                    this.treeSelectedDirectoryId = undefined;
+                }
+            },
+            tree_new_directory() {
+                if (this.treeSelectedDirectoryId === undefined || this.selectNode === undefined) {
+                    return;
+                }
+                this.inputModalShow = true;
+                this.inputText = '';
+                this.inputModalSure = (text)=>{
+                    file_new_directory({
+                        parent_directory_id: this.treeSelectedDirectoryId,
+                        name: text,
+                        success:(data)=>{
+                            if (data.code !== 1000) {
+                                return
+                            }
+                            let file = data.data
+                            file.title = file.name
+                            file.selected = true
+                            file.children = []
+                            let fileMap = fileApp.directoryViewData
+                            let indexes = this.selectNode.clue.split('-');
+                            indexes.splice(0, 1)
+                            for (const index of indexes) {
+                                fileMap = fileMap[parseInt(index)]
+                                fileMap.selected = false
+                                fileMap = fileMap.children
+                            }
+                            fileMap.splice(0, 0, file)
+                            if (fileApp.directory_id === this.treeSelectedDirectoryId) {
+                                this.addIntoFileList(file)
+                            }
+                            this.selectNode = fileMap[0]
+                            this.treeSelectedDirectoryId = this.selectNode.id
+                        },
+                        error:()=>{
+
+                        }
+                    });
+                };
+            },
+            removeFileFromFileList(file) {
+                let index = this.originFileList.indexOf(file)
+                if (index >= 0) {
+                    this.originFileList.splice(index, 1);
+                }
+                if (this.originFileList !== this.fileList) {
+                    index = this.fileList.indexOf(file)
+                    if (index >= 0) {
+                        this.fileList.splice(index, 1);
+                    }
+                }
+            },
+            addIntoFileList(file) {
+                this.handleFileList([file])
+                this.originFileList.splice(0, 0, file);
+                if (this.originFileList !== this.fileList) {
+                    this.fileList.splice(0, 0, file);
+                }
+            },
+            detail() {
+                let file = fileApp.menuFile
+                if (file && file.type === 0) {
+                    let time1 = (new Date(file.add_timestamp)).Format("yyyy-MM-dd hh:mm:ss")
+                    let time2 = (new Date(file.update_timestamp)).Format("yyyy-MM-dd hh:mm:ss")
+                    let str = `文件名: {0}\n文件大小: {1}\nMIME: {2}\n扩展名: {3}\n创建时间: {4}\n修改时间: {5}`
+                        .format(file.name, sizeDisplay(file.size), file.mime, file.extension, time1, time2)
+                    if (file.exif_timestamp) {
+                        str += '\nEXIF时间: {0}'.format((new Date(file.exif_timestamp)).Format("yyyy-MM-dd hh:mm:ss"))
+                    }
+                    setTimeout(()=>alert(str), 300)
+                } else {
+                    if (file) {
+                        let time1 = (new Date(file.add_timestamp)).Format("yyyy-MM-dd hh:mm:ss")
+                        let time2 = (new Date(file.update_timestamp)).Format("yyyy-MM-dd hh:mm:ss")
+                        file_size({
+                            file_id: file.id,
+                            success:(data)=>{
+                                let str = `文件夹名: {0}\n文件大小: {1}\n创建时间: {2}\n修改时间: {3}`.format(file.name, sizeDisplay(data.data.size), time1, time2)
+                                setTimeout(()=>alert(str), 300)
+                            }
+                        })
+                    } else {
+                        file_size({
+                            file_id: null,
+                            success:(data)=>{
+                                let str = `文件夹名: 桌面\n文件大小: {1}\n总容量: 5GB`.format('', sizeDisplay(data.data.size))
+                                setTimeout(()=>alert(str), 300)
+                            }
+                        })
+                    }
+                }
+            }
+        }
+    });
+
+    window.oncontextmenu=function(e){
+        if (fileApp.directoryViewShow) {
+            return;
+        }
+        fileApp.moveToViewClose();
+
+        let target = e.target;
+        if (target.className === 'menu' || target.className === 'hide_file_input') {
+            e.preventDefault();
+            return;
+        }
+
+        fileApp.hideSortMenu();
+        fileApp.hideSearchMenu();
+
+        if (e.target.id === 'sortButton') {
+            e.preventDefault();
+            return;
+        }
+        return showFileMenu(e)
+    };
+
+    function showFileMenu(e) {
+        let div = document.getElementById("desktop")
+        if (!div) {
+            return true;
+        }
+        let p = clickPos(e);
+        if (positionIn(div, p)) {
+            //取消默认的浏览器自带右键 很重要！！
+            e.preventDefault()
+            let target = e.target
+            let enableClass = ['icon-wrap', 'icon', 'file-name', 'two_line', 'file-upload-bar-wrapper', 'bar-progress', 'bar-content', 'bar-text']
+
+            fileApp.menuIndex = -1
+            fileApp.menuFile = undefined
+
+            if (enableClass.filter(className=>[...target.classList].indexOf(className)>=0).length > 0) {
+                while (target.nodeName !== 'LI') {
+                    target = target.parentNode
+                }
+                if (target.attributes.index) {
+                    let menuIndex = target.attributes.index.value
+                    let file = fileApp.fileList[menuIndex]
+                    fileApp.menuIndex = menuIndex
+                    fileApp.menuFile = file
+                }
+            }
+            fileApp.menuShow = true
+        } else {
+            fileApp.menuShow = false
+            return true
+        }
+        //根据事件对象中鼠标点击的位置，进行定位
+        if (p.x + 170 > document.documentElement.clientWidth) {
+            p.x -= 170
+        }
+        fileApp.menuX = p.x
+        fileApp.menuY = p.y
+        return false
+    }
+
+    fileApp.loadDirectoryList(-1);
+
+    function positionIn(div, p) {
+        let x=p.x;
+        let y=p.y;
+        let divx1 = div.offsetLeft;
+        let divy1 = div.offsetTop;
+        let divx2 = div.offsetLeft + div.offsetWidth;
+        let divy2 = div.offsetTop + div.offsetHeight;
+        return !(x < divx1 || x > divx2 || y < divy1 || y > divy2);
+
+    }
+
+    function clickPos(e) {
+        let scrollX = document.documentElement.scrollLeft || document.body.scrollLeft;
+        let scrollY = document.documentElement.scrollTop || document.body.scrollTop;
+        let x = e.pageX || e.clientX + scrollX;
+        let y = e.pageY || e.clientY + scrollY;
+        return {x, y}
+    }
+
+    function onPhoneClick(e) {
+        if (isPhoneView()) {
+            e.cancelBubble = true
+            if (fileApp.menuShow) {
+                fileApp.menuShow = false
+                return
+            }
+            showFileMenu(e)
+        }
+    }
+
+    function onDoubleClick(e) {
+        if (isPhoneView()) {
+            return;
+        }
+        let target = e.target;
+        while (target.nodeName !== 'LI') {
+            target = target.parentNode
+        }
+        if (target.attributes.index) {
+            let index = target.attributes.index.value;
+            let file = fileApp.fileList[index];
+            if (file.type === 1) {
+                fileApp.loadDirectoryList(file.id)
+            }
+        }
+    }
+
+    function iconFormat(file, error=false) {
+        const mime = mimeType(file.name)
+
+        // file.mime = mime
+        file.extension = getExt(file.name)
+
+        let icon = 'error';
+        if (!error) {
+            if (file.type === 0) {
+                icon = mimeIcon(mime)
+            } else {
+                icon = 'directory';
+            }
+        }
+        file.downloadName = file.name
+        if (!file.uploadFile && imageDisplaySupport(file.mime) && imageDisplaySupport(mime)) {
+            file.thumbUrl = '/file/user/get/{0}?img_quality={1}'.format(file.id, 'low')
+        } else {
+            file.thumbUrl = '/static/image/fileType/{0}.svg'.format(icon)
+        }
+    }
+
+</script>
