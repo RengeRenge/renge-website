@@ -117,8 +117,10 @@ def album_list(user_id, other_id):
 
     if count > 0:
         for row in result:
-            row[lastPicUrl] = url_with_name(row[lastPicUrl], thumb=True)
-            row[coverUrl] = url_with_name(row[coverUrl], thumb=True)
+            if row[lastPicUrl] is not None:
+                row[lastPicUrl] = url_with_name(row[lastPicUrl], thumb=True)
+            if row[coverUrl] is not None:
+                row[coverUrl] = url_with_name(row[coverUrl], thumb=True)
         return result, relation
     else:
         return None, relation
