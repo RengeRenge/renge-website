@@ -20,11 +20,19 @@
 <script type="text/javascript" src="/static/js/bgLayout.js?ver={{js_ver}}"></script>
 
 <script type="text/javascript" src="/static/js/timeUtil.js?ver={{js_ver}}"></script>
+<script type="text/javascript" src="/static/js/MimeType.js?ver={{js_ver}}"></script>
 <script type="text/javascript" src="/static/js/albumPage.js?ver={{js_ver}}"></script>
 
 <script type="text/javascript" src="/static/js/groupModal.js?ver={{js_ver}}"></script>
 
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
 <script type="text/javascript" src="/static/js/file.js?ver={{js_ver}}"></script>
+<link rel="stylesheet" href="/static/vue-beauty/vue-beauty.css">
+<script type="text/javascript" src="/static/vue-beauty/vue-beauty.min.js"></script>
+
+<link rel="stylesheet" href="/static/circle-progress/circle-progress.css">
+<script type="text/javascript" src="/static/circle-progress/circle-progress.js"></script>
+
 <script>
     bg_layout_init()
     keyboardInit()
@@ -107,6 +115,9 @@
                     break;
                 case 1:
                     url = '/photo/{{user.ID}}'
+                    break;
+                case 100:
+                    if (that.home) {url = '/file/user/Desktop'}
                     break;
                 case 2:
                     url = '/blog/view/{{user.ID}}'

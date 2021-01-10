@@ -1,0 +1,164 @@
+.annulus-box {
+    width: 200px;
+    height: 200px;
+/ / box-shadow: 0 0 5 px #ccc;
+    position: relative;
+}
+
+.annulus-box .plan {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: white;
+    position: absolute;
+    left: calc(50% - 75px);
+    top: calc(50% - 75px);
+    z-index: 5;
+    box-shadow: 0 0 5px #ccc inset;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 2rem;
+    color: #424242;
+}
+.annulus-box .annulus-bck {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background:radial-gradient(rgb(0, 255, 213) 50%,rgb(0, 110, 255) 100%);
+    position: absolute;
+    left: 0;
+    top: 0;
+    box-shadow: 0 0 10px #ccc;
+    display: flex;
+    justify-content: space-between;
+    overflow: hidden;
+}
+.annulus-box .annulus-left,
+.annulus-box .annulus-right {
+    transform: scale(1.01);
+    transform-origin: 50% 50%;
+    width: 50%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.annulus-box .annulus-left .semicircle {
+    transition: linear 0.5s;
+    width: 200px;
+    height: 100%;
+    border-radius: 50%;
+}
+
+.annulus-box .annulus-right .semicircle {
+    transition: linear 0.5s;
+    width: 200px;
+    height: 100%;
+    border-radius: 50%;
+}
+
+.annulus-box .annulus-left .semicircle {
+    transition-delay: 0.5s;
+    left: 0;
+    clip-path: polygon(0% 0%, 50% 0%, 50% 100%, 0% 100%);
+    background: white;
+}
+
+.annulus-box .annulus-right .semicircle {
+    position: relative;
+    left: -100%;
+    clip-path: polygon(50% 0%, 100% 0%, 100% 100%, 50% 100%);
+    background: white;
+}
+
+/*
+
+ */
+
+.circle-progress {
+    padding:40vh;
+}
+
+.circle-progress svg circle {
+    transition: stroke-dashoffset 0.15s;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+}
+
+.circle-progress .txt{
+    font-size: 14px;
+    text-align: center;
+}
+
+/*
+
+ */
+
+.percentloop {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.percentloop .circle-common {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50%;
+    height: 100%;
+    background-color: red;
+    overflow: hidden;
+}
+
+.percentloop .circle-common div {
+    width: 100%;
+    height: 100%;
+    background-color: #8a8a8a;
+    transform-origin: right center;
+    /*transition: all .5s linear;*/
+}
+
+.percentloop .circle-right {
+    left: 50%;
+}
+
+.percentloop .circle-right div {
+    transform-origin: left center;
+}
+
+.percentloop .number {
+    position: absolute;
+    top: 9%;
+    bottom: 9%;
+    left: 9%;
+    right: 9%;
+    background-color: #fff;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #000;
+}
+
+.bar-progress {
+    width: 100%;
+    height:12px;
+    border-radius: 6px;
+    border: #5e5e5e solid 1px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.bar-progress .bar-content {
+    background-color: #585554;
+    /*clip-path: inset(0 round 6px);*/
+    /*border: #5e5e5e solid 1px;*/
+    transition: linear 0.5s;
+    width: 0%;
+    height: 100%;
+}
