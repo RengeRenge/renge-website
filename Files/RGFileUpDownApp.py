@@ -50,7 +50,7 @@ def new_file(user_id):
     album_id = request_value(request, 'album_id', None)
     file_type = request_value(request, 'type')
 
-    directory_id = request_value(request, 'directory_id', '-1')
+    directory_id = request_value(request, 'directory_id', -1)
     filename = request_value(request, 'name', '')
 
     # directory
