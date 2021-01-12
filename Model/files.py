@@ -305,9 +305,14 @@ def user_file_list_with_name(user_id, name):
             conn.close()
 
 
-def user_filename(user_id, id=None):
+def user_file(user_id, id=None):
     sql = "SELECT \
-    file.filename as filename \
+    file.filename as filename, \
+    user_file.personal_name as name, \
+    file.mime as mime, \
+    file.size as size, \
+    file.hash as hash, \
+    user_file.id as id \
     from user_file \
     left join file on user_file.file_id = file.id \
     WHERE user_file.id=%(id)s and user_file.user_id = %(user_id)s and user_file.type = 0 limit 1"
@@ -320,8 +325,7 @@ def user_filename(user_id, id=None):
         }
     )
     if count > 0:
-        file = result[0]
-        return file['filename'] if 'filename' in file else None
+        return result[0]
     return None
 
 

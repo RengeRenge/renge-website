@@ -278,6 +278,7 @@
                 <img class="icon userSelectNone"
                      ondblclick="onDoubleClick(event)"
                      onclick="onPhoneClick(event)"
+                     @error="onThumbError(file)"
                      v-bind:src="file.thumbUrl"
                 />
                 <div class="userSelectNone file-upload-bar-wrapper"
@@ -322,6 +323,11 @@
     <div id="menu" class="menuWrap"
          v-bind:style="{ top: menuY+'px', left: menuX + 'px', display: menuShow? 'block' : 'none'}"
     >
+        <div v-if="menuFile && (menuFile.imageEnable || menuFile.videoEnable || menuFile.audioEnable)"
+           class="menu"
+           @click="preview(menuFile)">
+            预览
+        </div>
         <a v-if="menuFile && !menuFile.uploadFile && menuFile.type == 0"
            class="menu"
            v-bind:href="'/file/user/get/' + menuFile.id"
@@ -474,17 +480,34 @@
             hideSortMenu(){
                 fileApp.sortMenuShow = false;
             },
+            preview(menuFile) {
+                if (menuFile.videoEnable || menuFile.imageEnable || menuFile.audioEnable) {
+                    window.open('/file/nyapass/av' + menuFile.id)
+                } else {
+                    alert('不支持的文件类型')
+                }
+            },
             rename(){
                 fileApp.renameIndex = fileApp.menuIndex;
                 this.$nextTick(function(){
                     document.getElementById('edit_filename').focus()
                 })
             },
+            onThumbError(file) {
+                file.thumbUrl = file.thumbFailedUrl
+            },
             doRename(e){
                 let target = e.target;
-                let new_name = target.innerText.replace(/\s+/g,"").trim()
-                target.innerText = new_name;
                 let file = fileApp.fileList[fileApp.renameIndex];
+
+                let new_name = target.innerText.replace(/\s+/g,"").trim()
+                if (file.type === 0) {
+                    let ext = getExt(new_name, false)
+                    if (!ext) {
+                        new_name = new_name + '.' + getExt(file.name, false)
+                    }
+                }
+                target.innerText = new_name;
                 if (file.name !== new_name) {
                     file_rename({
                         file_id: file.id,
@@ -1030,6 +1053,8 @@
             let file = fileApp.fileList[index];
             if (file.type === 1) {
                 fileApp.loadDirectoryList(file.id)
+            } else {
+                fileApp.preview(file)
             }
         }
     }
@@ -1048,11 +1073,21 @@
                 icon = 'directory';
             }
         }
+
+        file.audioEnable = !file.uploadFile && audioDisplaySupport(mime)
+        file.videoEnable = !file.uploadFile && videoDisplaySupport(mime)
+        file.imageEnable = !file.uploadFile && imageDisplaySupport(mime)
+
+        file.thumbFailedUrl = '/static/image/fileType/{0}.svg'.format(icon)
+
         file.downloadName = file.name
-        if (!file.uploadFile && imageDisplaySupport(file.mime) && imageDisplaySupport(mime)) {
+        if (file.imageEnable) {
             file.thumbUrl = '/file/user/get/{0}?img_quality={1}'.format(file.id, 'low')
+        } else if (file.audioEnable) {
+            file.thumbUrl = '/file/user/get/{0}?audioCover=1'.format(file.id)
         } else {
-            file.thumbUrl = '/static/image/fileType/{0}.svg'.format(icon)
+            file.thumbUrl = file.thumbFailedUrl
+            file.imageEnable = false
         }
     }
 

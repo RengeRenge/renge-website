@@ -980,6 +980,7 @@ const mimeMap = {
     'zirz':'application/vnd.zul',
     'zmm':'application/vnd.handheld-entertainment+xml',
     123:'application/vnd.lotus-1-2-3',
+    'm4a': 'audio/x-m4a'
 };
 
 const image_support = [
@@ -1040,10 +1041,13 @@ function mimeType(filename) {
     return mimeMap[extension]
 }
 
-function getExt(filename, sep='.') {
+function getExt(filename, lower=true, sep='.') {
     let idx = filename.lastIndexOf(sep);
     let ext = (idx < 1) ? "" : filename.substr(idx + 1);
-    return ext.toLowerCase()
+    if (lower) {
+        ext = ext.toLowerCase()
+    }
+    return ext
 }
 
 function mimeIcon(mime) {
@@ -1059,7 +1063,21 @@ function mimeIcon(mime) {
 
 function imageDisplaySupport(mime) {
     if (mime && mime.indexOf('image') >= 0) {
-        return image_support.indexOf(getExt(mime, '/')) >= 0
+        return image_support.indexOf(getExt(mime, true, '/')) >= 0
+    }
+    return false
+}
+
+function videoDisplaySupport(mime) {
+    if (mime && mime.indexOf('video/') >= 0) {
+        return true
+    }
+    return false
+}
+
+function audioDisplaySupport(mime) {
+    if (mime && mime.indexOf('audio/') >= 0) {
+        return true
     }
     return false
 }

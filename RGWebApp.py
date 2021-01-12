@@ -88,4 +88,4 @@ def login_page():
 if __name__ == '__main__':
     # app.debug = True
     app.config['JSON_AS_ASCII'] = False
-    app.run(host=RGHost, port=RGPort, debug=RGDebug)
+    app.run(host=RGHost, port=RGPort, debug=RGDebug, threaded=True, processes=1)

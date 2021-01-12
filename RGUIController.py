@@ -37,7 +37,7 @@ def auth_handler(page=False, forceLogin=True, more_info=False, need_email=False)
 
                 t = get_data_with_request(request)
                 logs = json.dumps(t, sort_keys=True, indent=4, separators=(', ', ': '))
-                print('auth_handler -->\n{}\nuserid:{}\n{}\n'.format(request.path, user_id, logs))
+                # print('auth_handler -->\n{}\nuserid:{}\n{}\n'.format(request.path, user_id, logs))
 
                 if forceLogin:
                     if auth:
@@ -74,7 +74,7 @@ def check_bind():
 
                 t = get_data_with_request(request)
                 logs = json.dumps(t, sort_keys=True, indent=4, separators=(', ', ': '))
-                print('check_bind -->\n{}\n{}\n'.format(request.path, logs))
+                # print('check_bind -->\n{}\n{}\n'.format(request.path, logs))
 
                 if user_need_to_bind_page():
                     return redirect(url_for('bind_page'))

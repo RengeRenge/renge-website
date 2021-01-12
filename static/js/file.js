@@ -276,6 +276,18 @@ function upload_desc(offsetTime, oLoaded, loaded, total) {
     return leftTime.toHHMMSS() + speed
 }
 
+function userFileInfo(file_id, success, error) {
+    $.ajax({
+        type: 'GET',
+        url: "/file/user/fileInfo",
+        data: {
+            'id': file_id,
+        },
+        success:success,
+        error:error
+    })
+}
+
 function file_rename({file_id, name, success, error}) {
     $.ajax({
         type: 'POST',

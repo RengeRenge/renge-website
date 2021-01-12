@@ -1,14 +1,15 @@
 # encoding: utf-8
-import os
 
-import requests
-from flask import Blueprint, request, jsonify, stream_with_context, Response, json, abort, render_template
 from concurrent.futures import ThreadPoolExecutor
 
+import requests
+from flask import Blueprint, request, jsonify, stream_with_context, Response, json, redirect, \
+    url_for
+
 import RGUIController
+from DAO import rg_dao as dao
 from Model import files, pic
 from RGIgnoreConfig.RGFileGlobalConfigContext import FilePreFix, RemoteFileHost, name_fix, support_image
-from DAO import rg_dao as dao
 from RGUtil.RGCodeUtil import RGResCode
 from RGUtil.RGRequestHelp import form_res, request_value, is_int_number, request_file_size
 
@@ -24,6 +25,17 @@ page
 @RGUIController.auth_handler()
 def desktop_page(user_id):
     return RGUIController.ui_render_template('FileSite.html')
+
+
+@RestRouter.route('/nyapass/av<user_file_id>', methods=['GET'])
+def video_view_page(user_file_id):
+    if is_int_number(user_file_id):
+        auth, user_id = RGUIController.do_auth()
+        if not auth:
+            return redirect(url_for('login_page'))
+        return RGUIController.ui_render_template('VideoPreview.html')
+    else:
+        return jsonify(form_res(RGResCode.lack_param))
 
 
 """
@@ -125,7 +137,8 @@ def __fast_up(user_id, file):
     filename = file.get('name', '')
 
     if in_album:
-        photo, code = pic.check_and_new_pic_with_hash(user_id=user_id, file_hash=md5, filename=filename, album_id=album_id, needFullUrl=False)
+        photo, code = pic.check_and_new_pic_with_hash(user_id=user_id, file_hash=md5, filename=filename,
+                                                      album_id=album_id, full_url=False)
         file = {"file": photo, "code": code}
     elif in_file:
         file, code = files.check_and_new_user_file_with_hash(
@@ -148,6 +161,7 @@ def __fast_up(user_id, file):
             code = RGResCode.ok
             conn.commit()
         except Exception as e:
+            print(e)
             file_info = None
             conn.rollback()
             conn.commit()
@@ -199,8 +213,8 @@ def user_file_search(user_id):
 @RestRouter.route('/user/set', methods=['POST'])
 @RGUIController.auth_handler()
 def user_file_set(user_id):
-    id = request_value(request, 'id')
-    if id is None:
+    user_file_id = request_value(request, 'id')
+    if user_file_id is None:
         return jsonify(form_res(RGResCode.lack_param))
 
     args = {}
@@ -209,7 +223,7 @@ def user_file_set(user_id):
     if personal_name is not None:
         args['personal_name'] = personal_name
 
-    flag = files.user_file_set(user_id=user_id, id=id, args=args)
+    flag = files.user_file_set(user_id=user_id, id=user_file_id, args=args)
     if flag is True:
         code = RGResCode.ok
     else:
@@ -220,16 +234,16 @@ def user_file_set(user_id):
 @RestRouter.route('/user/del', methods=['POST'])
 @RGUIController.auth_handler()
 def user_file_del(user_id):
-    id = request_value(request, 'id')
+    user_file_id = request_value(request, 'id')
 
-    if id is None:
+    if user_file_id is None:
         return jsonify(form_res(RGResCode.lack_param))
 
     conn = None
     try:
         conn = dao.get()
 
-        delete_files = files.user_file_del_and_return_files(user_id=user_id, id=id, conn=conn)
+        delete_files = files.user_file_del_and_return_files(user_id=user_id, id=user_file_id, conn=conn)
 
         if len(delete_files) > 0:
             executor.submit(do_del_file, delete_files)
@@ -249,14 +263,14 @@ def user_file_del(user_id):
 @RestRouter.route('/user/move', methods=['POST'])
 @RGUIController.auth_handler()
 def user_file_move(user_id):
-    id = request_value(request, 'id')
-    if id is None:
+    user_file_id = request_value(request, 'id')
+    if user_file_id is None:
         return jsonify(form_res(RGResCode.lack_param))
 
     to_id = request_value(request, 'to_id')
     if to_id is None:
         return jsonify(form_res(RGResCode.lack_param))
-    flag = files.user_file_move(user_id=user_id, move_id=id, to_id=to_id)
+    flag = files.user_file_move(user_id=user_id, move_id=user_file_id, to_id=to_id)
     if flag is True:
         code = RGResCode.ok
     else:
@@ -267,11 +281,11 @@ def user_file_move(user_id):
 @RestRouter.route('/user/fileSize', methods=['GET'])
 @RGUIController.auth_handler()
 def user_file_size(user_id):
-    id = request_value(request, 'id', '')
-    if id is None:
+    user_file_id = request_value(request, 'id', '')
+    if user_file_id is None:
         return jsonify(form_res(RGResCode.lack_param))
 
-    error, file_size = files.user_file_size(user_id=user_id, id=id)
+    error, file_size = files.user_file_size(user_id=user_id, id=user_file_id)
     if error is None:
         code = RGResCode.ok
     else:
@@ -280,14 +294,18 @@ def user_file_size(user_id):
 
 
 def handler_upload_res(user_id, t, set_name=None,
-                       in_album=False, album_id=-1, needFullUrl=False,
+                       in_album=False, album_id=-1, full_url=False,
                        in_file=False, directory_id=-1):
     """
 
+    :param set_name:
     :param user_id: userId
     :param t: 上传结果
-    :param in_album: -1代表默认相册, None 代表不存入相册
+    :param in_album: 1代表存入相册 0代表不存入相册
+    :param album_id: 插入到对应的相册
+    :param in_file: 存入用户文件
     :param directory_id 文件夹id
+    :param full_url: 返回全地址
     :return: {
             'code': code,
             'msg': err_msg,
@@ -301,6 +319,7 @@ def handler_upload_res(user_id, t, set_name=None,
     conn = None
     try:
         conn = dao.get()
+        filename = ''
         if in_file and not files.capacity_enough(user_id=user_id, new_file_size=request_file_size(request), conn=conn):
             code = RGResCode.full_size
             raise Exception('capacity not enough')
@@ -311,7 +330,7 @@ def handler_upload_res(user_id, t, set_name=None,
 
             exif_info = None
             exif_time, size = 0, 0
-            exif_gps_lalo, mime, filename = '', '', ''
+            exif_gps_lalo, mime = '', ''
 
             if 'mime' in t:
                 mime = t['mime']
@@ -345,7 +364,8 @@ def handler_upload_res(user_id, t, set_name=None,
             raise Exception('new_file failed')
 
         if in_album and support_image(filename=filename):
-            photo = pic.new_pic(user_id, file_info, album_id=album_id, conn=conn, title=original_name, needFullUrl=needFullUrl)
+            photo = pic.new_pic(user_id, file_info, album_id=album_id, conn=conn, title=original_name,
+                                full_url=full_url)
             if photo is None:
                 raise Exception('new photo failed')
         elif in_file:
@@ -382,31 +402,64 @@ def handler_upload_res(user_id, t, set_name=None,
         }
 
 
-@RestRouter.route('/user/get/<id>', methods=['GET'])
-def user_file_get(id):
-    if is_int_number(id):
-        auth, user_id = RGUIController.do_auth()
-        filename = files.user_filename(user_id=user_id, id=id)
-        img_quality = request_value(request, 'img_quality', 'original')
-        if img_quality == 'low':
-            filename = name_fix(filename=filename, thumb=True, gif_activity=False)
-        if filename is None:
-            return jsonify(form_res(RGResCode.not_existed))
-        return handle_download_file(filename)
-    else:
+@RestRouter.route('/user/fileInfo', methods=['GET'])
+@RGUIController.auth_handler()
+def user_file_info(user_id):
+    file_id = request_value(request, 'id', '')
+    if id is None:
         return jsonify(form_res(RGResCode.lack_param))
+
+    info = files.user_file(user_id=user_id, id=file_id)
+    if info is not None:
+        code = RGResCode.ok
+    else:
+        code = RGResCode.database_error
+    return jsonify(form_res(code, {"file": info}))
+
+
+@RestRouter.route('/user/get/<user_file_id>', methods=['GET'])
+def user_file_get(user_file_id):
+    if not is_int_number(user_file_id):
+        return jsonify(form_res(RGResCode.lack_param))
+    auth, user_id = RGUIController.do_auth()
+    file = files.user_file(user_id=user_id, id=user_file_id)
+
+    filename = file['filename'] if file is not None and 'filename' in file else None
+    mime = file['mime'] if file is not None and 'mime' in file else None
+    name = file['name'] if file is not None and 'name' in file else None
+
+    img_quality = request_value(request, 'img_quality', 'original')
+    if img_quality == 'low':
+        filename = name_fix(filename=filename, thumb=True, gif_activity=False)
+    if filename is None:
+        return jsonify(form_res(RGResCode.not_existed))
+    return handle_download_file(filename, name, mime=mime)
 
 
 @RestRouter.route('/<filename>', methods=['GET'])
-def handle_download_file(filename):
-    remote_url = RemoteFileHost + '/' + FilePreFix + "download/" + filename
-    req = requests.get(remote_url, stream=True)
-    # content_type = req.headers['content-type']
-    # size = req.headers['content-length']
-    response = Response(stream_with_context(req.iter_content(chunk_size=1024)))
+def handle_download_file(filename, download_name=None, mime=None):
+    range_mode = 'Range' in request.headers
+    remote_url = handle_download_file_url(filename)
+    params = {
+        'mime': mime,
+        'name': download_name,
+        'audioCover': int(request_value(request, 'audioCover', 0))
+    }
+    req = requests.get(remote_url, headers=request.headers, json=params, stream=not range_mode)
+
+    if range_mode:
+        response = Response(stream_with_context(req.iter_content(chunk_size=None)), 206, direct_passthrough=True)
+    else:
+        response = Response(stream_with_context(req.iter_content(chunk_size=2048)))
+        if req.status_code == 200:
+            response.headers['Cache-Control'] = 'max-age=604800'
     for key in req.headers:
         response.headers[key] = req.headers[key]
     return response
+
+
+def handle_download_file_url(filename):
+    return RemoteFileHost + '/' + FilePreFix + "download/" + filename
 
 
 # 博客日志导入产生的图片存放的文件
@@ -444,10 +497,10 @@ def do_new_file():
         value = (stream.filename, stream.stream, stream.content_type)
         file_stream[file_key] = value
 
-    print('will upload')
+    # print('will upload')
     req = requests.post(url=url, files=file_stream, data=request.form, params=None,
                         auth=request.authorization, cookies=request.cookies, hooks=None, json=request.json, stream=True)
-    print('end upload status_code:%d' % req.status_code)
+    # print('end upload status_code:%d' % req.status_code)
 
     if req.status_code == 200:
         t = req.json()
@@ -457,8 +510,7 @@ def do_new_file():
 
 
 def do_del_file(filenames):
-    print('will delete', filenames)
+    # print('will delete', filenames)
     url = RemoteFileHost + '/' + FilePreFix + 'del'
     req = requests.post(url=url, json={"names": filenames})
-    print('end delete status_code:%d' % req.status_code)
-
+    # print('end delete status_code:%d' % req.status_code)
