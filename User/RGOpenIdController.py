@@ -24,13 +24,13 @@ def user_list(username=None, email=None):
         params = openid_base_params({
             'emails': [email]
         })
-    print('Open Id -> user_list {}'.format(params))
+    # print('Open Id -> user_list {}'.format(params))
     req = requests.get(
         url=CTOpenIdUserApi,
         json=params
     )
     t = req.json()
-    print(t)
+    # print(t)
 
     data = None
     code = RGResCode.server_error
@@ -61,7 +61,7 @@ def user_new(username, email, password):
         'username': username,
         'email': email,
     })
-    print('Open Id -> user_new {}'.format(params))
+    # print('Open Id -> user_new {}'.format(params))
 
     params['pwd'] = password
     req = requests.post(
@@ -69,7 +69,7 @@ def user_new(username, email, password):
         json=params
     )
     t = req.json()
-    print(t)
+    # print(t)
 
     code = RGResCode.server_error
     if 'code' in t and t['code'] == 200:
@@ -84,7 +84,7 @@ def user_update(username, password=None, payload=None):
     params = openid_base_params({'username': username})
     if payload:
         params['extra_payload'] = payload
-    print('Open Id -> user_update {}'.format(params))
+    # print('Open Id -> user_update {}'.format(params))
 
     if password:
         params['pwd'] = password
@@ -94,7 +94,7 @@ def user_update(username, password=None, payload=None):
         json=params
     )
     t = req.json()
-    print(t)
+    # print(t)
 
     code = RGResCode.server_error
     if 'code' in t and t['code'] == 200:

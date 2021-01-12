@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
+<script type="text/javascript" src="/static/jquery/jquery.min.js?ver={{js_ver}}"></script>
+<script type="text/javascript" src="/static/js/file.js?ver={{js_ver}}"></script>
+<script type="text/javascript" src="/static/js/MimeType.js?ver={{js_ver}}"></script>
+
+<style>
+    .full, html, body {
+        height: 100%;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+    }
+    .center {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    video {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+    audio {
+        width: 100%;
+        object-fit: contain;
+        align-self: flex-end;
+    }
+    .no-support {
+        color: #ecf6fd;
+    }
+</style>
+<head>
+    <meta charset="UTF-8">
+    <title>预览</title>
+</head>
+<body class="center" style="background-color: #4b4b4b;">
+<div id="videoPage" class="full center">
+    <img v-if="url && audio && audioCover"
+         v-bind:src="audioCover"
+         onerror="this.src='/static/image/music_playing.svg'"
+         style="max-width: 100%; max-height: 100%; position: absolute"
+    >
+    <audio v-if="url && audio"
+           v-bind:src="url"
+           controls autobuffer>
+    </audio>
+
+    <video v-if="url && video"
+           v-bind:src="url"
+           controls autobuffer>
+    </video>
+
+    <img v-if="url && image"
+         v-bind:src="url"
+         id="oImg"
+         style="max-width: 100%; max-height: 100%"
+    >
+
+    <div v-if="url && !image && !video && !audio"
+         class="no-support"
+    >
+        不支持的文件类型
+    </div>
+</div>
+</body>
+<script>
+    function getUrlSearch(name) {
+        if (!name) return null;
+        let after = window.location.search;
+        after = after.substr(1) || window.location.hash.split('?')[1];
+        if (!after) return null;
+        if (after.indexOf(name) === -1) return null;
+        var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)');
+        var r = decodeURI(after).match(reg);
+        if (!r) return null;
+        return r[2];
+    }
+
+    const videoPage = new Vue({
+        el: '#videoPage',
+        beforeCreate: function (e) {
+            let id = document.location.pathname.split("/")
+            id = id[id.length - 1]
+            id = id.split('av')
+            id = id[id.length - 1]
+
+            userFileInfo(id, (result)=> {
+                if (result.code !== 1000) {
+                    return
+                }
+                let file = result.data.file
+                this.mimeType = mimeType(file.name)
+                this.url = '/file/user/get/' + id
+                this.image = imageDisplaySupport(this.mimeType)
+                this.video = videoDisplaySupport(this.mimeType)
+                this.audio = audioDisplaySupport(this.mimeType)
+                if (this.audio) {
+                    this.audioCover = '/file/user/get/' + id + '?audioCover=1'
+                }
+                document.title = file.name
+            })
+        },
+        data: {
+            mimeType: null,
+            video: false,
+            image: false,
+            url: null,
+            audioCover: null,
+            errorImage: 'this.src="/static/image/music_playing.svg"',
+        },
+        methods:{
+
+        }
+    });
+</script>
+</html>

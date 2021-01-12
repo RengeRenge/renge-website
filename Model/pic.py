@@ -5,7 +5,7 @@ from RGIgnoreConfig.RGFileGlobalConfigContext import url_with_name, path_with_na
 from Model import album, user
 
 
-def new_pic(user_id, pic_file, conn=None, album_id=-1, title='', desc='', level=0, needFullUrl=False, original=False):
+def new_pic(user_id, pic_file, conn=None, album_id=-1, title='', desc='', level=0, full_url=False, original=False):
     if album_id is None or int(album_id) == -1:
         de_album = album.default_album(user_id, conn=conn)
         album_id = de_album.ID
@@ -26,7 +26,7 @@ def new_pic(user_id, pic_file, conn=None, album_id=-1, title='', desc='', level=
     if err is not None:
         return None
 
-    url = url_with_name(pic_file['filename'], needhost=needFullUrl, original=original)
+    url = url_with_name(pic_file['filename'], needhost=full_url, original=original)
     return {
         'id': new_id,
         'album_id': album_id,
@@ -36,7 +36,7 @@ def new_pic(user_id, pic_file, conn=None, album_id=-1, title='', desc='', level=
     }
 
 
-def check_and_new_pic_with_hash(user_id, file_hash, filename, album_id=-1, needFullUrl=False):
+def check_and_new_pic_with_hash(user_id, file_hash, filename, album_id=-1, full_url=False):
     conn = None
     pic = None
     from RGUtil.RGCodeUtil import RGResCode
@@ -58,7 +58,7 @@ def check_and_new_pic_with_hash(user_id, file_hash, filename, album_id=-1, needF
             if album_id is None or int(album_id) == -1:
                 de_album = album.default_album(user_id, conn=conn)
                 album_id = de_album.ID
-            pic = new_pic(user_id, file_info, album_id=album_id, conn=conn, title=filename, needFullUrl=needFullUrl)
+            pic = new_pic(user_id, file_info, album_id=album_id, conn=conn, title=filename, full_url=full_url)
             if pic is None:
                 code = RGResCode.insert_fail
                 raise Exception('insert failed')
