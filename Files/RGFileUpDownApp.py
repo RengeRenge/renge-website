@@ -1,5 +1,4 @@
 # encoding: utf-8
-import mimetypes
 from concurrent.futures import ThreadPoolExecutor
 
 import requests
@@ -427,8 +426,6 @@ def user_file_get(user_file_id):
     filename = file['filename'] if file is not None and 'filename' in file else None
     mime = file['mime'] if file is not None and 'mime' in file else None
     name = file['name'] if file is not None and 'name' in file else None
-    guess_mimes = mimetypes.guess_type(name)
-    mime = guess_mimes[0] if guess_mimes is not None and len(guess_mimes) > 0 else mime
 
     img_quality = request_value(request, 'img_quality', 'original')
     if img_quality == 'low':
