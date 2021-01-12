@@ -500,7 +500,7 @@
                 let target = e.target;
                 let file = fileApp.fileList[fileApp.renameIndex];
 
-                let new_name = target.innerText.replace(/\s+/g,"").trim()
+                let new_name = target.innerText.replace(/[\r\n]/g,"").trim()
                 if (file.type === 0) {
                     let ext = getExt(new_name, false)
                     if (!ext) {
