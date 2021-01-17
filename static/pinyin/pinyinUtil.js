@@ -115,13 +115,15 @@
 		 * @param splitter 分隔字符，默认用空格分隔
 		 * @param withtone 返回结果是否包含声调，默认是
 		 * @param polyphone 是否支持多音字，默认否
+		 * @param clearBlank 是否去除空格
 		 */
-		getPinyin: function(chinese, splitter, withtone, polyphone)
+		getPinyin: function(chinese, splitter, withtone, polyphone, clearBlank)
 		{
-			if(!chinese || /^ +$/g.test(chinese)) return '';
+			if(!chinese || /^ +$/g.test(chinese)) return clearBlank ? '' : chinese;
 			splitter = splitter == undefined ? ' ' : splitter;
 			withtone = withtone == undefined ? true : withtone;
 			polyphone = polyphone == undefined ? false : polyphone;
+			clearBlank = clearBlank == undefined ? false : clearBlank
 			var result = [];
 			if(dict.withtone) // 优先使用带声调的字典文件
 			{
@@ -139,7 +141,7 @@
 						noChinese && ( result.push( noChinese), noChinese = '' );
 						result.push( pinyin ); 
 					}
-					else if ( !chinese[i] || /^ +$/g.test(chinese[i]) ){
+					else if ( clearBlank && (!chinese[i] || /^ +$/g.test(chinese[i]))){
 						//空格，把noChinese作为一个词插入
 						noChinese && ( result.push( noChinese), noChinese = '' );
 					}
@@ -166,7 +168,7 @@
 						noChinese && ( result.push( noChinese), noChinese = '' );
 						result.push( pinyin );
 					}
-					else if ( !temp || /^ +$/g.test(temp) ){
+					else if (clearBlank && (!temp || /^ +$/g.test(temp))){
 						//空格，插入之前的非中文字符
 						noChinese && ( result.push( noChinese), noChinese = '' );
 					}

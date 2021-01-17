@@ -265,7 +265,8 @@
                             this.autoPlay = true
                             let fileList = result.data
                             fileList = fileList.filter(((file, index, array) => {
-                                file.sortName = pinyinUtil.getPinyin(file.name, '', false, false).toLowerCase()
+                                file.sortName = pinyinUtil.getPinyin(file.name, '', false, false, false).toLowerCase()
+                                file.sortName1 = pinyinUtil.getPinyin(file.name, '', false, false, true).toLowerCase()
                                 return audioDisplaySupport(mimeType(file.name))
                             }))
                             fileList.sort((a, b)=>{
@@ -406,7 +407,7 @@
             doSearch: function(text) {
                 text = text.toLowerCase()
                 this.displayList = this.fileList.filter(((file, index, array) => {
-                    return file.sortName.indexOf(text) >= 0 || file.name.indexOf(text) >= 0
+                    return file.sortName.indexOf(text) >= 0 || file.name.indexOf(text) >= 0 || file.sortName1.indexOf(text) >= 0
                 }))
             },
             onBackgroundClick: function (e) {
