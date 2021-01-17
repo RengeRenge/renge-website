@@ -120,6 +120,8 @@
         width: 100%;
         background-color: transparent;
         color: #ecf6fd;
+        border: transparent 0px;
+        padding: 5px;
     }
 </style>
 <head>
@@ -402,6 +404,7 @@
                 }
             },
             doSearch: function(text) {
+                text = text.toLocaleString()
                 this.displayList = this.fileList.filter(((file, index, array) => {
                     return file.sortName.indexOf(text) >= 0 || file.name.indexOf(text) >= 0
                 }))
