@@ -9,6 +9,7 @@ import RGUIController
 from DAO import rg_dao as dao
 from Model import files, pic
 from RGIgnoreConfig.RGFileGlobalConfigContext import FilePreFix, RemoteFileHost, name_fix, support_image
+from RGUtil import RGRequestHelp
 from RGUtil.RGCodeUtil import RGResCode
 from RGUtil.RGRequestHelp import form_res, request_value, is_int_number, request_file_size
 
@@ -29,12 +30,22 @@ def desktop_page(user_id):
 @RestRouter.route('/nyapass/av<user_file_id>', methods=['GET'])
 def video_view_page(user_file_id):
     if is_int_number(user_file_id):
+        user_file_id = int(user_file_id)
         auth, user_id = RGUIController.do_auth()
         if not auth:
             return redirect(url_for('login_page'))
-        return RGUIController.ui_render_template('VideoPreview.html')
-    else:
-        return jsonify(form_res(RGResCode.lack_param))
+        if user_file_id == -1 or files.user_file(user_id=user_id, id=user_file_id, type=1) is not None:
+            code = RGRequestHelp.did_encode(user_file_id, user_id)
+            return redirect(url_for('RGFileUpDown.play_list_page', user_id_directory_id=code))
+    return RGUIController.ui_render_template('VideoPreview.html')
+
+
+@RestRouter.route('/nyapass/playList/<user_id_directory_id>', methods=['GET'])
+def play_list_page(user_id_directory_id):
+    auth, user_id = RGUIController.do_auth()
+    if not auth:
+        return redirect(url_for('login_page'))
+    return RGUIController.ui_render_template('VideoPreview.html')
 
 
 """
@@ -180,6 +191,29 @@ def user_file_list(user_id):
     directory_id = request_value(request, 'directory_id', -1)
     try:
         result = files.user_file_list(user_id=user_id, directory_id=directory_id)
+        return jsonify(form_res(RGResCode.ok, result))
+    except:
+        return jsonify(form_res(RGResCode.database_error))
+
+
+@RestRouter.route('/user/playList', methods=['GET'])
+@RGUIController.auth_handler()
+def user_file_relative_list(user_id):
+    code = request_value(request, 'code')
+    if code is None:
+        return jsonify(form_res(RGResCode.lack_param))
+    u_id = None
+    try:
+        directory_id, u_id = RGRequestHelp.did_decode(code)
+    except Exception as e:
+        return jsonify(form_res(RGResCode.param_error))
+    finally:
+        if u_id != user_id:
+            return jsonify(form_res(RGResCode.auth_fail))
+    try:
+        result, error = files.user_file_files_relative_with_id(user_id=user_id, id=directory_id)
+        if error is not None:
+            raise error
         return jsonify(form_res(RGResCode.ok, result))
     except:
         return jsonify(form_res(RGResCode.database_error))

@@ -1,4 +1,9 @@
+import base64
+import random
+import zlib
+
 from RGUtil.RGCodeUtil import RGResCode
+
 
 def get_data_with_request(_request):
     if _request.is_json:
@@ -83,3 +88,113 @@ def request_file_mine(request):
         size += len(file.read())
         file.seek(0)
     return size
+
+
+baseList = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjklmnopqrstuvwxyz'
+
+
+def encode(n, b=58):
+    """
+
+    :param n: 压缩的数字
+    :param b: 进制 最大58
+    :return: 对应进制字符串
+    """
+    result = ''
+    x = int(n)
+    while True:
+        x, y = divmod(x, b)
+        result = baseList[y] + result
+        if x <= 0:
+            break
+    return result
+
+
+def decode(n, b=58):
+    """
+
+    :param n: 数字压缩后的字符串
+    :param b: 对应的进制 最大58
+    :return: 原来的数字
+    """
+    result = 0
+    length = len(n)
+    for index in range(length):
+        result += (baseList.index(n[index]) * pow(b, length - index - 1))
+    return result
+
+
+def did_encode(dir_id, uid):
+    dir_id = int(dir_id) + 10
+    dir_id = str(dir_id)
+    count = 0
+
+    # if len(dir_id) < 8:
+    #     count = 8 - len(dir_id)
+    #     dir_id = ''.join(['0', '0', '0', '0', '0', '0', '0', '0'][:count]) + dir_id
+
+    count = str(count)
+
+    uid = encode(uid)
+    dir_id = encode(dir_id)
+
+    content = '{}{}.{}.{}'.format(dir_id, uid, count, len(str(uid)))
+    content = base64.urlsafe_b64encode(content.encode("utf-8"))
+    content = str(content, "utf-8")
+    del_count = 0
+    for i in range(len(content) - 1, -1, -1):
+        if content[i] == '=':
+            del_count += 1
+            content = content[:-1]
+        else:
+            break
+    return content + encode(del_count)
+
+
+def did_decode(content):
+    del_count = decode(content[-1])
+    content = content[:-1]
+    for i in range(del_count):
+        content += '='
+    content = str(base64.urlsafe_b64decode(content.encode("utf-8")), "utf-8")
+    contents = content.split(sep='.')
+
+    uid_count = int(contents[-1])
+    count = int(contents[-2])
+
+    content = contents[0]
+    uid = content[-uid_count:]
+    dir_id = content[:-uid_count]
+    dir_id = dir_id[count:]
+    return int(decode(dir_id)) - 10, int(decode(uid))
+
+
+def bytes_to_hex_string(bytes):
+    result = ''
+    for byte in bytes:
+        result += '%02X' % byte
+    return result
+
+
+def hex_string_to_bytes(hex_string):
+    byte_array = bytearray()
+    for index in range(len(hex_string) // 2):
+        temp = hex_string[2 * index:2 * index + 2]
+        temp = bytes(temp, encoding='utf-8')
+        temp = int(temp, base=16)
+        byte_array.append(temp)
+    return byte_array
+
+
+if __name__ == '__main__':
+    code = encode(1000, 58)
+    print('#58', code)
+    print('#10', decode(code, 58))
+
+    dir_id = 122134
+    uid = 9812312332
+    print('did', dir_id, 'user_id', uid)
+    code = did_encode(dir_id=dir_id, uid=uid)
+    print('did_encode', code)
+    did, user_id = did_decode(code)
+    print('did', did, 'user_id', user_id)

@@ -305,7 +305,7 @@ def user_file_list_with_name(user_id, name):
             conn.close()
 
 
-def user_file(user_id, id=None):
+def user_file(user_id, id=None, type=0):
     sql = "SELECT \
     file.filename as filename, \
     user_file.personal_name as name, \
@@ -315,13 +315,14 @@ def user_file(user_id, id=None):
     user_file.id as id \
     from user_file \
     left join file on user_file.file_id = file.id \
-    WHERE user_file.id=%(id)s and user_file.user_id = %(user_id)s and user_file.type = 0 limit 1"
+    WHERE user_file.id=%(id)s and user_file.user_id = %(user_id)s and user_file.type = %(type)s limit 1"
     result, count, new_id = dao.execute_sql(
         sql=sql,
         kv=True,
         args={
             'id': id,
-            'user_id': user_id
+            'user_id': user_id,
+            'type': type
         }
     )
     if count > 0:
@@ -377,6 +378,8 @@ def user_file_files_relative_with_id(user_id, id, conn=None):
             user_file.id as id, \
             user_file.file_id as file_id, \
             user_file.type as type,\
+            user_file.personal_name as name, \
+            file.mime as mime,\
             file.filename as filename,\
             file.forever as forever\
             from user_file \
@@ -385,7 +388,7 @@ def user_file_files_relative_with_id(user_id, id, conn=None):
             and user_file.type = 0 \
             and user_file.user_id=%(user_id)s)"
     args = {
-        'id': id,
+        'id': '' if id == -1 else id,
         'user_id': user_id
     }
     result, count, new_id, error = dao.do_execute_sql(
