@@ -404,7 +404,7 @@
                 }
             },
             doSearch: function(text) {
-                text = text.toLocaleString()
+                text = text.toLowerCase()
                 this.displayList = this.fileList.filter(((file, index, array) => {
                     return file.sortName.indexOf(text) >= 0 || file.name.indexOf(text) >= 0
                 }))
