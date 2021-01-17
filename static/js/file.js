@@ -69,13 +69,22 @@ let fileApp = undefined
   }
 }
  */
-function file_list({id, directory=false,success,error}) {
+function file_list({id=null, code=null, directory=false, success, error}) {
+    let json = {}
+    let url
+    if (id !== null) {
+        json['directory_id'] = id
+        url = directory ? "/file/user/directory_list" : "/file/user/list"
+    }
+    if (code !== null) {
+        json['code'] = code
+        url = '/file/user/playList'
+    }
     $.ajax({
         type: 'GET',
-        url: directory ? "/file/user/directory_list" : "/file/user/list",
-        data: {
-            'directory_id': id,
-        },
+        // contentType: "application/json",
+        url: url,
+        data: json,
         success: success,
         error: error,
     })

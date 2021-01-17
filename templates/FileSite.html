@@ -342,6 +342,12 @@
              @click="loadDirectoryList(menuFile.id)">
             打开
         </div>
+        <a v-if="menuFile && !menuFile.uploadFile && menuFile.type == 1"
+             class="menu"
+             target="_blank"
+             v-bind:href="'/file/nyapass/av' + menuFile.id">
+            使用播放列表打开
+        </a>
         <div v-if="menuFile && menuFile.uploadFile && menuFile.uploading"
              class="menu"
              @click="onUserStopUpload(menuFile)">
@@ -367,6 +373,12 @@
 
         <p v-if="!menuFile" class="menu file_input_wrap" type="file">上传文件<input type="file" class="hide_file_input" @change="menu_upload($event)"></p>
         <div v-if="!menuFile" class="menu" @click="do_new_directory()">新建文件夹</div>
+        <a v-if="!menuFile"
+             class="menu"
+             target="_blank"
+             v-bind:href="'/file/nyapass/av' + directory_id">
+            使用播放列表打开
+        </a>
 
         <div v-if="!menuFile || !menuFile.uploadFile" class="line"></div>
         <div v-if="!menuFile || !menuFile.uploadFile" class="menu" @click="detail()">属性</div>
@@ -674,30 +686,36 @@
                     case 0:
                         list.sort((a, b)=> {
                             if (b.add_timestamp === a.add_timestamp) {
-                                return ('' + b.name).localeCompare(a.name);
+                                return ('' + b.sortName).localeCompare(a.sortName);
                             }
                             return b.add_timestamp - a.add_timestamp
                         });
                         break;
                     case 1:
                         list.sort((a, b)=> {
-                            return ('' + b.name).localeCompare(a.name);
+                            return ('' + b.sortName).localeCompare(a.sortName);
                         });
                         break;
                     case 2:
                         list.sort((a, b)=> {
                             if (b.size === a.size) {
-                                return ('' + b.name).localeCompare(a.name);
+                                return ('' + b.sortName).localeCompare(a.sortName);
                             }
                             return b.size - a.size
                         });
                         break;
                     case 3:
                         list.sort((a, b)=> {
-                            if (b.mime === a.mime) {
-                                return ('' + b.name).localeCompare(a.name);
+                            if (a.type !== b.type) {
+                                return b.type - a.type
                             }
-                            return ('' + b.mime).localeCompare(a.mime);
+                            if (a.type === b.type && a.type === 1) {
+                                return ('' + b.sortName).localeCompare(a.sortName);
+                            }
+                            if (b.displayMime === a.displayMime) {
+                                return ('' + b.sortName).localeCompare(a.sortName);
+                            }
+                            return ('' + b.displayMime).localeCompare(a.displayMime);
                         });
                         break;
                 }
@@ -1080,10 +1098,13 @@
         file.audioEnable = !file.uploadFile && audioDisplaySupport(mime)
         file.videoEnable = !file.uploadFile && videoDisplaySupport(mime)
         file.imageEnable = !file.uploadFile && imageDisplaySupport(mime)
+        file.displayMime = mime
 
         file.thumbFailedUrl = '/static/image/fileType/{0}.svg'.format(icon)
 
         file.downloadName = file.name
+        file.sortName = pinyinUtil.getPinyin(file.name, '', false, false)
+
         if (file.imageEnable) {
             file.thumbUrl = '/file/user/get/{0}?img_quality={1}'.format(file.id, 'low')
         } else if (file.audioEnable) {

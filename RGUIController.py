@@ -50,7 +50,7 @@ def auth_handler(page=False, forceLogin=True, more_info=False, need_email=False)
                     return func(params, *args, **kwargs)
             except Exception as ex:
                 print(ex)
-                token_session_remove()
+                # token_session_remove()
                 return make_response(jsonify({'error': 'System Error'}), 500)
                 # return make_response(jsonify({'error': 'System Error'}), 500) \
                 #     if page is False else redirect(url_for('login_page'))
