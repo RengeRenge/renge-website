@@ -1107,8 +1107,8 @@
 
         if (file.imageEnable) {
             file.thumbUrl = '/file/user/get/{0}?img_quality={1}'.format(file.id, 'low')
-        } else if (file.audioEnable) {
-            file.thumbUrl = '/file/user/get/{0}?audioCover=1'.format(file.id)
+        } else if (file.audioEnable || file.videoEnable) {
+            file.thumbUrl = '/file/user/get/{0}?cover=1'.format(file.id)
         } else {
             file.thumbUrl = file.thumbFailedUrl
             file.imageEnable = false

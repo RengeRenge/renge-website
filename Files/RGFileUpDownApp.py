@@ -476,7 +476,7 @@ def handle_download_file(filename, download_name=None, mime=None):
     params = {
         'mime': mime,
         'name': download_name,
-        'audioCover': int(request_value(request, 'audioCover', 0))
+        'cover': int(request_value(request, 'cover', 0))
     }
     req = requests.get(remote_url, headers=request.headers, json=params, stream=not range_mode)
 
