@@ -286,7 +286,9 @@
                 av = av + ''
                 av = av.split('av')
                 av = av[av.length - 1]
-                userFileInfo(av, (result)=> {
+                userFileInfo({
+                    file_id: av,
+                    success:(result)=> {
                     if (result.code !== 1000) {
                         return
                     }
@@ -314,7 +316,7 @@
                     //         this.$refs.audioPlayer.play()
                     //     }, 1000)
                     // }
-                })
+                }})
             },
             onCanplay: function() {
                 this.$refs.audioPlayer.play()

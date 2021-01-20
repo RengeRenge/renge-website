@@ -381,7 +381,7 @@
         </a>
 
         <div v-if="!menuFile || !menuFile.uploadFile" class="line"></div>
-        <div v-if="!menuFile || !menuFile.uploadFile" class="menu" @click="detail()">属性</div>
+        <div v-if="!menuFile || !menuFile.uploadFile" class="menu" @click="detail(menuFile)">属性</div>
     </div>
 
     <div id="file-select-bg" v-if="directoryViewShow">
@@ -931,8 +931,8 @@
                     this.fileList.splice(0, 0, file);
                 }
             },
-            detail() {
-                let file = fileApp.menuFile
+            detail(menuFile) {
+                let file = menuFile
                 if (file && file.type === 0) {
                     let time1 = (new Date(file.add_timestamp)).Format("yyyy-MM-dd hh:mm:ss")
                     let time2 = (new Date(file.update_timestamp)).Format("yyyy-MM-dd hh:mm:ss")
@@ -943,21 +943,22 @@
                     }
                     setTimeout(()=>alert(str), 300)
                 } else {
-                    if (file) {
-                        let time1 = (new Date(file.add_timestamp)).Format("yyyy-MM-dd hh:mm:ss")
-                        let time2 = (new Date(file.update_timestamp)).Format("yyyy-MM-dd hh:mm:ss")
+                    let dir = file ? file : this.path[this.path.length - 1]
+                    if (dir.id !== -1) {
                         file_size({
-                            file_id: file.id,
+                            file_id: dir.id,
                             success:(data)=>{
-                                let str = `文件夹名: {0}\n文件大小: {1}\n创建时间: {2}\n修改时间: {3}`.format(file.name, sizeDisplay(data.data.size), time1, time2)
+                                let time1 = (new Date(dir.add_timestamp)).Format("yyyy-MM-dd hh:mm:ss")
+                                let time2 = (new Date(dir.update_timestamp)).Format("yyyy-MM-dd hh:mm:ss")
+                                let str = `文件夹名: {0}\n文件大小: {1}\n创建时间: {2}\n修改时间: {3}`.format(dir.name, sizeDisplay(data.data.size), time1, time2)
                                 setTimeout(()=>alert(str), 300)
                             }
                         })
                     } else {
                         file_size({
-                            file_id: null,
+                            file_id: -1,
                             success:(data)=>{
-                                let str = `文件夹名: 桌面\n文件大小: {1}\n总容量: 5GB`.format('', sizeDisplay(data.data.size))
+                                let str =  `文件夹名: {0}\n文件大小: {1}\n总容量: 5GB`.format(dir.name, sizeDisplay(data.data.size))
                                 setTimeout(()=>alert(str), 300)
                             }
                         })
