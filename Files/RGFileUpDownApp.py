@@ -314,16 +314,32 @@ def user_file_move(user_id):
 @RestRouter.route('/user/fileSize', methods=['GET'])
 @RGUIController.auth_handler()
 def user_file_size(user_id):
-    user_file_id = request_value(request, 'id', '')
+    user_file_id = request_value(request, 'id', -1)
     if user_file_id is None:
         return jsonify(form_res(RGResCode.lack_param))
 
+    user_file_id = int(user_file_id)
     error, file_size = files.user_file_size(user_id=user_id, id=user_file_id)
     if error is None:
         code = RGResCode.ok
     else:
         code = RGResCode.database_error
     return jsonify(form_res(code, {"size": file_size}))
+
+
+@RestRouter.route('/user/fileInfo', methods=['GET'])
+@RGUIController.auth_handler()
+def user_file_info(user_id):
+    file_id = request_value(request, 'id')
+    if file_id is None:
+        return jsonify(form_res(RGResCode.lack_param))
+
+    info = files.user_file(user_id=user_id, id=file_id)
+    if info is not None:
+        code = RGResCode.ok
+    else:
+        code = RGResCode.database_error
+    return jsonify(form_res(code, {"file": info}))
 
 
 def handler_upload_res(user_id, t, set_name=None,
@@ -433,21 +449,6 @@ def handler_upload_res(user_id, t, set_name=None,
             'file_info': file_info,
             'data': photo if in_album else user_file if in_file else file_info,
         }
-
-
-@RestRouter.route('/user/fileInfo', methods=['GET'])
-@RGUIController.auth_handler()
-def user_file_info(user_id):
-    file_id = request_value(request, 'id', '')
-    if id is None:
-        return jsonify(form_res(RGResCode.lack_param))
-
-    info = files.user_file(user_id=user_id, id=file_id)
-    if info is not None:
-        code = RGResCode.ok
-    else:
-        code = RGResCode.database_error
-    return jsonify(form_res(code, {"file": info}))
 
 
 @RestRouter.route('/user/get/<user_file_id>', methods=['GET'])

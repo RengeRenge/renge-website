@@ -285,7 +285,7 @@ function upload_desc(offsetTime, oLoaded, loaded, total) {
     return leftTime.toHHMMSS() + speed
 }
 
-function userFileInfo(file_id, success, error) {
+function userFileInfo({file_id, success, error}) {
     $.ajax({
         type: 'GET',
         url: "/file/user/fileInfo",
@@ -340,7 +340,7 @@ function file_size({file_id, success, error}) {
         type: 'GET',
         url: "/file/user/fileSize",
         data: {
-            'id': file_id,
+            id: file_id,
         },
         success:success,
         error:error

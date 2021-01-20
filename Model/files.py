@@ -201,7 +201,9 @@ def user_file_list(user_id, directory_id=None):
         sql = "SELECT \
         c.personal_name as name,\
         c.id as id,\
-        c.type as type\
+        c.type as type,\
+        c.add_timestamp as add_timestamp,\
+        c.update_timestamp as update_timestamp\
         FROM user_file c\
         LEFT JOIN ( \
             SELECT CONCAT_WS(',', directory_path, id) as path from user_file \
@@ -568,7 +570,7 @@ def user_file_size(user_id, id, conn=None):
                 and user_file.type = 0 \
                 and user_file.user_id=%(user_id)s)"
     args = {
-        'id': id,
+        'id': '' if id == -1 else id,
         'user_id': user_id
     }
     result, count, new_id, error = dao.do_execute_sql(sql=sql, args=args, conn=conn, kv=True)
