@@ -442,21 +442,14 @@ def user_set_info(user_id):
     t = get_data_with_request(request)
 
     url = RGFullThisServerHost + '/file/fastUpload'
-    re_files = request.files
-    fast_json = {}
-    for file_key in re_files:
-        file_hash = request_value(request, file_key + '_md5')
-        if file_hash is None:
-            return RGResCode.lack_param, None
-        else:
-            fast_json[file_key] = {
-                "md5": file_hash
-            }
 
-    bg_id = None
-    icon_id = None
-    req = requests.post(url=url, auth=request.authorization, cookies=request.cookies, hooks=None,
-                        json={"files": fast_json})
+    fast_json = {}
+    file_up_info = request_value(request, 'fileUpInfo')
+    if file_up_info is not None:
+        fast_json = json.loads(file_up_info, encoding="utf-8")
+
+    bg_id, icon_id = None, None
+    req = requests.post(url=url, auth=request.authorization, cookies=request.cookies, json={"files": fast_json})
     if req.status_code != 200:
         return jsonify(form_res(RGResCode.server_error, None))
 
@@ -477,7 +470,7 @@ def user_set_info(user_id):
             elif key == "icon":
                 icon_id = file
         elif result['code'] == RGResCode.not_existed:
-            stream = re_files[key]
+            stream = request.files[key]
             value = (stream.filename, stream.stream, stream.content_type)
             file_stream[key] = value
             need_upload = True
@@ -497,11 +490,11 @@ def user_set_info(user_id):
         for key in data:
             result = data[key]
             if result['code'] == RGResCode.ok:
-                file = result['file']['id']
+                file_id = result['file']['id']
                 if key == "background":
-                    bg_id = file
+                    bg_id = file_id
                 elif key == "icon":
-                    icon_id = file
+                    icon_id = file_id
             else:
                 return jsonify(form_res(result['code'], None))
 

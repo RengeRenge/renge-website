@@ -562,10 +562,10 @@
                     parent_directory_id:fileApp.directory_id,
                     name,
                     success:(data) => {
-                        if (data.code !== 1000) {
+                        if (data.code !== 1000 || !data.data.dir || data.data.dir.code !== 1000) {
                             return
                         }
-                        this.addIntoFileList(data.data)
+                        this.addIntoFileList(data.data.dir.file)
                     }})
             },
             menu_upload(event) {
@@ -884,10 +884,10 @@
                         parent_directory_id: this.treeSelectedDirectoryId,
                         name: text,
                         success:(data)=>{
-                            if (data.code !== 1000) {
+                            if (data.code !== 1000 || !data.data.dir || data.data.dir.code !== 1000) {
                                 return
                             }
-                            let file = data.data
+                            let file = data.data.dir.file
                             file.title = file.name
                             file.selected = true
                             file.children = []

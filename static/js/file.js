@@ -106,12 +106,15 @@ function file_new_directory({parent_directory_id, name, success, error}) {
     $.ajax({
         type: 'POST',
         contentType: "application/json",
-        url: "/file/upload",
+        url: "/file/fastUpload",
         data: JSON.stringify({
-            name,
-            'type': 1,
-            'in_file': 1,
-            'directory_id': parent_directory_id,
+            files:{
+                dir: {
+                    name,
+                    'type': 1,
+                    'in_file': 1,
+                    'directory_id': parent_directory_id,
+                }}
         }),
         success:success,
         error:error
@@ -140,44 +143,26 @@ function new_file_upload_mode({name, fileData, type, typeIcon, time}) {
 }
 
 function file_upload({in_album, album_id, in_file, parent_directory_id, request, file_key='file', file, params, progress, success, complete, error}) {
-    let formData = new FormData();
-    if (in_album) {
-        formData.append('in_album', in_album)
-        formData.append('album_id', album_id)
-    } else if (in_file) {
-        formData.append('in_file', in_file)
-        formData.append('directory_id', parent_directory_id)
-        formData.append('type', '0')
-    } else {
+    if (!in_album && !in_file) {
         error && error(-1)
         return
     }
-    formData.append('name', file.name)
-    if (params) {
-      const ref = file.params
-      for (const k in ref) {
-        formData.append(k, ref[k])
-      }
-    }
-
     file_md5(file, (md5)=>{
-        formData.append('md5', md5)
+        let up_info = {
+            [file_key]: {
+                name: file.name,
+                md5,
+                in_file,
+                directory_id: parent_directory_id,
+                in_album,
+                album_id,
+            }
+        }
         let fastXhr = $.ajax({
             type: 'POST',
             url: "/file/fastUpload",
             contentType: "application/json",
-            data:JSON.stringify({
-                files:{
-                    [file_key]: {
-                        md5,
-                        in_album,
-                        album_id,
-                        in_file,
-                        directory_id: parent_directory_id,
-                        name: file.name
-                    }
-                }
-            }),
+            data:JSON.stringify({files: up_info}),
             headers: {
                 'X-File-Name': encodeURIComponent(file.name)
             },
@@ -202,7 +187,8 @@ function file_upload({in_album, album_id, in_file, parent_directory_id, request,
                     return
                 }
 
-                formData.append(file_key+'_md5', md5)
+                let formData = new FormData();
+                formData.append('fileUpInfo', JSON.stringify(up_info))
                 formData.append(file_key, file, file.filename)
 
                 let ot = new Date().getTime(), oLoaded = 0

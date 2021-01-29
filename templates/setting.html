@@ -617,9 +617,10 @@
 
         let formData = new FormData();
         let waitCount = 1;
-
+        let upFileInfo = {};
         let do_setInfo = ()=> {
             if (waitCount) return;
+            formData.append('fileUpInfo', JSON.stringify(upFileInfo))
             $.ajax({
                 url: '/user/setInfo',
                 processData: false,
@@ -648,7 +649,9 @@
             waitCount++;
             formData.append('icon', iconFile, iconFile.filename)
             file_md5(iconFile, (md5)=>{
-                formData.append('icon_md5', md5)
+                upFileInfo['icon'] = {
+                    md5,
+                }
                 waitCount--;
                 do_setInfo()
             })
@@ -658,7 +661,9 @@
             waitCount++;
             formData.append('background', bgFile, bgFile.filename)
             file_md5(bgFile, (md5)=>{
-                formData.append('background_md5', md5)
+                upFileInfo['background'] = {
+                    md5,
+                }
                 waitCount--;
                 do_setInfo()
             })
