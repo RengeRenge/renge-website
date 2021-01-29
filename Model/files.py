@@ -31,7 +31,7 @@ def new_file(conn=None, filename='', mime='', exif_time=0,
         'exif_info': exif_info,
         'exif_lalo': exif_lalo,
         'hash': file_hash,
-        'size': size,
+        'size': str(size),
         'forever': forever
     }
     result, count, new_id, err = dao.do_execute_sql(
@@ -95,6 +95,8 @@ def new_user_file(conn, user_id, file_id, type, directory_id, personal_name, add
     if count > 0:
         args['id'] = new_id
         del args['user_id']
+        if type == 1:
+            del args['file_id']
         if combined_file_info is not None:
             args.update(filter_return_file_info(combined_file_info))
         return args
@@ -307,7 +309,7 @@ def user_file_list_with_name(user_id, name):
             conn.close()
 
 
-def user_file(user_id, id=None, type=0):
+def user_file_info(user_id, id=None, type=0):
     sql = "SELECT \
     file.filename as filename, \
     user_file.personal_name as name, \

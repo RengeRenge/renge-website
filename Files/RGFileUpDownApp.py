@@ -34,7 +34,7 @@ def video_view_page(user_file_id):
         auth, user_id = RGUIController.do_auth()
         if not auth:
             return redirect(url_for('login_page'))
-        if user_file_id == -1 or files.user_file(user_id=user_id, id=user_file_id, type=1) is not None:
+        if user_file_id == -1 or files.user_file_info(user_id=user_id, id=user_file_id, type=1) is not None:
             code = RGRequestHelp.did_encode(user_file_id, user_id)
             return redirect(url_for('RGFileUpDown.play_list_page', user_id_directory_id=code))
     return RGUIController.ui_render_template('VideoPreview.html')
@@ -53,67 +53,6 @@ file
 """
 
 
-@RestRouter.route('/upload', methods=['POST'])
-@RGUIController.auth_handler()
-def new_file(user_id):
-    """
-    上传文件
-    body 参数:
-        name            文件名
-        type            1 文件夹 0 文件
-        {file}          文件流
-        {file}_md5      文件md5
-        directory_id    文件位置文件夹Id
-    """
-
-    in_album = request_value(request, 'in_album', 0)
-    in_file = request_value(request, 'in_file', 0)
-
-    album_id = request_value(request, 'album_id', None)
-    file_type = request_value(request, 'type')
-
-    directory_id = request_value(request, 'directory_id', -1)
-    filename = request_value(request, 'name', '')
-
-    # directory
-    if in_file and file_type is not None and int(file_type) == 1:
-        directory = files.new_directory(user_id=user_id, name=filename, directory_id=directory_id)
-        if directory is None:
-            return jsonify(form_res(RGResCode.insert_fail))
-        else:
-            return jsonify(form_res(RGResCode.ok, directory))
-    # file
-    if in_album:
-        if album_id is None:
-            return jsonify(form_res(RGResCode.lack_param))
-    elif in_file:
-        if not files.capacity_enough(user_id=user_id, new_file_size=request_file_size(request)):
-            return jsonify(form_res(RGResCode.full_size))
-
-    code, result = do_new_file()
-    if code != RGResCode.ok:
-        return jsonify(form_res(code))
-
-    data = {}
-    for res in result:
-        handle = handler_upload_res(user_id, res, set_name=filename,
-                                    in_album=in_album, album_id=album_id,
-                                    in_file=in_file, directory_id=directory_id)
-
-        code = handle['code']
-        file_key = res['key']
-        data[file_key] = {
-            'code': code,
-            'file': handle['data'],
-        }
-
-        if code != RGResCode.ok and 'path' in res:
-            del_filename = res['path']
-            executor.submit(do_del_file, [del_filename])
-
-    return jsonify(form_res(RGResCode.ok, data))
-
-
 @RestRouter.route('/fastUpload', methods=['POST'])
 @RGUIController.auth_handler()
 def new_user_file_with_hash(user_id):
@@ -122,8 +61,15 @@ def new_user_file_with_hash(user_id):
         return jsonify(form_res(RGResCode.lack_param))
     for file_key in up_files:
         file = up_files[file_key]
+        file_type = int(file.get('type', 0))
+        in_file = int(file.get('in_file', 0))
+
         if 'md5' not in file:
-            return jsonify(form_res(RGResCode.lack_param))
+            if in_file:
+                if file_type != 1:
+                    return jsonify(form_res(RGResCode.lack_param))
+            else:
+                return jsonify(form_res(RGResCode.lack_param))
 
         in_album = file.get('in_album', False)
         album_id = file.get('album_id', None)
@@ -139,11 +85,12 @@ def new_user_file_with_hash(user_id):
 
 
 def __fast_up(user_id, file):
-    md5 = file['md5']
+    md5 = file.get('md5')
     in_album = file.get('in_album', False)
     album_id = file.get('album_id', None)
     in_file = file.get('in_file', 0)
     directory_id = file.get('directory_id', -1)
+    file_type = file.get('type', 0)
     filename = file.get('name', '')
 
     if in_album:
@@ -151,8 +98,13 @@ def __fast_up(user_id, file):
                                                       album_id=album_id, full_url=False)
         file = {"file": photo, "code": code}
     elif in_file:
-        file, code = files.check_and_new_user_file_with_hash(
-            user_id=user_id, directory_id=directory_id, file_hash=md5, name=filename)
+        # directory
+        if int(file_type) == 1:
+            file = files.new_directory(user_id=user_id, name=filename, directory_id=directory_id)
+            code = RGResCode.ok if file is not None else RGResCode.insert_fail
+        else:
+            file, code = files.check_and_new_user_file_with_hash(
+                user_id=user_id, directory_id=directory_id, file_hash=md5, name=filename)
         file = {"file": file, "code": code}
     else:
         conn = None
@@ -183,6 +135,65 @@ def __fast_up(user_id, file):
             else:
                 file = {"file": files.filter_return_file_info(file_info=file_info, need_id=True), "code": RGResCode.ok}
     return file
+
+
+@RestRouter.route('/upload', methods=['POST'])
+@RGUIController.auth_handler()
+def new_file(user_id):
+    """
+    上传文件
+    body 参数:
+        fileUpInfo      文件信息
+        {file}          文件流
+    """
+    re_files = request.files
+    file_up_info = request_value(request, 'fileUpInfo')
+    if file_up_info is None:
+        return jsonify(form_res(RGResCode.lack_param))
+    file_up_info = json.loads(file_up_info, encoding="utf-8")
+
+    for file_key in re_files:
+        up_info = file_up_info.get(file_key, None)
+        if up_info is None:
+            return jsonify(form_res(RGResCode.lack_param))
+        if up_info.get('md5', None) is None:
+            return jsonify(form_res(RGResCode.lack_param))
+        if up_info.get('in_file', 0):
+            if not files.capacity_enough(user_id=user_id, new_file_size=request_file_size(request)):
+                return jsonify(form_res(RGResCode.full_size))
+
+    code, result = do_new_file()
+    if code != RGResCode.ok:
+        return jsonify(form_res(code))
+
+    data = {}
+    for up_res in result:
+        file_key = up_res['key']
+
+        up_info = file_up_info.get(file_key)
+        set_name = up_info.get('name', '')
+
+        in_album = up_info.get('in_album', 0)
+        album_id = up_info.get('album_id', -1)
+
+        in_file = up_info.get('in_file', 0)
+        did = up_info.get('directory_id', -1)
+
+        handle = handler_upload_res(user_id, up_res=up_res, set_name=set_name,
+                                    in_album=in_album, album_id=album_id,
+                                    in_file=in_file, directory_id=did)
+
+        code = handle['code']
+        data[file_key] = {
+            'code': code,
+            'file': handle['data'],
+        }
+
+        if code != RGResCode.ok and 'path' in up_res:
+            del_filename = up_res['path']
+            executor.submit(do_del_file, [del_filename])
+
+    return jsonify(form_res(RGResCode.ok, data))
 
 
 @RestRouter.route('/user/list', methods=['GET'])
@@ -334,7 +345,7 @@ def user_file_info(user_id):
     if file_id is None:
         return jsonify(form_res(RGResCode.lack_param))
 
-    info = files.user_file(user_id=user_id, id=file_id)
+    info = files.user_file_info(user_id=user_id, id=file_id)
     if info is not None:
         code = RGResCode.ok
     else:
@@ -342,14 +353,14 @@ def user_file_info(user_id):
     return jsonify(form_res(code, {"file": info}))
 
 
-def handler_upload_res(user_id, t, set_name=None,
+def handler_upload_res(user_id, up_res, set_name=None,
                        in_album=False, album_id=-1, full_url=False,
                        in_file=False, directory_id=-1):
     """
 
     :param set_name:
     :param user_id: userId
-    :param t: 上传结果
+    :param up_res: 上传结果
     :param in_album: 1代表存入相册 0代表不存入相册
     :param album_id: 插入到对应的相册
     :param in_file: 存入用户文件
@@ -372,25 +383,25 @@ def handler_upload_res(user_id, t, set_name=None,
         if in_file and not files.capacity_enough(user_id=user_id, new_file_size=request_file_size(request), conn=conn):
             code = RGResCode.full_size
             raise Exception('capacity not enough')
-        if 'flag' in t:
-            if not t['flag']:
+        if 'flag' in up_res:
+            if not up_res['flag']:
                 code = RGResCode.server_error
-                raise Exception(t['err_msg'])
+                raise Exception(up_res['err_msg'])
 
             exif_info = None
             exif_time, size = 0, 0
             exif_gps_lalo, mime = '', ''
 
-            if 'mime' in t:
-                mime = t['mime']
-            if 'name' in t:
-                original_name = t['name']
-            if 'size' in t:
-                size = t['size']
-            if 'path' in t:
-                filename = t['path']
-            if 'exif' in t:
-                exif = t.get('exif', None)
+            if 'mime' in up_res:
+                mime = up_res['mime']
+            if 'name' in up_res:
+                original_name = up_res['name']
+            if 'size' in up_res:
+                size = up_res['size']
+            if 'path' in up_res:
+                filename = up_res['path']
+            if 'exif' in up_res:
+                exif = up_res.get('exif', None)
                 exif_time = exif.get('timestamp', None)
                 exif_gps_lalo = exif.get('gps_lalo', None)
                 exif_info = exif.get('original', None)
@@ -402,7 +413,7 @@ def handler_upload_res(user_id, t, set_name=None,
                 mime=mime,
                 size=size,
                 filename=filename,
-                file_hash=t['hash'],
+                file_hash=up_res['hash'],
                 exif_time=exif_time,
                 exif_info=exif_info,
                 exif_lalo=exif_gps_lalo,
@@ -456,7 +467,7 @@ def user_file_get(user_file_id):
     if not is_int_number(user_file_id):
         return jsonify(form_res(RGResCode.lack_param))
     auth, user_id = RGUIController.do_auth()
-    file = files.user_file(user_id=user_id, id=user_file_id)
+    file = files.user_file_info(user_id=user_id, id=user_file_id)
 
     filename = file['filename'] if file is not None and 'filename' in file else None
     mime = file['mime'] if file is not None and 'mime' in file else None
@@ -506,17 +517,9 @@ def handle_download_import_file(filename):
     return Response(stream_with_context(req.iter_content(chunk_size=1024)), content_type=content_type)
 
 
-"""
-文件上传接口
-
-接收 key 为 file, icon, background 的文件流
-需要在对应的字段 file_md5, icon_md5, background_md5 提供对应的文件32位小写md5值
-"""
-
-
 def do_new_file():
     """
-    :return: response, [{name:'', success: True}, ……, ]
+    :return: code, [{name:'', success: True}, ……, ]
     """
 
     url = RemoteFileHost + '/' + FilePreFix + 'upload/'
@@ -524,9 +527,6 @@ def do_new_file():
 
     re_files = request.files
     for file_key in re_files:
-        file_hash = request_value(request, file_key + '_md5')
-        if file_hash is None:
-            return RGResCode.lack_param, None
         stream = re_files[file_key]
         value = (stream.filename, stream.stream, stream.content_type)
         file_stream[file_key] = value
