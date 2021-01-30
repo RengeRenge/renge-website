@@ -250,6 +250,7 @@ class user_file(Base):
     directory_id = Column(BigInteger, nullable=False, default=-1,
                           comment='The ID of the directory this file belongs to. -1 is root')
     personal_name = Column(String(100), nullable=True)
+    open_code = Column(String(48), nullable=True)
     add_timestamp = Column(BigInteger, nullable=True)
     update_timestamp = Column(BigInteger, nullable=True)
 
