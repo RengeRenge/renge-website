@@ -69,16 +69,18 @@ let fileApp = undefined
   }
 }
  */
-function file_list({id=null, code=null, directory=false, success, error}) {
+function file_list({id=null, code=null, open_code=null, directory=false, success, error}) {
     let json = {}
     let url
     if (id !== null) {
         json['directory_id'] = id
         url = directory ? "/file/user/directory_list" : "/file/user/list"
-    }
-    if (code !== null) {
+    } else if (code !== null) {
         json['code'] = code
         url = '/file/user/playList'
+    } else  if (open_code !== null) {
+        json['open_code'] = open_code
+        url = '/file/user/open/list'
     }
     $.ajax({
         type: 'GET',
@@ -271,13 +273,18 @@ function upload_desc(offsetTime, oLoaded, loaded, total) {
     return leftTime.toHHMMSS() + speed
 }
 
-function userFileInfo({file_id, success, error}) {
+function userFileInfo({file_id, open_code, success, error}) {
+    let data = {}
+    if (file_id) {
+        data['id'] = file_id
+    }
+    if (open_code) {
+        data['open_code'] = open_code
+    }
     $.ajax({
         type: 'GET',
-        url: "/file/user/fileInfo",
-        data: {
-            'id': file_id,
-        },
+        url: open_code ? "/file/user/open/fileInfo" : "/file/user/fileInfo",
+        data,
         success:success,
         error:error
     })
@@ -328,6 +335,32 @@ function file_size({file_id, success, error}) {
         data: {
             id: file_id,
         },
+        success:success,
+        error:error
+    })
+}
+
+function file_share({file_id, success, error}) {
+    $.ajax({
+        type: 'POST',
+        contentType: "application/json",
+        url: "/file/user/open/code",
+        data: JSON.stringify({
+            'id': file_id,
+        }),
+        success:success,
+        error:error
+    })
+}
+
+function file_cancel_share({file_id, success, error}) {
+    $.ajax({
+        type: 'POST',
+        contentType: "application/json",
+        url: "/file/user/open/cancel",
+        data: JSON.stringify({
+            'id': file_id,
+        }),
         success:success,
         error:error
     })

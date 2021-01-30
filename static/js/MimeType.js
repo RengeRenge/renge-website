@@ -1061,6 +1061,10 @@ function mimeIcon(mime) {
     return 'normal'
 }
 
+function mimeIconUrl(mime) {
+    return '/static/image/fileType/' + mimeIcon(mime) + '.svg'
+}
+
 function imageDisplaySupport(mime) {
     if (mime && mime.indexOf('image') >= 0) {
         return image_support.indexOf(getExt(mime, true, '/')) >= 0

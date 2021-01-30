@@ -182,9 +182,8 @@ def user_file_list(user_id, directory_id=None):
         sql = "SELECT \
         user_file.id as id, \
         personal_name as name, \
-        file.filename as filename,\
         file.exif_timestamp as exif_timestamp,\
-        directory_path, directory_id ,type, size, add_timestamp, update_timestamp, hash, mime \
+        directory_path, directory_id ,type, size, open_code, add_timestamp, update_timestamp, hash, mime \
         from user_file \
         left join file on user_file.file_id = file.id\
         WHERE user_id =  %(user_id)s and directory_id = %(directory_id)s"
@@ -281,7 +280,6 @@ def user_file_list_with_name(user_id, name):
         sql = "SELECT \
             user_file.id as id, \
             personal_name as name, \
-            file.filename as filename,\
             directory_path, directory_id ,type, size, add_timestamp, update_timestamp, hash, mime \
             from user_file \
             left join file on user_file.file_id = file.id\
@@ -309,24 +307,36 @@ def user_file_list_with_name(user_id, name):
             conn.close()
 
 
-def user_file_info(user_id, id=None, type=0):
+def user_file_info(user_id, id=None, type=None, open_code=None, conn=None):
+    temp = ['user_file.id=%(id)s and user_file.user_id = %(user_id)s']
+    if type is not None:
+        temp.append('user_file.type = %(type)s')
+    if open_code is not None:
+        temp.append('user_file.open_code = %(open_code)s')
+
     sql = "SELECT \
     file.filename as filename, \
     user_file.personal_name as name, \
     file.mime as mime, \
     file.size as size, \
     file.hash as hash, \
-    user_file.id as id \
+    user_file.id as id, \
+    user_file.type as type, \
+    user_file.open_code as open_code, \
+    user_file.directory_id as directory_id, \
+    user_file.directory_path as directory_path \
     from user_file \
     left join file on user_file.file_id = file.id \
-    WHERE user_file.id=%(id)s and user_file.user_id = %(user_id)s and user_file.type = %(type)s limit 1"
-    result, count, new_id = dao.execute_sql(
+    WHERE {} limit 1".format(' and '.join(temp))
+    result, count, new_id, error = dao.do_execute_sql(
+        conn=conn,
         sql=sql,
         kv=True,
         args={
             'id': id,
             'user_id': user_id,
-            'type': type
+            'type': type,
+            'open_code': open_code
         }
     )
     if count > 0:
