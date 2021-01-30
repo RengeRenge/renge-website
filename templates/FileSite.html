@@ -51,6 +51,18 @@
         /* box-shadow: 0px 1px 5px rgba(0,0,0, 0.3); */
         /* background-color: whitesmoke; */
     }
+    .sharing-status {
+        width: 12px;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background-color: white;
+        border-radius: 50%;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
     .file-list li .file-name {
         display: flex;
         max-width: 100%;
@@ -219,6 +231,15 @@
         margin-left: auto;
         margin-right: auto;
     }
+    .open-code-display {
+        font-size: 16px;
+        color: gray;
+        background-color: gainsboro;
+        padding: 5px 10px;
+        border-radius: 5px;
+        word-break: break-all;
+        line-height: 2.3;
+    }
 </style>
 
 <body>
@@ -284,6 +305,10 @@
                      @error="onThumbError(file)"
                      v-bind:src="file.thumbUrl"
                 />
+                <img v-if="file.open_code" src="/static/image/file-sharing.svg"
+                     class="sharing-status"
+                     v-bind:style="file.thumbUrl == file.thumbFailedUrl ? {} : {right: '-6px', bottom: '-3px'}"
+                >
                 <div class="userSelectNone file-upload-bar-wrapper"
                      v-if="file.uploadFile && file.uploading"
                 >
@@ -345,8 +370,8 @@
         <a v-if="menuFile && !menuFile.uploadFile && menuFile.type == 1"
              class="menu"
              target="_blank"
-             v-bind:href="'/file/nyapass/av' + menuFile.id">
-            使用播放列表打开
+             v-bind:href="'/file/nyapass/pv' + menuFile.id">
+            音乐列表播放
         </a>
         <div v-if="menuFile && menuFile.uploadFile && menuFile.uploading"
              class="menu"
@@ -369,15 +394,19 @@
         <div v-if="menuFile && !menuFile.uploadFile" class="menu" @click="remove()">删除</div>
         <div v-if="menuFile && !menuFile.uploadFile" class="line"></div>
         <div v-if="menuFile && !menuFile.uploadFile" class="menu" @click="moveto()">移动到...</div>
-        <!--<div v-if="menuFile && !menuFile.uploadFile" class="menu">分享</div>-->
+
+        <div v-if="menuFile && !menuFile.uploadFile && menuFile.open_code" class="menu" @click="showShareUrl(menuFile.open_code, menuFile.type)">共享链接</div>
+        <div v-if="menuFile && !menuFile.uploadFile && menuFile.open_code" class="menu" @click="cancelShare(menuFile.id, menuFile)">取消共享</div>
+
+        <div v-if="menuFile && !menuFile.uploadFile && !menuFile.open_code" class="menu" @click="share(menuFile.id, menuFile)">{{menuFile.type ? '音乐列表共享': '文件共享'}}</div>
 
         <p v-if="!menuFile" class="menu file_input_wrap" type="file">上传文件<input type="file" class="hide_file_input" @change="menu_upload($event)"></p>
         <div v-if="!menuFile" class="menu" @click="do_new_directory()">新建文件夹</div>
         <a v-if="!menuFile"
              class="menu"
              target="_blank"
-             v-bind:href="'/file/nyapass/av' + directory_id">
-            使用播放列表打开
+             v-bind:href="'/file/nyapass/pv' + directory_id">
+            音乐列表播放
         </a>
 
         <div v-if="!menuFile || !menuFile.uploadFile" class="line"></div>
@@ -430,6 +459,16 @@
             <v-input placeholder="请输入文件夹名称" v-model="inputText"></v-input>
         </v-modal>
     </template>
+
+    <template>
+        <v-modal title="共享链接" :visible="openCodeUrl" @ok="openCodeUrl = null" @cancel="openCodeUrl = null">
+            <v-div class="open-code-display">{{openCodeUrl}}</v-div>
+            <template slot="footer">
+                <v-button @click="window.open(openCodeUrl)" type="primary">查看共享页面</v-button>
+                <v-button type="primary" @click="openCodeUrl = null">关闭</v-button>
+            </template>
+        </v-modal>
+    </template>
 </div>
 {% endraw %}
 
@@ -468,7 +507,9 @@
 
             directoryViewShow: false,
             directoryViewData: [],
-            treeSelectedDirectoryId: undefined
+            treeSelectedDirectoryId: undefined,
+
+            openCodeUrl: null,
         },
         methods:{
             hideMenu(e){
@@ -496,11 +537,7 @@
                 fileApp.sortMenuShow = false;
             },
             preview(menuFile) {
-                if (menuFile.videoEnable || menuFile.imageEnable || menuFile.audioEnable) {
-                    window.open('/file/nyapass/av' + menuFile.id)
-                } else {
-                    alert('不支持的文件类型')
-                }
+                window.open('/file/nyapass/pv' + menuFile.id)
             },
             rename(){
                 fileApp.renameIndex = fileApp.menuIndex;
@@ -964,6 +1001,43 @@
                         })
                     }
                 }
+            },
+            share(file_id, file=null) {
+                file_share({
+                    file_id,
+                    success:(result)=> {
+                        if (result.code === 1000) {
+                            let code = result.data.shareCode
+                            let type = 1
+                            if (file) {
+                                file.open_code = code
+                                type = file.type
+                            }
+                            this.showShareUrl(code, type)
+
+                        }
+                    },
+                    error:()=> {
+
+                    }
+                })
+            },
+            cancelShare(file_id, file=null) {
+                file_cancel_share({
+                    file_id,
+                    success:(result)=> {
+                        if (result.code === 1000 && file) {
+                            file.open_code = null
+                        }
+                    },
+                    error:()=> {
+
+                    }
+                })
+            },
+            showShareUrl(open_code, file_type) {
+                let url = document.location.origin + (file_type ? '/file/nyapass/playList/sv' : '/file/nyapass/sv') + open_code
+                this.openCodeUrl = url
             }
         }
     });
@@ -1000,7 +1074,7 @@
             //取消默认的浏览器自带右键 很重要！！
             e.preventDefault()
             let target = e.target
-            let enableClass = ['icon-wrap', 'icon', 'file-name', 'two_line', 'file-upload-bar-wrapper', 'bar-progress', 'bar-content', 'bar-text']
+            let enableClass = ['icon-wrap', 'icon', 'file-name', 'two_line', 'file-upload-bar-wrapper', 'bar-progress', 'bar-content', 'bar-text', 'sharing-status']
 
             fileApp.menuIndex = -1
             fileApp.menuFile = undefined

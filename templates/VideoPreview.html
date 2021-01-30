@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<html lang="zh" xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
 <script type="text/javascript" src="/static/jquery/jquery.min.js?ver={{js_ver}}"></script>
 <script type="text/javascript" src="/static/js/file.js?ver={{js_ver}}"></script>
@@ -33,7 +33,18 @@
     }
     .no-support {
         color: #ecf6fd;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
     }
+
+    .no-support img {
+        max-width: 80%;
+        max-height: 50%;
+    }
+
     ::-webkit-scrollbar{
         display: none;
         /* background-color:transparent; */
@@ -45,6 +56,12 @@
         height: 20px;
         transform: scaleX(-1);
         cursor: pointer;
+    }
+    .download {
+        height: 20px;
+        cursor: pointer;
+        top: 0;
+        right: 0;
     }
     .play-list {
         border-radius: 5px;
@@ -80,7 +97,7 @@
         background-color: #262626;
     }
     .play-list .even {
-
+        background-color: #303030;
     }
     .play-list .selected {
         background-color: #4d5157;
@@ -167,18 +184,29 @@
          style="max-width: 100%; max-height: 100%"
     >
 
-    <div v-if="mimeType && !image && !video && !audio"
-         class="no-support"
-    >
-        不支持的文件类型
+    <div v-if="loaded && !image && !video && !audio" class="no-support">
+        <img v-if="loadedFile" v-bind:src="loadedFile.thumb" @error="onThumbError(loadedFile)">
+        <div v-if="loadedFile" style="margin-bottom: 40px; margin-top: 20px">{{loadedFile.name}}</div>
+        <div v-if="!loadedFile && open_code">共享内容已取消</div>
     </div>
     <div v-if="list && !fileList.length"
          class="no-support"
     >
         没有可播放的内容
     </div>
+
     <img v-if="list && fileList.length" src="/static/image/menu.svg" class="menu" @click="onMenuIconClick">
+    <div v-else-if="loadedFile" class="menu">
+        <img src="/static/image/file-download.svg" class="download">
+        <a class="download"
+           style="width: 100%;height: 100%; position: absolute;"
+           v-bind:href="loadedFile.downloadUrl"
+           v-bind:download="loadedFile.name"></a>
+    </div>
+
+
     <div v-if="list && fileList.length && showMenu" class="play-list">
+        <div v-if="open_code" style="padding-left: 14px; padding-top: 5px; padding-bottom: 5px; font-size: 14px;">共享的播放列表</div>
         <input v-if="listSearchState" autofocus="autofocus" class="search-input" @input="doSearch(event.target.value)">
         <ul v-bind:style="{maxHeight: Math.min(appHeight - 130, 300) + 'px'}">
             <li v-for="(file, index) in displayList"
@@ -189,7 +217,7 @@
                 @dblclick="onAudioDoubleClick(file.id)"
                 onselectstart="return false"
             >
-                <img v-if="playingId == file.id" src="/static/image/list_playing.svg" class="playing-icon">
+                <img v-if="playingId == file.id" @click="switchPlayState(file.id)" src="/static/image/list_playing.svg" class="playing-icon">
                 <div v-else class="playing-icon">{{index + 1}} </div>
                 <span>
                     <span class="two_line">{{file.name}}</span>
@@ -221,23 +249,13 @@
 
     const videoPage = new Vue({
         el: '#videoPage',
-        created: function (e) {
-            let id = document.location.pathname.split("/")
-            if (id.indexOf('playList') >= 0) {
-                id = id[id.length - 1]
-                this.loadPlayList(id)
-            } else {
-                this.loadFile(id[id.length - 1])
-            }
-        },
-        mounted: function() {
-            this.onResize()
-        },
         data: {
+            loaded: false,
             mimeType: null,
             video: false,
             image: false,
             audio: false,
+            loadedFile: null,
             list: false,
             url: null,
             audioCover: null,
@@ -253,12 +271,34 @@
             errorImage: 'this.src="/static/image/music_playing.svg"',
             appHeight: 0,
             listSearchState: false,
+            open_code: null,
+        },
+        created: function (e) {
+            let path = document.location.pathname.split("/")
+            let lastPath = path[path.length - 1]
+            let sv = null, pv = null
+            if (lastPath.indexOf('pv') === 0) {
+                pv = lastPath.substr(2)
+            } else if (lastPath.indexOf('sv') === 0) {
+                sv = lastPath.substr(2)
+                document.title = '共享'
+                this.open_code = sv
+            }
+            if (path.indexOf('playList') >= 0) {
+                document.title = '播放列表'
+                this.loadPlayList(pv, sv)
+            } else {
+                this.loadFile(pv)
+            }
+        },
+        mounted: function() {
+            this.onResize()
         },
         methods:{
-            loadPlayList: function (code) {
-                document.title = '播放列表'
+            loadPlayList: function (code, open_code) {
                 file_list({
                     code,
+                    open_code,
                     success: (result) => {
                         this.list = true
                         if (result.code === 1000) {
@@ -282,41 +322,59 @@
                     },
                 })
             },
-            loadFile:function (av) {
-                av = av + ''
-                av = av.split('av')
-                av = av[av.length - 1]
+            loadFile:function (fid) {
+                if (fid !== null) {
+                    fid = parseInt(fid)
+                }
                 userFileInfo({
-                    file_id: av,
+                    file_id: fid,
+                    open_code: this.open_code,
+                    error:()=> {
+                        this.loaded = true
+                    },
                     success:(result)=> {
-                    if (result.code !== 1000) {
-                        return
-                    }
-                    let file = result.data.file
-                    this.mimeType = mimeType(file.name)
-                    this.image = imageDisplaySupport(this.mimeType)
-                    this.video = videoDisplaySupport(this.mimeType)
-                    this.audio = audioDisplaySupport(this.mimeType)
-                    this.url = ''
-                    this.playingId = null
+                        this.loaded = true
+                        if (result.code !== 1000) {
+                            return
+                        }
+                        let file = result.data.file
+                        let mime = mimeType(file.name)
 
-                    // this.url = '/file/user/get/' + av
-                    if (this.audio) {
-                        this.audioCover = '/file/user/get/' + av + '?cover=1'
-                    }
-                    document.title = file.name
+                        file.errorThumb = mimeIconUrl(mime)
+                        if (this.open_code) {
+                            file.downloadUrl = '/file/user/open/get/' + this.open_code + '?id=' + file.id
+                            file.thumb = file.downloadUrl+ '&cover=1'
+                        } else {
+                            file.downloadUrl = '/file/user/get/' + file.id
+                            file.thumb = file.downloadUrl+ '?cover=1'
+                        }
 
-                    this.$nextTick(function () {
-                        this.url = '/file/user/get/' + av
-                        this.willPlayId = av
-                    })
+                        this.loadedFile = file
 
-                    // if (this.autoPlay) {
-                    //     setTimeout(()=> {
-                    //         this.$refs.audioPlayer.play()
-                    //     }, 1000)
-                    // }
-                }})
+                        this.mimeType = mime
+                        this.image = imageDisplaySupport(mime)
+                        this.video = videoDisplaySupport(mime)
+                        this.audio = audioDisplaySupport(mime)
+                        this.url = ''
+                        this.playingId = null
+
+                        // this.url = '/file/user/get/' + fid
+                        if (this.audio) {
+                            this.audioCover = file.thumb
+                        }
+                        document.title = file.name
+
+                        this.$nextTick(function () {
+                            this.url = file.downloadUrl
+                            this.willPlayId = fid
+                        })
+
+                        // if (this.autoPlay) {
+                        //     setTimeout(()=> {
+                        //         this.$refs.audioPlayer.play()
+                        //     }, 1000)
+                        // }
+                    }})
             },
             onCanplay: function() {
                 this.$refs.audioPlayer.play()
@@ -324,25 +382,25 @@
             onStartPlay: function() {
                 this.playingId = this.willPlayId
             },
-            select: function(av) {
+            select: function(fid) {
                 event.cancelBubble = true
                 event.preventDefault()
-                this.selectedId = av
+                this.selectedId = fid
                 if (isPhoneView()) {
-                    this.willPlayId === av+'' ? this.switchPlayState(av) : this.loadFile(av)
+                    this.willPlayId === fid ? this.switchPlayState(fid) : this.loadFile(fid)
                 }
             },
-            onAudioDoubleClick: function(av) {
+            onAudioDoubleClick: function(fid) {
                 event.cancelBubble = true
                 event.preventDefault()
                 if (isPhoneView()) {
                     return
                 }
-                this.selectedId = av
-                this.willPlayId === av+'' ? this.switchPlayState(av) : this.loadFile(av)
+                this.selectedId = fid
+                this.willPlayId === fid ? this.switchPlayState(fid) : this.loadFile(fid)
             },
-            switchPlayState: function(av) {
-                if (av+'' !== this.willPlayId) {
+            switchPlayState: function(fid) {
+                if (fid !== this.willPlayId) {
                     return
                 }
                 let audioPlayer = this.$refs.audioPlayer
@@ -359,7 +417,7 @@
                 this.next()
             },
             next: function (user) {
-                let nextIndex = this.fileList.findIndex(file => (file.id + '') === this.playingId)
+                let nextIndex = this.fileList.findIndex(file => file.id === this.playingId)
                 let loopMode = this.loopMode
                 if (loopMode === 2 && user) {
                     loopMode = 0
@@ -419,6 +477,9 @@
                 // console.log(this.$refs.videoPage.offsetHeight)
                 this.appHeight = this.$refs.videoPage.offsetHeight
                 this.appWidth = this.$refs.videoPage.offsetWidth
+            },
+            onThumbError(file) {
+                file.thumb = file.errorThumb
             }
         }
     });

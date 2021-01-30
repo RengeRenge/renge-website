@@ -1,5 +1,6 @@
 # encoding: utf-8
 from concurrent.futures import ThreadPoolExecutor
+from functools import wraps
 
 import requests
 from flask import Blueprint, request, jsonify, stream_with_context, Response, json, redirect, \
@@ -7,6 +8,7 @@ from flask import Blueprint, request, jsonify, stream_with_context, Response, js
 
 import RGUIController
 from DAO import rg_dao as dao
+from Files import RGFileOpen
 from Model import files, pic
 from RGIgnoreConfig.RGFileGlobalConfigContext import FilePreFix, RemoteFileHost, name_fix, support_image
 from RGUtil import RGRequestHelp
@@ -27,7 +29,7 @@ def desktop_page(user_id):
     return RGUIController.ui_render_template('FileSite.html')
 
 
-@RestRouter.route('/nyapass/av<user_file_id>', methods=['GET'])
+@RestRouter.route('/nyapass/pv<user_file_id>', methods=['GET'])
 def video_view_page(user_file_id):
     if is_int_number(user_file_id):
         user_file_id = int(user_file_id)
@@ -40,11 +42,31 @@ def video_view_page(user_file_id):
     return RGUIController.ui_render_template('VideoPreview.html')
 
 
-@RestRouter.route('/nyapass/playList/<user_id_directory_id>', methods=['GET'])
+@RestRouter.route('/nyapass/playList/pv<user_id_directory_id>', methods=['GET'])
 def play_list_page(user_id_directory_id):
     auth, user_id = RGUIController.do_auth()
     if not auth:
         return redirect(url_for('login_page'))
+    return RGUIController.ui_render_template('VideoPreview.html')
+
+
+@RestRouter.route('/nyapass/sv<open_code>', methods=['GET'])
+def share_page(open_code):
+    try:
+        f_id, u_id = RGRequestHelp.fid_decode(open_code)
+        file_info = files.user_file_info(user_id=u_id, id=f_id, open_code=open_code)
+        if file_info is None:
+            return RGUIController.ui_render_template('VideoPreview.html')
+        if file_info['type'] == 1:
+            url = url_for('RGFileUpDown.play_list_share_page', open_code=open_code)
+            return redirect(url)
+        return RGUIController.ui_render_template('VideoPreview.html')
+    except:
+        return RGUIController.ui_render_template('VideoPreview.html')
+
+
+@RestRouter.route('/nyapass/playList/sv<open_code>', methods=['GET'])
+def play_list_share_page(open_code):
     return RGUIController.ui_render_template('VideoPreview.html')
 
 
@@ -347,10 +369,82 @@ def user_file_info(user_id):
 
     info = files.user_file_info(user_id=user_id, id=file_id)
     if info is not None:
+        del info['filename']
         code = RGResCode.ok
     else:
         code = RGResCode.database_error
     return jsonify(form_res(code, {"file": info}))
+
+
+@RestRouter.route('/user/open/code', methods=['POST'])
+@RGUIController.auth_handler()
+def user_file_share_code(user_id):
+    file_id = request_value(request, 'id')
+    if file_id is None:
+        return jsonify(form_res(RGResCode.lack_param))
+    share_code = RGRequestHelp.fid_encode(file_id, user_id)
+    flag = files.user_file_set(user_id=user_id, id=file_id, args={"open_code": share_code})
+    if flag:
+        code = RGResCode.ok
+    else:
+        share_code = None
+        code = RGResCode.database_error
+    return jsonify(form_res(code, {"shareCode": share_code}))
+
+
+@RestRouter.route('/user/open/cancel', methods=['POST'])
+@RGUIController.auth_handler()
+def user_file_open_code_cancel(user_id):
+    file_id = request_value(request, 'id')
+    if file_id is None:
+        return jsonify(form_res(RGResCode.lack_param))
+    flag = files.user_file_set(user_id=user_id, id=file_id, args={"open_code": None})
+    if flag:
+        code = RGResCode.ok
+    else:
+        code = RGResCode.database_error
+    return jsonify(form_res(code))
+
+
+@RestRouter.route('/user/open/list', methods=['GET'])
+@RGFileOpen.file_open_handler()
+def user_file_open_list(**params):
+    """
+    根据 openCode 获取文件列表
+    """
+    result, error = files.user_file_files_relative_with_id(user_id=params['u_id'], id=params['f_id'], conn=params['conn'])
+    if error is not None:
+        raise error
+    return jsonify(form_res(RGResCode.ok, result))
+
+
+@RestRouter.route('/user/open/fileInfo', methods=['GET'])
+@RGFileOpen.file_open_handler()
+def user_file_open_file_info(**params):
+    """
+    根据 openCode 获取文件详情
+    """
+    info = params['info']
+    del info['filename']
+    return jsonify(form_res(RGResCode.ok, {'file': info}))
+
+
+@RestRouter.route('/user/open/get', methods=['GET'])
+@RGFileOpen.file_open_handler()
+def user_file_open_file_get(**params):
+    """
+    根据openCode获取文件流
+    """
+    return __get_file_stream(params['info'])
+
+
+@RestRouter.route('/user/open/get/<open_code>', methods=['GET'])
+@RGFileOpen.file_open_handler(wrapper_code_key='open_code')
+def user_file_open_file_url_get(**params):
+    """
+    根据openCode获取文件流
+    """
+    return __get_file_stream(params['info'])
 
 
 def handler_upload_res(user_id, up_res, set_name=None,
@@ -467,8 +561,11 @@ def user_file_get(user_file_id):
     if not is_int_number(user_file_id):
         return jsonify(form_res(RGResCode.lack_param))
     auth, user_id = RGUIController.do_auth()
-    file = files.user_file_info(user_id=user_id, id=user_file_id)
+    file = files.user_file_info(user_id=user_id, id=user_file_id, type=0)
+    return __get_file_stream(file)
 
+
+def __get_file_stream(file):
     filename = file['filename'] if file is not None and 'filename' in file else None
     mime = file['mime'] if file is not None and 'mime' in file else None
     name = file['name'] if file is not None and 'name' in file else None
@@ -491,7 +588,8 @@ def handle_download_file(filename, download_name=None, mime=None):
         'cover': int(request_value(request, 'cover', 0))
     }
     req = requests.get(remote_url, headers=request.headers, json=params, stream=not range_mode)
-
+    if req.status_code != 200 and req.status_code != 206:
+        return Response(req.content, req.status_code, direct_passthrough=True)
     if range_mode:
         response = Response(req.content, 206, direct_passthrough=True)
     else:
@@ -548,3 +646,10 @@ def do_del_file(filenames):
     url = RemoteFileHost + '/' + FilePreFix + 'del'
     req = requests.post(url=url, json={"names": filenames})
     # print('end delete status_code:%d' % req.status_code)
+
+
+"""
+decorator
+"""
+
+
