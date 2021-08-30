@@ -14,7 +14,7 @@
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=1.0, user-scalable=yes"/>
-    <title>{%- if coll_pwd -%}设置密码{%- elif coll_email -%}绑定邮箱{%- elif coll_user_email -%}验证邮箱{%- else -%}登陆{%- endif -%}</title>
+    <title>{%- if coll_pwd -%}设置密码{%- elif coll_email -%}绑定邮箱{%- elif coll_user_email -%}验证邮箱{%- else -%}登录{%- endif -%}</title>
 </head>
 <body>
 <div class="hina_bg"></div>
@@ -93,7 +93,7 @@
 
                 {%- else -%}
 
-                <!--正常登陆注册-->
+                <!--正常登录注册-->
                 <div class="weui-cell" id="pwd_wrapper">
                     <div class="weui-cell__bd">
                         <input {% if coll_user_email %} hidden="hidden" {% endif %}
@@ -129,7 +129,7 @@
                 <div class="si-remember-password">
                     <input type="checkbox" id="remember-me" class="form-choice form-choice-checkbox" onchange="checkRemember(this)" >
                     <label class="form-label" for="remember-me">
-                        <span class="form-choice-indicator"></span>记住登陆状态
+                        <span class="form-choice-indicator"></span>记住登录状态
                     </label>
                 </div>
             </div>
@@ -281,7 +281,7 @@
                     } else if (that.registMode > 1) {
                         show_tip('不存在此账号')
                     } else if (that.registMode) {
-                        show_tip('该用户已注册 请直接登陆')
+                        show_tip('该用户已注册 请直接登录')
                     } else {
                         show_tip('该用户未注册 请点击立即注册')
                     }
@@ -298,7 +298,7 @@
         that.registMode = !that.registMode
         if (this.registMode) {
             $('#mode_desc').text('已有账号，')
-            $('#mode_action').text('去登陆。')
+            $('#mode_action').text('去登录。')
             $('.form-choice').css('cursor', 'default')
             $('.form-choice~.form-label').css('cursor', 'default')
             $('#remember-me').attr('disabled', "disabled")
@@ -335,7 +335,7 @@
             if (!username.length) {
                 $('#user').focus()
                 login_hidden('#pwd_wrapper', true, 200, function () {
-                    show_tip('请输入登陆用户名')
+                    show_tip('请输入登录用户名')
                 })
             } else {
                 check_user()
@@ -483,7 +483,7 @@
                     show_bind_more_info(false, false)
                     break;
                 case 1011:
-                    show_tip('登陆状态校验失败')
+                    show_tip('登录状态校验失败')
                     show_bind_more_info(false, false)
                     break;
                 case 1012:

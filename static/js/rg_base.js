@@ -55,7 +55,7 @@ function rgLoadContent(url, need_login=false) {
         let b = that.home ? '<a href="/user/set" class="boprt05" target="_top"><em>设置</em></a>':
             that.auth ?
                 '<a href="/" class="boprt01" target="_top"><em>回家</em></a>':
-                '<a href="/" class="boprt01" target="_top"><em>登陆</em></a>'
+                '<a href="/" class="boprt01" target="_top"><em>登录</em></a>'
         $('#topControl').remove()
         $(document.body).append($(controlH5.format(a, b)))
 
