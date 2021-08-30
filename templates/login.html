@@ -16,6 +16,24 @@
           content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=1.0, user-scalable=yes"/>
     <title>{%- if coll_pwd -%}设置密码{%- elif coll_email -%}绑定邮箱{%- elif coll_user_email -%}验证邮箱{%- else -%}登录{%- endif -%}</title>
 </head>
+<style>
+    .login_height0 {
+        height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        min-height: 0px;
+        overflow: hidden;
+    }
+    .login_display_none {
+        display: none;
+    }
+    .animate_wrapper {
+        -webkit-transition: all 0.3s;
+        -moz-transition: all 0.3s;
+        -o-transition: all 0.3s;
+        transition: all 0.3s;
+    }
+</style>
 <body>
 <div class="hina_bg"></div>
 <div class="page_wrapper main_title_color">
@@ -186,9 +204,9 @@
         that.registMode = parseInt('{%- if coll_user_email -%} 2 {%- else -%} 0 {%- endif -%}')
         that.remember = 0
 
-        login_hidden('#pwd_wrapper', true, 0, null)
-        login_hidden('#bind_code_wrapper', true, 0, null)
-        login_hidden('#bind_email_pwd_wrapper', true, 0, null)
+        login_hidden('#pwd_wrapper', true, null)
+        login_hidden('#bind_code_wrapper', true, null)
+        login_hidden('#bind_email_pwd_wrapper', true, null)
 
 
         $("#user").on("input", function (e) {
@@ -210,6 +228,9 @@
             show_bind_more_info(false, false)
             show_tip('')
         });
+        setTimeout(() => {
+            $('.weui-cell').addClass('animate_wrapper')    
+        }, 1000);
     })
 
     function hidePwdInputView(clearText=false) {
@@ -220,12 +241,12 @@
         $('#login_btn_pwd').addClass('login_button')
 
 
-        login_hidden('#pwd_wrapper', true, 200, null)
+        login_hidden('#pwd_wrapper', true, null)
         if (clearText) {
             $('#pwd').val('')
             $('#email').val('')
         }
-
+        that.checked = false
     }
 
     function check_user() {
@@ -251,15 +272,16 @@
                 showPwd = (data.code === 1000 && !that.registMode) || (data.code === 1001 && that.registMode)
             }
 
+            that.checked = showPwd
 
             if (showPwd) {
                 if (that.registMode) {
                 } else {
                     show_tip('')
                 }
-                login_hidden('#login_btn_pwd', true, 0, function () {
-                    login_hidden('#pwd_wrapper', false, 200, function () {
-                        login_hidden('#login_btn_pwd', false, 80, function () {
+                login_hidden('#login_btn_pwd', true, function () {
+                    login_hidden('#pwd_wrapper', false, function () {
+                        login_hidden('#login_btn_pwd', false, function () {
                             if (that.registMode > 1) {
                                 $('#email').focus()
                                 show_tip('请输入账号绑定的邮箱')
@@ -275,7 +297,7 @@
                 })
             } else {
                 $('#login_btn_user').addClass('login_button')
-                login_hidden('#login_btn_pwd', true, 0, function () {
+                login_hidden('#login_btn_pwd', true, function () {
                     if (data.code < 1000) {
                         show_tip('服务器异常🙆‍♀️')
                     } else if (that.registMode > 1) {
@@ -296,6 +318,13 @@
         }
         requestFine()
         that.registMode = !that.registMode
+
+        if (!that.registMode) {
+            $('.login_display_none').removeClass('login_display_none')
+        } else {
+            $('.login_height0').removeClass('login_height0')
+        }
+        
         if (this.registMode) {
             $('#mode_desc').text('已有账号，')
             $('#mode_action').text('去登录。')
@@ -323,7 +352,7 @@
             $('#email').show()
             if (!username.length) {
                 $('#user').focus()
-                login_hidden('#pwd_wrapper', true, 200, function () {
+                login_hidden('#pwd_wrapper', true, function () {
                     show_tip('请输入注册用户名')
                 })
             } else {
@@ -334,7 +363,7 @@
             $('#email').hide()
             if (!username.length) {
                 $('#user').focus()
-                login_hidden('#pwd_wrapper', true, 200, function () {
+                login_hidden('#pwd_wrapper', true, function () {
                     show_tip('请输入登录用户名')
                 })
             } else {
@@ -344,6 +373,10 @@
     }
 
     function login_user() {
+        if (!that.registMode && !that.checked) {
+            check_user()
+            return
+        }
         let username = $('#user').val()
         if (usernameCheck(username)) {
             return
@@ -509,8 +542,8 @@
     }
 
     function show_bind_more_info(show, loading) {
-        login_hidden('#bind_code_wrapper', !show, 200, null)
-        login_hidden('#bind_email_pwd_wrapper', !show, 200, null)
+        login_hidden('#bind_code_wrapper', !show, null)
+        login_hidden('#bind_email_pwd_wrapper', !show, null)
         if (show) {
             $('#bind_email_btn').removeClass('weui-loading')
             $('#bind_email_btn').removeClass('login_button')
@@ -616,11 +649,38 @@
         }
     }
 
-    function login_hidden(id, hide, time, callback) {
+    function login_hidden(id, hide, callback) {
         if (hide) {
-            $(id).hide(time, callback)
+            if (that.registMode) {
+                $(id).addClass('login_height0')
+                setTimeout(() => {
+                    if (that.registMode && $(id).hasClass('login_height0')) {
+                        $(id).addClass('login_display_none')
+                        $(id).removeClass('login_height0')
+                    }
+                }, 300);
+                if (callback) { callback() }
+            } else {
+                $(id).addClass('login_height0')
+                if (callback) { callback() }
+            }
         } else {
-            $(id).show(time, callback)
+            if (that.registMode) {
+                if ($(id).hasClass('login_display_none')) {
+                    $(id).addClass('login_height0')
+                    $(id).removeClass('login_display_none')
+                    setTimeout(() => {
+                        if (that.registMode && $(id).hasClass('login_height0')) {
+                            $(id).removeClass('login_height0')
+                        }
+                    }, 0);
+                    if (callback) { callback() }
+                    return
+                }
+            }
+            $(id).removeClass('login_display_none')
+            $(id).removeClass('login_height0')
+            if (callback) { callback() }
         }
     }
 
