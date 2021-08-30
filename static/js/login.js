@@ -78,7 +78,7 @@ function getVerifyCode(email, username, verifyType, callback) {
         success: function (result) {
             /**
              * 1002 已存在
-             * 1011 登陆状态验证失败
+             * 1011 登录状态验证失败
              * */
             if (callback)
                 callback(result)
