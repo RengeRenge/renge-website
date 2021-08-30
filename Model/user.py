@@ -169,7 +169,7 @@ def user_with_db_result(result=None, need_pwd=False, need_username=False, need_i
 
 
 def login_sign_check(username):
-    sql = "SELECT * FROM user where username=%(username)s"
+    sql = "SELECT * FROM user where username=%(username)s and is_active=1"
     result, count, new_id = dao.execute_sql(sql, ret=True, args={'username': username})
 
     _user = None
