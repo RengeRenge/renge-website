@@ -1,5 +1,5 @@
+import re
 from functools import wraps
-
 from flask import request, jsonify
 
 from Model import files
@@ -23,6 +23,8 @@ def file_open_handler(wrapper_code_key=None):
                     code = kwargs.get(wrapper_code_key)
                 if code is None:
                     return jsonify(form_res(RGResCode.lack_param))
+                else:
+                    code = re.sub("[^A-Za-z0-9].*", "", code)
             try:
                 f_id, u_id = RGRequestHelp.fid_decode(code)
             except Exception as e:
