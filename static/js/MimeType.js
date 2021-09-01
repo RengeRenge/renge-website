@@ -1085,3 +1085,17 @@ function audioDisplaySupport(mime) {
     }
     return false
 }
+
+function epubDisplaySupport(mime) {
+    if (mime && mime.indexOf('application/epub+zip') >= 0) {
+        return true
+    }
+    return false
+}
+
+function previewSupport(mime) {
+    if (imageDisplaySupport(mime) || videoDisplaySupport(mime) || audioDisplaySupport(mime) || epubDisplaySupport(mime)) {
+        return true
+    }
+    return false
+}
