@@ -426,6 +426,16 @@ def user_file_open_file_info(**params):
     """
     info = params['info']
     del info['filename']
+
+    open_code = params['open_code']
+
+    file_open_code = info['open_code']
+    if file_open_code is None or file_open_code != open_code:
+        info['depend_folder'] = True
+    else:
+        info['depend_folder'] = False
+
+    info['open_code'] = open_code
     return jsonify(form_res(RGResCode.ok, {'file': info}))
 
 

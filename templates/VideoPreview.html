@@ -342,8 +342,13 @@
 
                         file.errorThumb = mimeIconUrl(mime)
                         if (this.open_code) {
-                            file.downloadUrl = '/file/user/open/get/' + this.open_code + '?id=' + file.id
-                            file.thumb = file.downloadUrl+ '&cover=1'
+                            file.downloadUrl = '/file/user/open/get/' + file.open_code
+                            if (file['depend_folder']) {
+                                file.downloadUrl = file.downloadUrl + '?id=' + file.id
+                                file.thumb = file.downloadUrl + '&cover=1'
+                            } else {
+                                file.thumb = file.downloadUrl + '?cover=1'
+                            }
                         } else {
                             file.downloadUrl = '/file/user/get/' + file.id
                             file.thumb = file.downloadUrl+ '?cover=1'

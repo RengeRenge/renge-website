@@ -41,6 +41,7 @@ def file_open_handler(wrapper_code_key=None):
                 if file_id is not None:
                     file_id = int(file_id)
                     if f_id != file_id:
+                        # 共享文件夹内的文件可访问
                         file_info = files.user_file_info(user_id=u_id, id=file_id)
                         if file_info is None:
                             return jsonify(form_res(RGResCode.not_existed))
@@ -52,7 +53,7 @@ def file_open_handler(wrapper_code_key=None):
                 kwargs.update({
                     'conn': conn,
                     'info': info,
-                    'open_code_info': open_code_info,
+                    'open_code': code,
                     'f_id': f_id,
                     'u_id': u_id,
                 })
