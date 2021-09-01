@@ -351,7 +351,7 @@
     <div id="menu" class="menuWrap"
          v-bind:style="{ top: menuY+'px', left: menuX + 'px', display: menuShow? 'block' : 'none'}"
     >
-        <div v-if="menuFile && (menuFile.imageEnable || menuFile.videoEnable || menuFile.audioEnable)"
+        <div v-if="menuFile && menuFile.previewSupport"
            class="menu"
            @click="preview(menuFile)">
             预览
@@ -1170,9 +1170,8 @@
             }
         }
 
-        file.audioEnable = !file.uploadFile && audioDisplaySupport(mime)
-        file.videoEnable = !file.uploadFile && videoDisplaySupport(mime)
         file.imageEnable = !file.uploadFile && imageDisplaySupport(mime)
+        file.previewSupport = !file.uploadFile && previewSupport(mime)
         file.displayMime = mime
 
         file.thumbFailedUrl = '/static/image/fileType/{0}.svg'.format(icon)
@@ -1182,7 +1181,7 @@
 
         if (file.imageEnable) {
             file.thumbUrl = '/file/user/get/{0}?img_quality={1}'.format(file.id, 'low')
-        } else if (file.audioEnable || file.videoEnable) {
+        } else if (file.previewSupport) {
             file.thumbUrl = '/file/user/get/{0}?cover=1'.format(file.id)
         } else {
             file.thumbUrl = file.thumbFailedUrl
