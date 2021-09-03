@@ -217,3 +217,26 @@ function isPhoneView() {
     }
     return false
 }
+
+function getFrame(id, forStyle = false) {
+    if (typeof id === 'string') {
+        id = document.getElementById(id)
+    }
+    const frame = {
+        width: id.clientWidth,
+        height: id.clientHeight,
+        x: id.offsetLeft,
+        y: id.offsetTop
+    }
+
+    if (forStyle) {
+        return {
+            width: frame.width + 'px',
+            height: frame.height + 'px',
+            left: frame.x + 'px',
+            top: frame.y + 'px',
+            position: 'absolute'
+        }
+    }
+    return frame
+}
