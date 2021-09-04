@@ -75,7 +75,7 @@
         right: 0;
     }
 
-    .play-list {
+    .menu-base {
         border-radius: 5px;
         position: absolute;
         right: 20px;
@@ -86,6 +86,8 @@
         max-width: 300px;
         width: 80%;
     }
+
+    .play-list {}
 
     .play-list ul {
         list-style-type: none;
@@ -177,6 +179,11 @@
         justify-content: center;
     }
 
+    .list-style-none {
+        list-style-type: none;
+        list-style-image: none;
+    }
+
     .arrow {
         position: fixed;
         top: 50%;
@@ -255,6 +262,29 @@
     .shadow {
         box-shadow: 0 3px 6px 1px rgba(0, 0, 0, .22);
     }
+
+    .epub-chapter-wrapper {
+        max-height: 300px;
+        overflow: auto;
+        margin: 0;
+        padding: 0;
+    }
+
+    .epub-item {
+        cursor: pointer;
+        padding-top: 3px;
+        padding-bottom: 3px;
+        padding-right: 10px;
+        font-size: 12px;
+    }
+
+    .epub-bold {
+        font-weight: bold;
+    }
+
+    .epub-ul {
+        padding-left: 20px;
+    }
 </style>
 
 <head>
@@ -262,6 +292,26 @@
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=1.0, user-scalable=yes" />
     <title>预览</title>
+    {% raw %}
+    <script type="text/x-template" id="item-template">
+        <li>
+          <div
+            :class="'epub-bold'"
+            @click="$emit('select', item)">
+            {{ item.label }}
+          </div>
+          <ul class="epub-ul" v-show="isOpen" v-if="isFolder">
+            <tree-item
+              class="epub-item"
+              v-for="(child, index) in item.subitems"
+              :key="index"
+              :item="child"
+              @select="$emit('select', $event)"
+            ></tree-item>
+          </ul>
+        </li>
+    </script>
+    {% endraw %}
 </head>
 
 <body class="center" style="background-color: #4b4b4b;" onresize="onResize(event)">
@@ -296,15 +346,44 @@
             没有可播放的内容
         </div>
 
-        <img v-if="list && fileList.length" src="/static/image/menu.svg" class="menu" @click="onMenuIconClick">
-        <div v-else-if="loadedFile" class="menu">
+        <div v-if="epubLoading" class="full-ab center-column transition">
+
+            <div v-if="epubLoading" class="full-ab center-column transition">
+                <div id="epubWrapper"
+                    v-bind:class="epubCoverShadow ? epubSize : ['shadow', 'epub-bg', epubSize].join(' ')"
+                    style="position: absolute;">
+                    <div class="full-ab transition1" style="position: absolute;"
+                        v-bind:style="{opacity: epubAreaOpacity}">
+                        <div key="epubContent" class="full-ab" v-bind:class="phoneView?'':'spreads'" id="epubArea">
+                        </div>
+                    </div>
+                </div>
+                <a v-if="!phoneView" v-bind:style="{opacity: epubAreaOpacity}" id="prev" class="arrow"
+                    @click="epubPrev">‹</a>
+                <a v-if="!phoneView" v-bind:style="{opacity: epubAreaOpacity}" id="next" class="arrow"
+                    @click="epubNext">›</a>
+            </div>
+
+            <div v-if="!epubLoaded" v-bind:class="epubCoverShadow ? 'shadow transition': ''"
+                v-bind:style="epubCoverShadowStyle">
+                <div v-if="epubCoverShow" class="full-ab epub-bg"></div>
+            </div>
+
+            <div v-if="!epubLoaded" v-bind:class="epubSize" style="position: absolute;">
+                <img v-if="epubCoverShow" key="epubCover" v-bind:src="loadedFile.thumb"
+                    @error="onThumbError(loadedFile)" class="transition" v-bind:style="epubCoverStyle" />
+            </div>
+        </div>
+
+        <img v-if="(list && fileList.length) || (epubLoaded && epubToc)" src="/static/image/menu.svg" class="menu"
+            @click="onMenuIconClick">
+        <div v-else-if="loadedFile && !epubLoaded" class="menu">
             <img src="/static/image/file-download.svg" class="download">
             <a class="download" style="width: 100%;height: 100%; position: absolute;"
                 v-bind:href="loadedFile.downloadUrl" v-bind:download="loadedFile.name"></a>
         </div>
 
-
-        <div v-if="list && fileList.length && showMenu" class="play-list">
+        <div v-if="list && fileList.length && showMenu" class="play-list menu-base">
             <div v-if="open_code" style="padding-left: 14px; padding-top: 5px; padding-bottom: 5px; font-size: 14px;">
                 共享的播放列表</div>
             <input v-if="listSearchState" autofocus="autofocus" class="search-input"
@@ -330,33 +409,10 @@
             <img class="tool" src="/static/image/list_next.svg" @click="next(1)">
         </div>
 
-        <div v-if="epubLoading" class="full-ab center-column transition">
-
-            <div v-if="epubLoading" class="full-ab center-column transition">
-                <div id="epubWrapper"
-                    v-bind:class="epubCoverShadow ? epubSize : ['shadow', 'epub-bg', epubSize].join(' ')"
-                    style="position: absolute;">
-                    <div class="full-ab transition1" style="position: absolute;"
-                        v-bind:style="{opacity: epubAreaOpacity}">
-                        <div class="full-ab" v-bind:class="phoneView?'':'spreads'" id="epubArea">
-                        </div>
-                    </div>
-                </div>
-                <a v-if="!phoneView" v-bind:style="{opacity: epubAreaOpacity}" id="prev" class="arrow"
-                    @click="epubPrev">‹</a>
-                <a v-if="!phoneView" v-bind:style="{opacity: epubAreaOpacity}" id="next" class="arrow"
-                    @click="epubNext">›</a>
-            </div>
-
-            <div v-if="!epubLoaded" v-bind:class="epubCoverShadow ? 'shadow transition': ''"
-                v-bind:style="epubCoverShadowStyle">
-                <div v-if="epubCoverShow" class="full-ab epub-bg"></div>
-            </div>
-
-            <div v-if="!epubLoaded" v-bind:class="epubSize" style="position: absolute;">
-                <img v-if="epubCoverShow" key="epubCover" v-bind:src="loadedFile.thumb"
-                    @error="onThumbError(loadedFile)" class="transition" v-bind:style="epubCoverStyle" />
-            </div>
+        <div v-if="epub && showMenu && epubToc" class="menu-base epub-chapter-wrapper">
+            <tree-item class="epub-item list-style-none" style="padding:16px;"
+                :item="{label: loadedFile.name, subitems: epubToc}" @select="gotoToc">
+            </tree-item>
         </div>
     </div>
 
@@ -376,6 +432,28 @@
         if (!r) return null;
         return r[2];
     }
+
+    Vue.component("tree-item", {
+        template: "#item-template",
+        props: {
+            item: Object
+        },
+        data: function () {
+            return {
+                isOpen: true
+            };
+        },
+        computed: {
+            isFolder: function () {
+                return this.item.subitems && this.item.subitems.length;
+            }
+        },
+        methods: {
+            select: function () {
+                this.$emit("select", this.item);
+            },
+        }
+    });
 
     const videoPage = new Vue({
         el: '#videoPage',
@@ -416,7 +494,8 @@
             epubAreaOpacity: 0,
             epubSize: isPhoneView() ? "epub-size-phone" : "epub-size",
             epubBook: null,
-            epubRendition: null
+            epubRendition: null,
+            epubToc: null
         },
         created: function (e) {
             let path = document.location.pathname.split("/")
@@ -759,16 +838,28 @@
                 if (phoneView) {
                     params.manager = "continuous"
                 }
-                var rendition = book.renderTo(div, params);
+                var rendition = book.renderTo(div, params)
 
-                var displayed = rendition.display()
+                var pageKey = 'epubPage_' + this.loadedFile.id
+                let cfi = localStorage.getItem(pageKey)
+                if (cfi) {
+                    rendition.display(cfi)
+                } else {
+                    rendition.display()
+                }
 
                 this.epubBook = book
                 this.epubRendition = rendition
 
                 book.ready.then(() => {
+                    book.loaded.navigation.then((toc) => {
+                        this.epubToc = toc.toc
+                    })
 
-                    console.log('book ready')
+                    rendition.on("relocated", (relocated) => {
+                        localStorage.setItem(pageKey, relocated.start.cfi)
+                    });
+
                     setTimeout(() => {
                         complete()
                     }, 400);
@@ -803,7 +894,13 @@
                 const rendition = this.epubRendition
                 this.epubBook.package.metadata.direction === "rtl" ? rendition.prev() : rendition.next()
                 e.preventDefault()
-            }
+            },
+            gotoToc: function (toc) {
+                var skip = this.epubRendition.display(toc.href);
+                skip.then(function () {
+
+                })
+            },
         },
     });
 
