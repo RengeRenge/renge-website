@@ -2,6 +2,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
 
+import re
 import requests
 from flask import Blueprint, request, jsonify, stream_with_context, Response, json, redirect, \
     url_for
@@ -568,6 +569,9 @@ def handler_upload_res(user_id, up_res, set_name=None,
 
 @RestRouter.route('/user/get/<user_file_id>', methods=['GET'])
 def user_file_get(user_file_id):
+    if user_file_id is None:
+        return jsonify(form_res(RGResCode.lack_param))
+    user_file_id = re.sub("[^A-Za-z0-9].*", "", user_file_id)
     if not is_int_number(user_file_id):
         return jsonify(form_res(RGResCode.lack_param))
     auth, user_id = RGUIController.do_auth()

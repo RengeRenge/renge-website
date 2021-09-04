@@ -9,28 +9,37 @@
 <script type="text/javascript" src="/static/pinyin/pinyin_dict_notone.js?ver={{js_ver}}"></script>
 <script type="text/javascript" src="/static/pinyin/pinyinUtil.js?ver={{js_ver}}"></script>
 
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
+<script type="text/javascript" src="/static/js/epub.min.js?ver={{js_ver}}"></script>
+
 <style>
-    .full, html, body {
+    .full,
+    html,
+    body {
         height: 100%;
         width: 100%;
         padding: 0;
         margin: 0;
     }
+
     .center {
         display: flex;
         align-items: center;
         justify-content: center;
     }
+
     video {
         width: 100%;
         height: 100%;
         object-fit: contain;
     }
+
     audio {
         width: 100%;
         object-fit: contain;
         align-self: flex-end;
     }
+
     .no-support {
         color: #ecf6fd;
         display: flex;
@@ -45,10 +54,11 @@
         max-height: 50%;
     }
 
-    ::-webkit-scrollbar{
+    ::-webkit-scrollbar {
         display: none;
         /* background-color:transparent; */
     }
+
     .menu {
         position: absolute;
         right: 20px;
@@ -57,12 +67,14 @@
         transform: scaleX(-1);
         cursor: pointer;
     }
+
     .download {
         height: 20px;
         cursor: pointer;
         top: 0;
         right: 0;
     }
+
     .play-list {
         border-radius: 5px;
         position: absolute;
@@ -74,14 +86,16 @@
         max-width: 300px;
         width: 80%;
     }
+
     .play-list ul {
         list-style-type: none;
-        list-style-image:none;
+        list-style-image: none;
         max-height: 300px;
         overflow: auto;
         margin: 0;
         padding: 0;
     }
+
     .play-list li {
         /*padding-left: 40px;*/
         padding-top: 3px;
@@ -93,15 +107,19 @@
         align-items: center;
         font-size: 12px;
     }
+
     .play-list .odd {
         background-color: #262626;
     }
+
     .play-list .even {
         background-color: #303030;
     }
+
     .play-list .selected {
         background-color: #4d5157;
     }
+
     .playing-icon {
         /*position: absolute;*/
         height: 15px;
@@ -109,10 +127,12 @@
         width: 40px;
         text-align: center;
     }
+
     .play-list .playing {
         /*background-color: #121212;*/
         background-color: #3d67d8;
     }
+
     .play-list .tool {
         height: 18px;
         float: right;
@@ -121,10 +141,12 @@
         margin-top: 4px;
         margin-bottom: 4px;
     }
+
     .play-list .tool-disable {
         filter: brightness(40%);
         /*filter: invert(10%) sepia(70%) saturate(1688%) hue-rotate(193deg) brightness(94%) contrast(87%);*/
     }
+
     .background {
         width: 100%;
         height: 100%;
@@ -133,6 +155,7 @@
         position: absolute;
         filter: blur(60px)
     }
+
     .search-input {
         width: 100%;
         background-color: transparent;
@@ -140,102 +163,209 @@
         border: transparent 0px;
         padding: 5px;
     }
+
+    .full-ab {
+        height: 100%;
+        width: 100%;
+        position: absolute;
+    }
+
+    .center-column {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .arrow {
+        position: fixed;
+        top: 50%;
+        margin-top: -32px;
+        font-size: 64px;
+        color: #E2E2E2;
+        font-family: arial, sans-serif;
+        font-weight: bold;
+        cursor: pointer;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
+        text-decoration: none;
+    }
+
+    #prev {
+        left: 0;
+    }
+
+    #next {
+        right: 0;
+    }
+
+    @media (min-width: 1000px) {
+        #epubArea.spreads:after {
+            position: absolute;
+            width: 1px;
+            border-right: 1px #000 solid;
+            height: 90%;
+            z-index: 1;
+            left: 50%;
+            margin-left: -1px;
+            top: 5%;
+            opacity: .15;
+            box-shadow: -2px 0 15px rgba(0, 0, 0, 1);
+            content: "";
+        }
+
+        #epubArea.spreads.single:after {
+            display: none;
+        }
+
+        #prev {
+            left: 40px;
+        }
+
+        #next {
+            right: 40px;
+        }
+    }
+
+    .epub-size {
+        width: 86%;
+        height: 90%;
+        overflow: hidden;
+    }
+
+    .epub-size-phone {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .epub-bg {
+        background-color: rgb(252, 248, 237);
+    }
+
+    .transition {
+        transition: all 0.4s ease-in-out;
+    }
+
+    .transition1 {
+        transition: all 1.0s ease-in-out;
+    }
+
+    .shadow {
+        box-shadow: 0 3px 6px 1px rgba(0, 0, 0, .22);
+    }
 </style>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport"
-          content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=1.0, user-scalable=yes"/>
+        content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=1.0, user-scalable=yes" />
     <title>预览</title>
 </head>
+
 <body class="center" style="background-color: #4b4b4b;" onresize="onResize(event)">
 
-{% raw %}
-<div id="videoPage" ref="videoPage" class="full center" @click="onBackgroundClick">
-    <div v-if="url && audio && audioCover"
-         class="background"
-         v-bind:style="{backgroundImage: 'url(' + audioCover + ')' }"
-    ></div>
-    <img v-if="url && audio && audioCover"
-         v-bind:src="audioCover"
-         onerror="this.src='/static/image/music_playing.svg'"
-         style="max-width: 80%; max-height: 80%; position: absolute; border-radius: 4px"
-         v-bind:style="{maxHeight: Math.min(appHeight * 0.8, 400) + 'px'}"
-    >
-    <audio v-if="audio"
-           v-bind:src="url"
-           ref="audioPlayer"
-           v-bind:autoplay="autoPlay ? 'autoplay' : null"
-           @ended="onEnded()"
-           @play="onStartPlay()"
-           @canplay="onCanplay()"
-           v-bind:loop="autoPlay && loopMode === 2 ? 'loop' : null"
-           controls
-           autobuffer>
-    </audio>
+    {% raw %}
+    <div id="videoPage" ref="videoPage" class="full center" @click="onBackgroundClick">
+        <div v-if="url && audio && audioCover" class="background"
+            v-bind:style="{backgroundImage: 'url(' + audioCover + ')' }"></div>
+        <img v-if="url && audio && audioCover" v-bind:src="audioCover"
+            onerror="this.src='/static/image/music_playing.svg'"
+            style="max-width: 80%; max-height: 80%; position: absolute; border-radius: 4px"
+            v-bind:style="{maxHeight: Math.min(appHeight * 0.8, 400) + 'px'}">
+        <audio v-if="audio" v-bind:src="url" ref="audioPlayer" v-bind:autoplay="autoPlay ? 'autoplay' : null"
+            @ended="onEnded()" @play="onStartPlay()" @canplay="onCanplay()"
+            v-bind:loop="autoPlay && loopMode === 2 ? 'loop' : null" controls autobuffer>
+        </audio>
 
-    <video v-if="video"
-           v-bind:src="url"
-           controls autobuffer>
-    </video>
+        <video v-if="video" v-bind:src="url" controls autobuffer>
+        </video>
 
-    <img v-if="image"
-         v-bind:src="url"
-         id="oImg"
-         style="max-width: 100%; max-height: 100%"
-    >
+        <img v-if="image" v-bind:src="url" id="oImg" style="max-width: 100%; max-height: 100%">
 
-    <div v-if="loaded && !image && !video && !audio" class="no-support">
-        <img v-if="loadedFile" v-bind:src="loadedFile.thumb" @error="onThumbError(loadedFile)">
-        <div v-if="loadedFile" style="margin-bottom: 40px; margin-top: 20px">{{loadedFile.name}}</div>
-        <div v-if="!loadedFile && open_code">共享内容已取消</div>
-    </div>
-    <div v-if="list && !fileList.length"
-         class="no-support"
-    >
-        没有可播放的内容
-    </div>
+        <div v-if="loaded && !image && !video && !audio" class="no-support transition"
+            v-bind:style="{opacity: previewOpacity}">
+            <img id="cover" v-if="loadedFile" v-bind:src="loadedFile.thumb" @error="onThumbError(loadedFile)"
+                @click="onThumbClick">
+            <div v-if="loadedFile" style="margin-bottom: 40px; margin-top: 20px">{{loadedFile.name}}</div>
+            <div v-if="!loadedFile && open_code">共享内容已取消</div>
+        </div>
 
-    <img v-if="list && fileList.length" src="/static/image/menu.svg" class="menu" @click="onMenuIconClick">
-    <div v-else-if="loadedFile" class="menu">
-        <img src="/static/image/file-download.svg" class="download">
-        <a class="download"
-           style="width: 100%;height: 100%; position: absolute;"
-           v-bind:href="loadedFile.downloadUrl"
-           v-bind:download="loadedFile.name"></a>
-    </div>
+        <div v-if="list && !fileList.length" class="no-support">
+            没有可播放的内容
+        </div>
+
+        <img v-if="list && fileList.length" src="/static/image/menu.svg" class="menu" @click="onMenuIconClick">
+        <div v-else-if="loadedFile" class="menu">
+            <img src="/static/image/file-download.svg" class="download">
+            <a class="download" style="width: 100%;height: 100%; position: absolute;"
+                v-bind:href="loadedFile.downloadUrl" v-bind:download="loadedFile.name"></a>
+        </div>
 
 
-    <div v-if="list && fileList.length && showMenu" class="play-list">
-        <div v-if="open_code" style="padding-left: 14px; padding-top: 5px; padding-bottom: 5px; font-size: 14px;">共享的播放列表</div>
-        <input v-if="listSearchState" autofocus="autofocus" class="search-input" @input="doSearch(event.target.value)">
-        <ul v-bind:style="{maxHeight: Math.min(appHeight - 130, 300) + 'px'}">
-            <li v-for="(file, index) in displayList"
-                v-bind:class="(index%2 == 0 ? 'odd' : 'even') + ' ' +
+        <div v-if="list && fileList.length && showMenu" class="play-list">
+            <div v-if="open_code" style="padding-left: 14px; padding-top: 5px; padding-bottom: 5px; font-size: 14px;">
+                共享的播放列表</div>
+            <input v-if="listSearchState" autofocus="autofocus" class="search-input"
+                @input="doSearch(event.target.value)">
+            <ul v-bind:style="{maxHeight: Math.min(appHeight - 130, 300) + 'px'}">
+                <li v-for="(file, index) in displayList" v-bind:class="(index%2 == 0 ? 'odd' : 'even') + ' ' +
                 (selectedId == file.id ? 'selected' : '') + ' ' +
-                (willPlayId == file.id ? 'playing': '')"
-                @click="select(file.id)"
-                @dblclick="onAudioDoubleClick(file.id)"
-                onselectstart="return false"
-            >
-                <img v-if="playingId == file.id" @click="switchPlayState(file.id)" src="/static/image/list_playing.svg" class="playing-icon">
-                <div v-else class="playing-icon">{{index + 1}} </div>
-                <span>
-                    <span class="two_line">{{file.name}}</span>
-                </span>
-            </li>
-        </ul>
-        <img class="tool" v-bind:class="!autoPlay ? 'tool-disable' : ''" src="/static/image/list_auto.svg" @click="switchAutoPlay">
-        <img class="tool" v-bind:class="!autoPlay ? 'tool-disable' : ''" v-bind:src="loopModes[loopMode]" @click="switchLoopMode">
-        <img class="tool" src="/static/image/list-search.svg" @click="onSearch">
-        <img class="tool" src="/static/image/list_next.svg" @click="next(1)">
-    </div>
-</div>
+                (willPlayId == file.id ? 'playing': '')" @click="select(file.id)"
+                    @dblclick="onAudioDoubleClick(file.id)" onselectstart="return false">
+                    <img v-if="playingId == file.id" @click="switchPlayState(file.id)"
+                        src="/static/image/list_playing.svg" class="playing-icon">
+                    <div v-else class="playing-icon">{{index + 1}} </div>
+                    <span>
+                        <span class="two_line">{{file.name}}</span>
+                    </span>
+                </li>
+            </ul>
+            <img class="tool" v-bind:class="!autoPlay ? 'tool-disable' : ''" src="/static/image/list_auto.svg"
+                @click="switchAutoPlay">
+            <img class="tool" v-bind:class="!autoPlay ? 'tool-disable' : ''" v-bind:src="loopModes[loopMode]"
+                @click="switchLoopMode">
+            <img class="tool" src="/static/image/list-search.svg" @click="onSearch">
+            <img class="tool" src="/static/image/list_next.svg" @click="next(1)">
+        </div>
 
-{% endraw %}
+        <div v-if="epubLoading" class="full-ab center-column transition">
+
+            <div v-if="epubLoading" class="full-ab center-column transition">
+                <div id="epubWrapper"
+                    v-bind:class="epubCoverShadow ? epubSize : ['shadow', 'epub-bg', epubSize].join(' ')"
+                    style="position: absolute;">
+                    <div class="full-ab transition1" style="position: absolute;"
+                        v-bind:style="{opacity: epubAreaOpacity}">
+                        <div class="full-ab" v-bind:class="phoneView?'':'spreads'" id="epubArea">
+                        </div>
+                    </div>
+                </div>
+                <a v-if="!phoneView" v-bind:style="{opacity: epubAreaOpacity}" id="prev" class="arrow"
+                    @click="epubPrev">‹</a>
+                <a v-if="!phoneView" v-bind:style="{opacity: epubAreaOpacity}" id="next" class="arrow"
+                    @click="epubNext">›</a>
+            </div>
+
+            <div v-if="!epubLoaded" v-bind:class="epubCoverShadow ? 'shadow transition': ''"
+                v-bind:style="epubCoverShadowStyle">
+                <div v-if="epubCoverShow" class="full-ab epub-bg"></div>
+            </div>
+
+            <div v-if="!epubLoaded" v-bind:class="epubSize" style="position: absolute;">
+                <img v-if="epubCoverShow" key="epubCover" v-bind:src="loadedFile.thumb"
+                    @error="onThumbError(loadedFile)" class="transition" v-bind:style="epubCoverStyle" />
+            </div>
+        </div>
+    </div>
+
+    {% endraw %}
 
 </body>
 <script>
     function getUrlSearch(name) {
+        [].join()
         if (!name) return null;
         let after = window.location.search;
         after = after.substr(1) || window.location.hash.split('?')[1];
@@ -269,9 +399,24 @@
             loopMode: 0,
             loopModes: ['/static/image/list_order.svg', '/static/image/list_random.svg', '/static/image/list_one_loop.svg'],
             errorImage: 'this.src="/static/image/music_playing.svg"',
+            previewOpacity: 1,
+            appWidth: 0,
             appHeight: 0,
             listSearchState: false,
             open_code: null,
+            phoneView: isPhoneView(),
+
+            epub: false,
+            epubLoading: false,
+            epubLoaded: false,
+            epubCoverShow: false,
+            epubCoverStyle: {},
+            epubCoverShadowStyle: {},
+            epubCoverShadow: true,
+            epubAreaOpacity: 0,
+            epubSize: isPhoneView() ? "epub-size-phone" : "epub-size",
+            epubBook: null,
+            epubRendition: null
         },
         created: function (e) {
             let path = document.location.pathname.split("/")
@@ -291,10 +436,10 @@
                 this.loadFile(pv)
             }
         },
-        mounted: function() {
+        mounted: function () {
             this.onResize()
         },
-        methods:{
+        methods: {
             loadPlayList: function (code, open_code) {
                 file_list({
                     code,
@@ -309,7 +454,7 @@
                                 file.sortName1 = pinyinUtil.getPinyin(file.name, '', false, false, true).toLowerCase()
                                 return audioDisplaySupport(mimeType(file.name))
                             }))
-                            fileList.sort((a, b)=>{
+                            fileList.sort((a, b) => {
                                 return a.sortName.localeCompare(b.sortName)
                             })
                             this.fileList = fileList
@@ -322,17 +467,17 @@
                     },
                 })
             },
-            loadFile:function (fid) {
+            loadFile: function (fid) {
                 if (fid !== null) {
                     fid = parseInt(fid)
                 }
                 userFileInfo({
                     file_id: fid,
                     open_code: this.open_code,
-                    error:()=> {
+                    error: () => {
                         this.loaded = true
                     },
-                    success:(result)=> {
+                    success: (result) => {
                         this.loaded = true
                         if (result.code !== 1000) {
                             return
@@ -351,7 +496,7 @@
                             }
                         } else {
                             file.downloadUrl = '/file/user/get/' + file.id
-                            file.thumb = file.downloadUrl+ '?cover=1'
+                            file.thumb = file.downloadUrl + '?cover=1'
                         }
 
                         this.loadedFile = file
@@ -360,6 +505,7 @@
                         this.image = imageDisplaySupport(mime)
                         this.video = videoDisplaySupport(mime)
                         this.audio = audioDisplaySupport(mime)
+                        this.epub = epubDisplaySupport(mime)
                         this.url = ''
                         this.playingId = null
 
@@ -379,15 +525,16 @@
                         //         this.$refs.audioPlayer.play()
                         //     }, 1000)
                         // }
-                    }})
+                    }
+                })
             },
-            onCanplay: function() {
+            onCanplay: function () {
                 this.$refs.audioPlayer.play()
             },
-            onStartPlay: function() {
+            onStartPlay: function () {
                 this.playingId = this.willPlayId
             },
-            select: function(fid) {
+            select: function (fid) {
                 event.cancelBubble = true
                 event.preventDefault()
                 this.selectedId = fid
@@ -395,7 +542,7 @@
                     this.willPlayId === fid ? this.switchPlayState(fid) : this.loadFile(fid)
                 }
             },
-            onAudioDoubleClick: function(fid) {
+            onAudioDoubleClick: function (fid) {
                 event.cancelBubble = true
                 event.preventDefault()
                 if (isPhoneView()) {
@@ -404,7 +551,7 @@
                 this.selectedId = fid
                 this.willPlayId === fid ? this.switchPlayState(fid) : this.loadFile(fid)
             },
-            switchPlayState: function(fid) {
+            switchPlayState: function (fid) {
                 if (fid !== this.willPlayId) {
                     return
                 }
@@ -415,7 +562,7 @@
                     audioPlayer.pause()
                 }
             },
-            onEnded: function() {
+            onEnded: function () {
                 if (!this.autoPlay) {
                     return
                 }
@@ -447,7 +594,7 @@
             switchLoopMode: function (e) {
                 e.cancelBubble = true
                 let loopMode = this.loopMode
-                loopMode ++
+                loopMode++
                 if (loopMode >= this.loopModes.length) {
                     loopMode = 0
                 }
@@ -457,9 +604,9 @@
                 e.cancelBubble = true
                 this.autoPlay = !this.autoPlay
             },
-            onMenuIconClick: function(e) {
+            onMenuIconClick: function (e) {
                 e.cancelBubble = true
-                this.showMenu=!this.showMenu
+                this.showMenu = !this.showMenu
             },
             onSearch: function (e) {
                 this.listSearchState = !this.listSearchState
@@ -469,7 +616,7 @@
                     this.displayList = this.fileList
                 }
             },
-            doSearch: function(text) {
+            doSearch: function (text) {
                 text = text.toLowerCase()
                 this.displayList = this.fileList.filter(((file, index, array) => {
                     return file.sortName.indexOf(text) >= 0 || file.name.indexOf(text) >= 0 || file.sortName1.indexOf(text) >= 0
@@ -482,14 +629,187 @@
                 // console.log(this.$refs.videoPage.offsetHeight)
                 this.appHeight = this.$refs.videoPage.offsetHeight
                 this.appWidth = this.$refs.videoPage.offsetWidth
+                if (this.epubLoading && !this.epubLoaded) {
+
+                    let cover = document.getElementById("cover");
+                    let style = this.getFrame(cover, true)
+                    let rate = parseFloat(style.width) / parseFloat(style.height)
+
+                    this.epubCoverStyle = this.getCoverStyle(rate, 'epubWrapper', false)
+                    this.epubCoverShadowStyle = this.getCoverStyle(rate, 'epubWrapper', false)
+                }
             },
             onThumbError(file) {
                 file.thumb = file.errorThumb
+            },
+            onThumbClick: function (e) {
+                if (this.epub) {
+                    this.showBook()
+                    return
+                }
+            },
+            showBook: function () {
+                if (this.epubLoading || this.epubLoaded) {
+                    return
+                }
+
+                let cover = document.getElementById("cover");
+
+                let style = getFrame(cover, true)
+                let rate = parseFloat(style.width) / parseFloat(style.height)
+
+                this.epubLoading = true
+                this.epubAreaOpacity = 0
+                this.epubCoverShadow = true
+                this.epubLoaded = false
+                style = this.getCoverStyle(rate, 'cover', false)
+
+                this.epubCoverShadowStyle = this.getCoverStyle(rate, 'cover', false)
+
+                this.$nextTick(() => {
+                    setTimeout(() => {
+
+                        this.previewOpacity = 0
+                        this.epubCoverShadowStyle = this.getCoverStyle(rate, 'cover', false)
+
+                        let frame = getFrame('epubWrapper')
+                        let style = this.getCoverStyle(rate, 'cover', false)
+
+                        style.left = parseFloat(style.left) - frame.x + 'px'
+                        style.top = parseFloat(style.top) - frame.y + 'px'
+                        this.epubCoverStyle = style
+                        this.epubCoverShow = true
+
+                        this.$nextTick(() => {
+                            setTimeout(() => {
+                                this.epubCoverStyle = this.getCoverStyle(rate, 'epubWrapper', true)
+                                this.epubCoverShadowStyle = this.getCoverStyle(rate, 'epubWrapper', false)
+
+                                this.loadEpub('epubArea', this.loadedFile.downloadUrl + ".epub", () => {
+                                    this.epubCoverStyle = this.getCoverStyle(rate, 'epubWrapper', true)
+                                    this.epubCoverShadowStyle = this.getCoverStyle(rate, 'epubWrapper', false)
+
+                                    this.$nextTick(() => {
+                                        setTimeout(() => {
+                                            let style = this.getCoverStyle(rate, 'epubWrapper', true)
+                                            style.left = (-parseFloat(style.width)) + 'px'
+                                            this.epubCoverStyle = style
+
+                                            style = getFrame('epubWrapper', true)
+                                            this.epubCoverShadowStyle = style
+
+                                            this.epubAreaOpacity = 1
+
+                                            this.$nextTick(() => {
+                                                setTimeout(() => {
+                                                    this.epubCoverShadow = false
+                                                    this.epubLoaded = true
+                                                }, 400);
+                                            });
+                                        }, 400);
+                                    });
+                                });
+                            }, 10);
+                        })
+                    }, 10);
+                })
+            },
+            getCoverStyle: function (rate, inContainer, relateContainer) {
+                let style = getFrame(inContainer, true)
+
+                let width = parseFloat(style.width)
+                let height = parseFloat(style.height)
+                let left = parseFloat(style.left)
+                let top = parseFloat(style.top)
+
+                let _rate = width / height
+
+                if (_rate > rate) {
+
+                    style.width = height * rate + 'px'
+                    style.left = (width - height * rate) / 2.0
+                    if (!relateContainer) {
+                        style.left += left
+                    } else {
+                        style.top = 0
+                    }
+                    style.left += 'px'
+                } else {
+                    style.height = width / rate + 'px'
+                    style.top = (height - width / rate) / 2.0
+                    if (!relateContainer) {
+                        style.top += top
+                    } else {
+                        style.left = 0
+                    }
+                    style.top += 'px'
+                }
+                return style
+            },
+            loadEpub: function (div, url, complete) {
+                var book = ePub(url);
+                let phoneView = isPhoneView()
+                let params = {
+                    flow: phoneView ? "scrolled" : "paginated",
+                    // snap: true,
+                    width: "100%",
+                    height: "100%",
+                    // spread: "always"
+                }
+                if (phoneView) {
+                    params.manager = "continuous"
+                }
+                var rendition = book.renderTo(div, params);
+
+                var displayed = rendition.display()
+
+                this.epubBook = book
+                this.epubRendition = rendition
+
+                book.ready.then(() => {
+
+                    console.log('book ready')
+                    setTimeout(() => {
+                        complete()
+                    }, 400);
+
+                    if (phoneView) {
+                        return
+                    }
+
+                    var keyListener = function (e) {
+
+                        // Left Key
+                        if ((e.keyCode || e.which) == 37) {
+                            book.package.metadata.direction === "rtl" ? rendition.next() : rendition.prev();
+                        }
+
+                        // Right Key
+                        if ((e.keyCode || e.which) == 39) {
+                            book.package.metadata.direction === "rtl" ? rendition.prev() : rendition.next();
+                        }
+
+                    };
+                    rendition.on("keyup", keyListener);
+                    document.addEventListener("keyup", keyListener, false);
+                })
+            },
+            epubPrev: function (e) {
+                const rendition = this.epubRendition
+                this.epubBook.package.metadata.direction === "rtl" ? rendition.next() : rendition.prev()
+                e.preventDefault()
+            },
+            epubNext: function (e) {
+                const rendition = this.epubRendition
+                this.epubBook.package.metadata.direction === "rtl" ? rendition.prev() : rendition.next()
+                e.preventDefault()
             }
-        }
+        },
     });
+
     function onResize(e) {
         videoPage.onResize()
     }
 </script>
+
 </html>
