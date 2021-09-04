@@ -711,7 +711,7 @@
                 if (this.epubLoading && !this.epubLoaded) {
 
                     let cover = document.getElementById("cover");
-                    let style = this.getFrame(cover, true)
+                    let style = getFrame(cover, true)
                     let rate = parseFloat(style.width) / parseFloat(style.height)
 
                     this.epubCoverStyle = this.getCoverStyle(rate, 'epubWrapper', false)
