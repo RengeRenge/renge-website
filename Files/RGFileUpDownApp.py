@@ -55,11 +55,13 @@ def play_list_page(user_id_directory_id):
 def share_page(open_code):
     try:
         f_id, u_id = RGRequestHelp.fid_decode(open_code)
-        file_info = files.user_file_info(user_id=u_id, id=f_id, open_code=open_code)
+        file_info = files.user_file_info(
+            user_id=u_id, id=f_id, open_code=open_code)
         if file_info is None:
             return RGUIController.ui_render_template('VideoPreview.html')
         if file_info['type'] == 1:
-            url = url_for('RGFileUpDown.play_list_share_page', open_code=open_code)
+            url = url_for('RGFileUpDown.play_list_share_page',
+                          open_code=open_code)
             return redirect(url)
         return RGUIController.ui_render_template('VideoPreview.html')
     except:
@@ -123,7 +125,8 @@ def __fast_up(user_id, file):
     elif in_file:
         # directory
         if int(file_type) == 1:
-            file = files.new_directory(user_id=user_id, name=filename, directory_id=directory_id)
+            file = files.new_directory(
+                user_id=user_id, name=filename, directory_id=directory_id)
             code = RGResCode.ok if file is not None else RGResCode.insert_fail
         else:
             file, code = files.check_and_new_user_file_with_hash(
@@ -156,7 +159,8 @@ def __fast_up(user_id, file):
             if file_info is None:
                 file = {"file": None, "code": code}
             else:
-                file = {"file": files.filter_return_file_info(file_info=file_info, need_id=True), "code": RGResCode.ok}
+                file = {"file": files.filter_return_file_info(
+                    file_info=file_info, need_id=True), "code": RGResCode.ok}
     return file
 
 
@@ -224,7 +228,8 @@ def new_file(user_id):
 def user_file_list(user_id):
     directory_id = request_value(request, 'directory_id', -1)
     try:
-        result = files.user_file_list(user_id=user_id, directory_id=directory_id)
+        result = files.user_file_list(
+            user_id=user_id, directory_id=directory_id)
         return jsonify(form_res(RGResCode.ok, result))
     except:
         return jsonify(form_res(RGResCode.database_error))
@@ -245,7 +250,8 @@ def user_file_relative_list(user_id):
         if u_id != user_id:
             return jsonify(form_res(RGResCode.auth_fail))
     try:
-        result, error = files.user_file_files_relative_with_id(user_id=user_id, id=directory_id)
+        result, error = files.user_file_files_relative_with_id(
+            user_id=user_id, id=directory_id)
         if error is not None:
             raise error
         return jsonify(form_res(RGResCode.ok, result))
@@ -258,7 +264,8 @@ def user_file_relative_list(user_id):
 def user_file_directory_list(user_id):
     directory_id = request_value(request, 'directory_id', -1)
     try:
-        result = files.user_file_directory_list(user_id=user_id, directory_id=directory_id)
+        result = files.user_file_directory_list(
+            user_id=user_id, directory_id=directory_id)
         return jsonify(form_res(RGResCode.ok, result))
     except:
         return jsonify(form_res(RGResCode.database_error))
@@ -310,7 +317,8 @@ def user_file_del(user_id):
     try:
         conn = dao.get()
 
-        delete_files = files.user_file_del_and_return_files(user_id=user_id, id=user_file_id, conn=conn)
+        delete_files = files.user_file_del_and_return_files(
+            user_id=user_id, id=user_file_id, conn=conn)
 
         if len(delete_files) > 0:
             executor.submit(do_del_file, delete_files)
@@ -337,7 +345,8 @@ def user_file_move(user_id):
     to_id = request_value(request, 'to_id')
     if to_id is None:
         return jsonify(form_res(RGResCode.lack_param))
-    flag = files.user_file_move(user_id=user_id, move_id=user_file_id, to_id=to_id)
+    flag = files.user_file_move(
+        user_id=user_id, move_id=user_file_id, to_id=to_id)
     if flag is True:
         code = RGResCode.ok
     else:
@@ -384,7 +393,8 @@ def user_file_share_code(user_id):
     if file_id is None:
         return jsonify(form_res(RGResCode.lack_param))
     share_code = RGRequestHelp.fid_encode(file_id, user_id)
-    flag = files.user_file_set(user_id=user_id, id=file_id, args={"open_code": share_code})
+    flag = files.user_file_set(user_id=user_id, id=file_id, args={
+                               "open_code": share_code})
     if flag:
         code = RGResCode.ok
     else:
@@ -399,7 +409,8 @@ def user_file_open_code_cancel(user_id):
     file_id = request_value(request, 'id')
     if file_id is None:
         return jsonify(form_res(RGResCode.lack_param))
-    flag = files.user_file_set(user_id=user_id, id=file_id, args={"open_code": None})
+    flag = files.user_file_set(
+        user_id=user_id, id=file_id, args={"open_code": None})
     if flag:
         code = RGResCode.ok
     else:
@@ -413,7 +424,8 @@ def user_file_open_list(**params):
     """
     根据 openCode 获取文件列表
     """
-    result, error = files.user_file_files_relative_with_id(user_id=params['u_id'], id=params['f_id'], conn=params['conn'])
+    result, error = files.user_file_files_relative_with_id(
+        user_id=params['u_id'], id=params['f_id'], conn=params['conn'])
     if error is not None:
         raise error
     return jsonify(form_res(RGResCode.ok, result))
@@ -452,6 +464,15 @@ def user_file_open_file_get(**params):
 @RestRouter.route('/user/open/get/<open_code>', methods=['GET'])
 @RGFileOpen.file_open_handler(wrapper_code_key='open_code')
 def user_file_open_file_url_get(**params):
+    """
+    根据openCode获取文件流
+    """
+    return __get_file_stream(params['info'])
+
+
+@RestRouter.route('/user/open/get/<open_code>/<path:path>', methods=['GET'])
+@RGFileOpen.file_open_handler(wrapper_code_key='open_code', wrapper_path_key='path')
+def user_file_open_file_url_path_get(**params):
     """
     根据openCode获取文件流
     """
@@ -569,6 +590,11 @@ def handler_upload_res(user_id, up_res, set_name=None,
 
 @RestRouter.route('/user/get/<user_file_id>', methods=['GET'])
 def user_file_get(user_file_id):
+    return user_file_path_get(user_file_id, None)
+
+
+@RestRouter.route('/user/get/<user_file_id>/<path:path>', methods=['GET'])
+def user_file_path_get(user_file_id, path):
     if user_file_id is None:
         return jsonify(form_res(RGResCode.lack_param))
     user_file_id = re.sub("[^A-Za-z0-9].*", "", user_file_id)
@@ -576,6 +602,11 @@ def user_file_get(user_file_id):
         return jsonify(form_res(RGResCode.lack_param))
     auth, user_id = RGUIController.do_auth()
     file = files.user_file_info(user_id=user_id, id=user_file_id, type=0)
+
+    if path is not None:
+        file['filename'] = file['filename'] + '/' + path
+        file['name'] = path.split('/')[-1]
+        del file['mime']
     return __get_file_stream(file)
 
 
@@ -601,13 +632,15 @@ def handle_download_file(filename, download_name=None, mime=None):
         'name': download_name,
         'cover': int(request_value(request, 'cover', 0))
     }
-    req = requests.get(remote_url, headers=request.headers, json=params, stream=not range_mode)
+    req = requests.get(remote_url, headers=request.headers,
+                       json=params, stream=not range_mode)
     if req.status_code != 200 and req.status_code != 206:
         return Response(req.content, req.status_code, direct_passthrough=True)
     if range_mode:
         response = Response(req.content, 206, direct_passthrough=True)
     else:
-        response = Response(stream_with_context(req.iter_content(chunk_size=2048)))
+        response = Response(stream_with_context(
+            req.iter_content(chunk_size=2048)))
         if req.status_code == 200:
             response.headers['Cache-Control'] = 'max-age=604800'
     for key in req.headers:
@@ -665,5 +698,3 @@ def do_del_file(filenames):
 """
 decorator
 """
-
-
