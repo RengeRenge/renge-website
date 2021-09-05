@@ -13,7 +13,7 @@ class RGFileOpen(object):
     pass
 
 
-def file_open_handler(wrapper_code_key=None):
+def file_open_handler(wrapper_code_key=None, wrapper_path_key=None):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -49,6 +49,12 @@ def file_open_handler(wrapper_code_key=None):
                         open_path = str(open_code_info['id'])
                         if open_path in paths:
                             info = file_info
+
+                if wrapper_path_key is not None:
+                    path = kwargs.get(wrapper_path_key, '')
+                    info['filename'] = info['filename'] + '/' + path
+                    info['name'] = path.split('/')[-1]
+                    del info['mime']
 
                 kwargs.update({
                     'conn': conn,
