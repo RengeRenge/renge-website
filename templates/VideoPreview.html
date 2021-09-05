@@ -54,17 +54,16 @@
         max-height: 50%;
     }
 
-    ::-webkit-scrollbar {
-        display: none;
-        /* background-color:transparent; */
-    }
-
     .menu {
         position: absolute;
         right: 20px;
         top: 20px;
         height: 20px;
         transform: scaleX(-1);
+        cursor: pointer;
+    }
+
+    .pointer {
         cursor: pointer;
     }
 
@@ -85,6 +84,17 @@
         overflow: auto;
         max-width: 300px;
         width: 80%;
+    }
+
+    .menu-base::-webkit-scrollbar, .menu-base ul::-webkit-scrollbar {
+        background-color: rgba(0, 0, 0, 0);
+        width: 10px;
+    }
+
+    .menu-base::-webkit-scrollbar-thumb, .menu-base ul::-webkit-scrollbar-thumb {
+        background-color: gray;
+        border-radius: 5px;
+        text-align: center;
     }
 
     .play-list {}
@@ -264,7 +274,7 @@
     }
 
     .epub-chapter-wrapper {
-        max-height: 300px;
+        max-height: 80%;
         overflow: auto;
         margin: 0;
         padding: 0;
@@ -336,7 +346,7 @@
 
         <div v-if="loaded && !image && !video && !audio" class="no-support transition"
             v-bind:style="{opacity: previewOpacity}">
-            <img id="cover" v-if="loadedFile" v-bind:src="loadedFile.thumb" @error="onThumbError(loadedFile)"
+            <img id="cover" v-if="loadedFile" v-bind:class="epub ? 'pointer' : ''" v-bind:src="loadedFile.thumb" @error="onThumbError(loadedFile)"
                 @click="onThumbClick">
             <div v-if="loadedFile" style="margin-bottom: 40px; margin-top: 20px">{{loadedFile.name}}</div>
             <div v-if="!loadedFile && open_code">共享内容已取消</div>
