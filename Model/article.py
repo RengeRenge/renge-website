@@ -154,8 +154,11 @@ def month_list(art_user, other_id, group_id, year, month, timezone=8):
 
     e_time = RGTimeUtil.timestamp_with_month(year=year, month=month, timezone=timezone)
 
+    item = "art.id, art.title, art.summary, art.cate, art.cover, \
+        art.addtime, art.updatetime, art.create_time, art.read_count, art.group_id"
+
     if other_id is None:
-        sql = 'select art.* from art \
+        sql = 'select {} from art \
                             left join art_group as g on g.id = art.group_id \
                         where \
                         art.user_id=%(art_user)s \
@@ -164,11 +167,11 @@ def month_list(art_user, other_id, group_id, year, month, timezone=8):
                         and cate <= 0 \
                         and (g.id is NULL or g.level <= 0) \
                         {} \
-                        order by addtime desc'.format(s_time, e_time, '{}')
+                        order by addtime desc'.format(item, s_time, e_time, '{}')
     elif user.isHome(art_user, other_id):
         sql = 'select art.* from art \
                 where user_id=%(art_user)s and \
-                addtime >= {} and addtime < {} {} order by addtime desc'.format(s_time, e_time, '{}')
+                addtime >= {} and addtime < {} {} order by addtime desc'.format(item, s_time, e_time, '{}')
     else:
         sql = 'select art.* from art \
                 left join art_group as g on g.id = art.group_id \
@@ -181,7 +184,7 @@ def month_list(art_user, other_id, group_id, year, month, timezone=8):
                 and (g.id is NULL or g.level <= 0 or g.level <= r.relation) \
                 and (cate <= 0 or cate <= r.relation) \
                 {} \
-                order by addtime desc'.format(s_time, e_time, '{}')
+                order by addtime desc'.format(item, s_time, e_time, '{}')
 
     if group_id is None:
         sql = sql.format('')
