@@ -169,11 +169,11 @@ def month_list(art_user, other_id, group_id, year, month, timezone=8):
                         {} \
                         order by addtime desc'.format(item, s_time, e_time, '{}')
     elif user.isHome(art_user, other_id):
-        sql = 'select art.* from art \
+        sql = 'select {} from art \
                 where user_id=%(art_user)s and \
                 addtime >= {} and addtime < {} {} order by addtime desc'.format(item, s_time, e_time, '{}')
     else:
-        sql = 'select art.* from art \
+        sql = 'select {} from art \
                 left join art_group as g on g.id = art.group_id \
                 left join (select relation from user_relation \
                             where m_user_id = %(art_user)s and o_user_id = %(other_id)s) as r on 1=1 \
