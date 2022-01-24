@@ -86,12 +86,14 @@
         width: 80%;
     }
 
-    .menu-base::-webkit-scrollbar, .menu-base ul::-webkit-scrollbar {
+    .menu-base::-webkit-scrollbar,
+    .menu-base ul::-webkit-scrollbar {
         background-color: rgba(0, 0, 0, 0);
         width: 10px;
     }
 
-    .menu-base::-webkit-scrollbar-thumb, .menu-base ul::-webkit-scrollbar-thumb {
+    .menu-base::-webkit-scrollbar-thumb,
+    .menu-base ul::-webkit-scrollbar-thumb {
         background-color: gray;
         border-radius: 5px;
         text-align: center;
@@ -334,9 +336,9 @@
             onerror="this.src='/static/image/music_playing.svg'"
             style="max-width: 80%; max-height: 80%; position: absolute; border-radius: 4px"
             v-bind:style="{maxHeight: Math.min(appHeight * 0.8, 400) + 'px'}">
-        <audio v-if="audio" ref="audioPlayer" v-bind:autoplay="autoPlay ? 'autoplay' : null"
-            @ended="onEnded()" @play="onStartPlay()" @canplay="onCanplay()"
-            v-bind:loop="autoPlay && loopMode === 2 ? 'loop' : null" controls autobuffer>
+        <audio v-if="audio" ref="audioPlayer" v-bind:autoplay="autoPlay ? 'autoplay' : null" @ended="onEnded()"
+            @play="onStartPlay()" @canplay="onCanplay()" v-bind:loop="autoPlay && loopMode === 2 ? 'loop' : null"
+            controls autobuffer>
             <source v-bind:src="url" type="audio/mpeg">
             <source v-bind:src="url" type="audio/aac">
             <source v-bind:src="url" type="audio/ogg">
@@ -349,8 +351,8 @@
 
         <div v-if="loaded && !image && !video && !audio" class="no-support transition"
             v-bind:style="{opacity: previewOpacity}">
-            <img id="cover" v-if="loadedFile" v-bind:class="epub ? 'pointer' : ''" v-bind:src="loadedFile.thumb" @error="onThumbError(loadedFile)"
-                @click="onThumbClick">
+            <img id="cover" v-if="loadedFile" v-bind:class="epub ? 'pointer' : ''" v-bind:src="loadedFile.thumb"
+                @error="onThumbError(loadedFile)" @click="onThumbClick">
             <div v-if="loadedFile" style="margin-bottom: 40px; margin-top: 20px">{{loadedFile.name}}</div>
             <div v-if="!loadedFile && open_code">共享内容已取消</div>
         </div>
