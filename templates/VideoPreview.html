@@ -600,7 +600,10 @@
                         this.video = videoDisplaySupport(mime)
                         this.audio = audioDisplaySupport(mime)
                         this.epub = epubDisplaySupport(mime)
+                        
                         this.url = ''
+                        this.$refs.audioPlayer && this.$refs.audioPlayer.load()
+
                         this.playingId = null
 
                         // this.url = '/file/user/get/' + fid
