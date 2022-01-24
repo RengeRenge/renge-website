@@ -610,6 +610,7 @@
                         this.$nextTick(function () {
                             this.url = file.downloadUrl
                             this.willPlayId = fid
+                            this.$refs.audioPlayer.load()
                         })
 
                         // if (this.autoPlay) {
@@ -630,9 +631,10 @@
                 event.cancelBubble = true
                 event.preventDefault()
                 this.selectedId = fid
-                if (isPhoneView()) {
-                    this.willPlayId === fid ? this.switchPlayState(fid) : this.loadFile(fid)
+                if (!isPhoneView()) {
+                    return
                 }
+                this.onAudioItemChoice()
             },
             onAudioDoubleClick: function (fid) {
                 event.cancelBubble = true
@@ -641,7 +643,16 @@
                     return
                 }
                 this.selectedId = fid
-                this.willPlayId === fid ? this.switchPlayState(fid) : this.loadFile(fid)
+                this.onAudioItemChoice()
+            },
+            onAudioItemChoice: function () {
+                let audioPlayer = this.$refs.audioPlayer
+                if (this.willPlayId === fid) {
+                    this.switchPlayState(fid)
+                } else {
+                    audioPlayer.pause()
+                    this.loadFile(fid)
+                }
             },
             switchPlayState: function (fid) {
                 if (fid !== this.willPlayId) {
