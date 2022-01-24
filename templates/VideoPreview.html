@@ -612,7 +612,7 @@
                         this.$nextTick(function () {
                             this.url = file.downloadUrl
                             this.willPlayId = fid
-                            this.$refs.audioPlayer.load()
+                            this.$refs.audioPlayer && this.$refs.audioPlayer.load()
                         })
 
                         // if (this.autoPlay) {
@@ -645,9 +645,9 @@
                     return
                 }
                 this.selectedId = fid
-                this.onAudioItemChoice()
+                this.onAudioItemChoice(fid)
             },
-            onAudioItemChoice: function () {
+            onAudioItemChoice: function (fid) {
                 let audioPlayer = this.$refs.audioPlayer
                 if (this.willPlayId === fid) {
                     this.switchPlayState(fid)
