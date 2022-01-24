@@ -600,7 +600,7 @@
                         this.video = videoDisplaySupport(mime)
                         this.audio = audioDisplaySupport(mime)
                         this.epub = epubDisplaySupport(mime)
-                        
+
                         this.url = ''
                         this.$refs.audioPlayer && this.$refs.audioPlayer.load()
 
@@ -656,6 +656,7 @@
                     this.switchPlayState(fid)
                 } else {
                     audioPlayer.pause()
+                    audioPlayer.fastSeek(0)
                     this.loadFile(fid)
                 }
             },
