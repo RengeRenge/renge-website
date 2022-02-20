@@ -34,8 +34,9 @@ def timestamp_with_month(year, month, timezone):
     return _timestamp
 
 
-def get_datetime(timedelta):
-    return datetime.now() + timedelta
+def gmt_time_string(timedelta):
+    GMT_FORMAT = '%a, %d %b %Y %H:%M:%S GMT'
+    return (datetime.utcnow() + timedelta).strftime(GMT_FORMAT)
 
 
 """
