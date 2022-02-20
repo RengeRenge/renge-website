@@ -16,7 +16,7 @@ from RGIgnoreConfig.RGFileGlobalConfigContext import FilePreFix, RemoteFileHost,
 from RGUtil import RGRequestHelp
 from RGUtil.RGCodeUtil import RGResCode
 from RGUtil.RGRequestHelp import form_res, request_value, is_int_number, request_file_size
-from RGUtil.RGTimeUtil import get_datetime
+from RGUtil.RGTimeUtil import gmt_time_string
 
 RestRouter = Blueprint('RGFileUpDown', __name__, url_prefix='/' + FilePreFix)
 executor = ThreadPoolExecutor()
@@ -646,7 +646,7 @@ def handle_download_file(filename, download_name=None, mime=None):
         if req.status_code == 200:
             time = 604800
             response.headers['Cache-Control'] = 'max-age=' + str(time)
-            response.headers['Expires'] = get_datetime(timedelta(seconds=time))
+            response.headers['Expires'] = gmt_time_string(timedelta(seconds=time))
     for key in req.headers:
         response.headers[key] = req.headers[key]
     return response
