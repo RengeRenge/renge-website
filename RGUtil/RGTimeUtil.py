@@ -34,6 +34,10 @@ def timestamp_with_month(year, month, timezone):
     return _timestamp
 
 
+def get_datetime(timedelta):
+    return datetime.now() + timedelta
+
+
 """
 tzinfo是关于时区信息的类
 tzinfo是一个抽象类，所以不能直接被实例化
