@@ -6,7 +6,7 @@ from functools import wraps
 import re
 import requests
 from flask import Blueprint, request, jsonify, stream_with_context, Response, json, redirect, \
-    url_for
+    url_for, session
 
 import RGUIController
 from DAO import rg_dao as dao
@@ -603,16 +603,17 @@ def user_file_path_get(user_file_id, path):
     if not is_int_number(user_file_id):
         return jsonify(form_res(RGResCode.lack_param))
     auth, user_id = RGUIController.do_auth()
+    session.removeVaryCookie = True
     file = files.user_file_info(user_id=user_id, id=user_file_id, type=0)
 
     if path is not None:
         file['filename'] = file['filename'] + '/' + path
         file['name'] = path.split('/')[-1]
         del file['mime']
-    return __get_file_stream(file)
+    return __get_file_stream(file, max_age=86400)
 
 
-def __get_file_stream(file):
+def __get_file_stream(file, max_age=604800):
     filename = file['filename'] if file is not None and 'filename' in file else None
     mime = file['mime'] if file is not None and 'mime' in file else None
     name = file['name'] if file is not None and 'name' in file else None
@@ -622,11 +623,11 @@ def __get_file_stream(file):
         filename = name_fix(filename=filename, thumb=True, gif_activity=False)
     if filename is None:
         return jsonify(form_res(RGResCode.not_existed))
-    return handle_download_file(filename, name, mime=mime)
+    return handle_download_file(filename, name, mime=mime, max_age=max_age)
 
 
 @RestRouter.route('/<filename>', methods=['GET'])
-def handle_download_file(filename, download_name=None, mime=None):
+def handle_download_file(filename, download_name=None, mime=None, max_age=604800):
     range_mode = 'Range' in request.headers
     remote_url = handle_download_file_url(filename)
     params = {
@@ -644,9 +645,8 @@ def handle_download_file(filename, download_name=None, mime=None):
         response = Response(stream_with_context(
             req.iter_content(chunk_size=2048)))
         if req.status_code == 200:
-            time = 604800
-            response.headers['Cache-Control'] = 'max-age=' + str(time)
-            response.headers['Expires'] = gmt_time_string(timedelta(seconds=time))
+            response.headers['Cache-Control'] = 'max-age=' + str(max_age)
+            response.headers['Expires'] = gmt_time_string(timedelta(seconds=max_age))
     for key in req.headers:
         response.headers[key] = req.headers[key]
     return response
