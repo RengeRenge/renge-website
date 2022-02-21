@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from flask import Flask, send_file, redirect, url_for
+from flask.sessions import SecureCookieSessionInterface, SecureCookieSession
 
 import RGUIController
 from Blog import RGBlogApp
@@ -10,7 +11,27 @@ from RGIgnoreConfig.RGGlobalConfigContext import RGHost, RGPort, RGDebug
 from RGUtil.RGCodeUtil import RGVerifyType
 from User import RGUserApp
 
+
+class CacheSecureCookieSession(SecureCookieSession):
+    removeVaryCookie = False
+
+
+class CacheSessionInterface(SecureCookieSessionInterface):
+    session_class = CacheSecureCookieSession
+
+    def open_session(self, app, request):
+        session = super().open_session(app, request)
+        return session
+
+    def save_session(self, app, session, response):
+        super().save_session(app, session, response)
+        if session.removeVaryCookie == True:
+            if response.vary.find('Cookie') >= 0:
+                response.vary.remove('Cookie')
+
+
 app = Flask(__name__, template_folder='templates', static_folder='static')
+app.session_interface = CacheSessionInterface()
 app.jinja_env.trim_blocks = True
 app.jinja_env.lstrip_blocks = True
 
