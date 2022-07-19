@@ -1,0 +1,119 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>TTT</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <style>
+        .cell {
+            background-color: rgb(241, 228, 200);
+            margin-top: 20px;
+        }
+
+        .cell a {
+            display: block
+        }
+
+        .cell a i {
+            color: crimson;
+        }
+    </style>
+</head>
+
+
+
+<body>
+    <div id="app">
+        <h2>t+0成本计算器</h2>
+
+        <div style="margin-bottom: 40px">
+            <div>佣金为万2.5 单笔最少5元</div>
+            <div>印花税卖出时收取成交金额的千分之1，买入不收</div>
+            <div>过户费收取成交金额的万分之0.2，买卖双向收取</div>
+        </div>
+
+        <div>
+            <a>成交价格</a>
+            <input v-model="price" @input="changeInput()">
+        </div>
+        <div>
+            <a>成交数量</a>
+            <input v-model="number" @input="changeInput()">
+        </div>
+
+        <div class="cell">
+            <h3>买入</h3>
+            <a>
+                平台佣金 <i>{{ platformFee }}</i>
+            </a>
+            <a>
+                过户费 <i>{{ transferFee }}</i>
+            </a>
+
+            <a>合计买入 <i>{{amount}}</i> 元股票的手续费为：<i>{{ platformFee + transferFee }}</i></a>
+
+            <a>相同数量卖出的成本价格 <i>{{ outPrice }}</i></a>
+        </div>
+
+        <div class="cell">
+            <h3>卖出</h3>
+            <a>
+                平台佣金 <i>{{ platformFee }}</i>
+            </a>
+            <a>
+                过户费 <i>{{ transferFee }}</i>
+            </a>
+            <a>
+                印花税 <i>{{ stampTax }}</i>
+            </a>
+            <a>合计卖出 <i>{{amount}}</i> 元股票的手续费为：<i>{{ platformFee + transferFee + stampTax }}</i></a>
+        </div>
+    </div>
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script>
+    const app = new Vue({
+        el: '#app',
+        data: {
+            message: 'Hello Vue!',
+            number: '',
+            price: '',
+            amount: 0,
+            platformFee: 0,
+            transferFee: 0,
+            stampTax: 0,
+            outPrice: 0
+        },
+        methods: {
+            changeInput() {
+                this.amount = this.number * this.price
+                this.platformFee = Math.max(5, this.amount * 2.5 / 10000.0)
+                this.transferFee = this.amount * 0.2 / 10000.0
+                this.stampTax = this.amount / 1000.0
+
+                let b = this.amount + this.platformFee + this.transferFee + this.stampTax
+
+                let outPrice = 0
+                let rate = (1 - 2.8 / 10000.0)
+                if (b > 20000.0 / rate) {
+                    outPrice = b / rate / this.number
+                } else {
+                    outPrice = (b + 5) / (1 - 0.3 / 10000.0) / this.number
+                }
+
+                // let outPrice = 0
+                // let outAmount = outPrice * this.number
+
+                // let outPlatformFee = Math.max(5, outAmount * 2.5 / 10000.0)
+                // let outTransferFee = outAmount * 0.2 / 10000.0
+                // let outStampTax = outAmount / 1000.0
+
+                this.outPrice = outPrice
+            },
+        }
+    })
+</script>
+
+</html>
