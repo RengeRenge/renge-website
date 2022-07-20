@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
     <style>
         .cell {
-            background-color: rgb(241, 228, 200);
+            /* background-color: rgb(241, 228, 200); */
             margin-top: 20px;
         }
 
@@ -16,7 +16,41 @@
         }
 
         .cell a i {
-            color: crimson;
+            /* color: crimson; */
+            color: rgb(225, 171, 1);
+            font-weight: bold;
+            font-style: normal;
+        }
+
+        .bg {
+            width: 100%;
+            height: 100%;
+            color: azure;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+
+        .container {
+            padding: 40px;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        div input {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-width: 0;
+            border-radius: 3px;
+            max-width: 60px;
+        }
+
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            background: url('./ke.jpg') no-repeat center center;
+            background-size: cover;
         }
     </style>
 </head>
@@ -24,50 +58,55 @@
 
 
 <body>
-    <div id="app">
-        <h2>t+0成本计算器</h2>
+    <div id="app" class="bg">
+        <div class="container">
+            <h2>t+0成本计算器</h2>
 
-        <div style="margin-bottom: 40px">
-            <div>佣金为万2.5 单笔最少5元</div>
-            <div>印花税卖出时收取成交金额的千分之1，买入不收</div>
-            <div>过户费收取成交金额的万分之0.2，买卖双向收取</div>
-        </div>
+            <div style="margin-bottom: 40px">
+                <div>佣金为万分之<input v-model="platformRate" @input="changeInput()"> 单笔最少<input v-model="platformMinimal"
+                        @input="changeInput()">元</div>
+                <div>过户费收取成交金额的万分之<input v-model="transferRate" @input="changeInput()">，买卖双向收取</div>
+                <div>印花税卖出时收取成交金额的万分之<input v-model="stampTaxRate" @input="changeInput()">，买入不收</div>
+            </div>
 
-        <div>
-            <a>成交价格</a>
-            <input v-model="price" @input="changeInput()">
-        </div>
-        <div>
-            <a>成交数量</a>
-            <input v-model="number" @input="changeInput()">
-        </div>
+            <div>
+                <a>成交价格</a>
+                <input v-model="price" @input="changeInput()">
+            </div>
+            <div>
+                <a>成交数量</a>
+                <input v-model="number" @input="changeInput()">
+            </div>
 
-        <div class="cell">
-            <h3>买入</h3>
-            <a>
-                平台佣金 <i>{{ platformFee }}</i>
-            </a>
-            <a>
-                过户费 <i>{{ transferFee }}</i>
-            </a>
+            <div class="cell">
+                <h3>买入</h3>
+                <a>
+                    平台佣金：<i>{{ platformFee }}</i>
+                </a>
+                <a>
+                    过户费：<i>{{ transferFee }}</i>
+                </a>
 
-            <a>合计买入 <i>{{amount}}</i> 元股票的手续费为：<i>{{ platformFee + transferFee }}</i></a>
+                <a>合计买入 <i>{{amount}}</i> 元股票的手续费为：<i>{{ platformFee + transferFee }}</i></a>
+                <a>出账 <i>{{amount + (platformFee + transferFee)}}</i></a>
 
-            <a>相同数量卖出的成本价格 <i>{{ outPrice }}</i></a>
-        </div>
+                <a>相同数量卖出的成本价格：<i>{{ outPrice }}</i></a>
+            </div>
 
-        <div class="cell">
-            <h3>卖出</h3>
-            <a>
-                平台佣金 <i>{{ platformFee }}</i>
-            </a>
-            <a>
-                过户费 <i>{{ transferFee }}</i>
-            </a>
-            <a>
-                印花税 <i>{{ stampTax }}</i>
-            </a>
-            <a>合计卖出 <i>{{amount}}</i> 元股票的手续费为：<i>{{ platformFee + transferFee + stampTax }}</i></a>
+            <div class="cell">
+                <h3>卖出</h3>
+                <a>
+                    平台佣金：<i>{{ platformFee }}</i>
+                </a>
+                <a>
+                    过户费：<i>{{ transferFee }}</i>
+                </a>
+                <a>
+                    印花税：<i>{{ stampTax }}</i>
+                </a>
+                <a>合计卖出 <i>{{amount}}</i> 元股票的手续费为：<i>{{ platformFee + transferFee + stampTax }}</i></a>
+                <a>到账 <i>{{amount - (platformFee + transferFee + stampTax)}}</i></a>
+            </div>
         </div>
     </div>
 </body>
@@ -77,7 +116,11 @@
     const app = new Vue({
         el: '#app',
         data: {
-            message: 'Hello Vue!',
+            platformRate: 2.5,
+            platformMinimal: 5,
+            stampTaxRate: 10,
+            transferRate: 0.2,
+
             number: '',
             price: '',
             amount: 0,
@@ -89,18 +132,19 @@
         methods: {
             changeInput() {
                 this.amount = this.number * this.price
-                this.platformFee = Math.max(5, this.amount * 2.5 / 10000.0)
-                this.transferFee = this.amount * 0.2 / 10000.0
-                this.stampTax = this.amount / 1000.0
+                this.platformFee = Math.max(this.platformMinimal, this.amount * this.platformRate / 10000.0)
+                this.transferFee = this.amount * this.transferRate / 10000.0
+                this.stampTax = this.amount * this.stampTaxRate / 10000.0
 
                 let b = this.amount + this.platformFee + this.transferFee + this.stampTax
 
                 let outPrice = 0
-                let rate = (1 - 2.8 / 10000.0)
-                if (b > 20000.0 / rate) {
+                let rate = (1 - (this.stampTaxRate + this.transferRate + this.platformRate) / 10000.0)
+                let limit = this.platformMinimal / this.platformRate * 10000.0
+                if (b > limit / rate) {
                     outPrice = b / rate / this.number
                 } else {
-                    outPrice = (b + 5) / (1 - 0.3 / 10000.0) / this.number
+                    outPrice = (b + this.platformMinimal) / (1 - (this.stampTaxRate + this.transferRate) / 10000.0) / this.number
                 }
 
                 // let outPrice = 0
