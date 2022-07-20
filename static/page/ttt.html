@@ -147,7 +147,7 @@
                 this.transferFee = this.amount * this.transferRate / 10000.0
                 this.stampTax = this.amount * this.stampTaxRate / 10000.0
 
-                let b = this.amount + this.platformFee + this.transferFee + this.stampTax
+                let b = this.amount + this.platformFee + this.transferFee
 
                 let outPrice = 0
                 let rate = (1 - (this.stampTaxRate + this.transferRate + this.platformRate) / 10000.0)
