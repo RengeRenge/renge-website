@@ -94,11 +94,9 @@
                         <a>
                             过户费：<i>{{ transferFee }}</i>
                         </a>
-
                         <a>合计买入 <i>{{amount}}</i> 元股票的手续费为：<i>{{ platformFee + transferFee }}</i></a>
-                        <a>出账 <i>{{amount + (platformFee + transferFee)}}</i></a>
-
                         <a>相同数量卖出的成本价格：<i>{{ outPrice }}</i></a>
+                        <a>出账：<i>{{amount + (platformFee + transferFee)}}</i></a>
                     </div>
 
                     <div class="cell">
@@ -113,7 +111,7 @@
                             印花税：<i>{{ stampTax }}</i>
                         </a>
                         <a>合计卖出 <i>{{amount}}</i> 元股票的手续费为：<i>{{ platformFee + transferFee + stampTax }}</i></a>
-                        <a>到账 <i>{{amount - (platformFee + transferFee + stampTax)}}</i></a>
+                        <a>入账：<i>{{amount - (platformFee + transferFee + stampTax)}}</i></a>
                     </div>
                 </div>
             </div>
