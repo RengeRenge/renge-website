@@ -6,7 +6,7 @@
 # @Software: PyCharm
 from datetime import datetime
 
-from flask import Flask, json
+from flask import json
 from sqlalchemy import create_engine, Column, INTEGER, BigInteger, String, Text, Integer, TIMESTAMP, BOOLEAN, ForeignKey
 from sqlalchemy.databases import mysql
 from sqlalchemy.ext.declarative import declarative_base
@@ -18,7 +18,7 @@ DB_URI = "mysql+pymysql://{user}:{passwd}@{host}:{port}/{database}?charset={char
 engine = create_engine(DB_URI)
 Base = declarative_base(engine)
 
-app = Flask(__name__)
+# app = Flask(__name__)
 # app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:A_n20071214@localhost:3306/rg_database"
 # app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 
@@ -36,7 +36,7 @@ app = Flask(__name__)
 # ALTER TABLE art MODIFY create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP; 取消时间戳自动更新
 class User(Base):
     __tablename__ = "user"
-    __table_args__ = {'mysql_collate': 'utf8mb4_unicode_as_cs'}
+    __table_args__ = {'mysql_collate': 'utf8mb4_unicode_ci'}
 
     id = Column(BigInteger, primary_key=True, comment='user id', autoincrement=True)
     username = Column(String(30), nullable=False, default='', unique=True, comment='login id')
@@ -247,6 +247,8 @@ class user_file(Base):
     user_id = Column(BigInteger, index=True, nullable=False)
     file_id = Column(BigInteger, index=True, nullable=False)
     type = Column(INTEGER, comment='0 file, 1 directory')
+    directory_path = Column(mysql.LONGTEXT, nullable=False,
+                          comment=',1,5,3,4,2,')
     directory_id = Column(BigInteger, nullable=False, default=-1,
                           comment='The ID of the directory this file belongs to. -1 is root')
     personal_name = Column(String(100), nullable=True)
