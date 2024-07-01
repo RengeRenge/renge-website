@@ -570,6 +570,10 @@
                 })
             },
             loadFile: function (fid) {
+                if (fid === undefined) {
+                    this.loaded = true
+                    return
+                }
                 if (fid !== null) {
                     fid = parseInt(fid)
                 }
@@ -647,7 +651,7 @@
                 if (!isPhoneView()) {
                     return
                 }
-                this.onAudioItemChoice()
+                this.onAudioItemChoice(fid)
             },
             onAudioDoubleClick: function (fid) {
                 event.cancelBubble = true
