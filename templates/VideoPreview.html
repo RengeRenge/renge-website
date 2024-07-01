@@ -38,6 +38,7 @@
         width: 100%;
         object-fit: contain;
         align-self: flex-end;
+        transition: opacity 0.6s ease;
     }
 
     .no-support {
@@ -336,8 +337,14 @@
             onerror="this.src='/static/image/music_playing.svg'"
             style="max-width: 80%; max-height: 80%; position: absolute; border-radius: 4px"
             v-bind:style="{maxHeight: Math.min(appHeight * 0.8, 400) + 'px'}">
-        <audio v-if="audio" ref="audioPlayer" v-bind:autoplay="autoPlay ? 'autoplay' : null" @ended="onEnded()"
-            @play="onStartPlay()" @canplay="onCanplay()" v-bind:loop="autoPlay && loopMode === 2 ? 'loop' : null"
+        <audio v-if="audio" ref="audioPlayer"
+            v-bind:style="{opacity: audioPlayerOpacity}"
+            v-bind:autoplay="autoPlay ? 'autoplay' : null"
+            v-bind:loop="autoPlay && loopMode === 2 ? 'loop' : null"
+            @click="onAudioPlayerClick"
+            @ended="onEnded()"
+            @play="onStartPlay()"
+            @canplay="onCanplay()"
             controls autobuffer>
             <source v-bind:src="url" type="audio/mpeg">
             <source v-bind:src="url" type="audio/aac">
@@ -493,6 +500,7 @@
             loopModes: ['/static/image/list_order.svg', '/static/image/list_random.svg', '/static/image/list_one_loop.svg'],
             errorImage: 'this.src="/static/image/music_playing.svg"',
             previewOpacity: 1,
+            audioPlayerOpacity: 1,
             appWidth: 0,
             appHeight: 0,
             listSearchState: false,
@@ -731,7 +739,14 @@
                 }))
             },
             onBackgroundClick: function (e) {
+                e.cancelBubble = true
+                if (this.audio) {
+                    this.audioPlayerOpacity = this.audioPlayerOpacity ? 0 : 1
+                }
                 // this.switchPlayState(this.willPlayId)
+            },
+            onAudioPlayerClick: function (e) {
+                e.cancelBubble = true
             },
             onResize: function () {
                 // console.log(this.$refs.videoPage.offsetHeight)
