@@ -330,7 +330,7 @@
 <body class="center" style="background-color: #4b4b4b;" onresize="onResize(event)">
 
     {% raw %}
-    <div id="videoPage" ref="videoPage" class="full center" @click="onBackgroundClick">
+    <div id="videoPage" ref="videoPage" class="full center" @click="onBackgroundClick" @dblclick="onBackgroundDoubleClick">
         <div v-if="url && audio && audioCover" class="background"
             v-bind:style="{backgroundImage: 'url(' + audioCover + ')' }"></div>
         <img v-if="url && audio && audioCover" v-bind:src="audioCover"
@@ -501,6 +501,7 @@
             errorImage: 'this.src="/static/image/music_playing.svg"',
             previewOpacity: 1,
             audioPlayerOpacity: 1,
+            backgroundViewClickTimer: null,
             appWidth: 0,
             appHeight: 0,
             listSearchState: false,
@@ -744,10 +745,46 @@
             },
             onBackgroundClick: function (e) {
                 e.cancelBubble = true
+                this.backgroundViewClickTimer && clearTimeout(this.backgroundViewClickTimer)
+                this.backgroundViewClickTimer = setTimeout(() => {
+                    if (this.audio) {
+                        this.audioPlayerOpacity = this.audioPlayerOpacity ? 0 : 1
+                    }
+                }, 200);
+            },
+            onBackgroundDoubleClick: function (e) {
+                e.cancelBubble = true
+                this.backgroundViewClickTimer && clearTimeout(this.backgroundViewClickTimer)
                 if (this.audio) {
-                    this.audioPlayerOpacity = this.audioPlayerOpacity ? 0 : 1
+                    if (!document.fullscreenElement) {
+                        this.enterFullScreen();
+                    } else {
+                        this.exitFullScreen();
+                    }
                 }
-                // this.switchPlayState(this.willPlayId)
+            },
+            enterFullScreen() {
+                let element = document.documentElement;
+                if (element.requestFullscreen) {
+                    element.requestFullscreen();
+                } else if (element.mozRequestFullScreen) { /* Firefox */
+                    element.mozRequestFullScreen();
+                } else if (element.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
+                    element.webkitRequestFullscreen();
+                } else if (element.msRequestFullscreen) { /* IE/Edge */
+                    element.msRequestFullscreen();
+                }
+            },
+            exitFullScreen() {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.mozCancelFullScreen) { /* Firefox */
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) { /* IE/Edge */
+                    document.msExitFullscreen();
+                }
             },
             onAudioPlayerClick: function (e) {
                 e.cancelBubble = true
