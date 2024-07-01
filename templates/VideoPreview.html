@@ -627,7 +627,7 @@
                 })
             },
             onCanplay: function () {
-                this.$refs.audioPlayer.play()
+                this.$refs.audioPlayer && this.$refs.audioPlayer.play()
             },
             onStartPlay: function () {
                 this.playingId = this.willPlayId
