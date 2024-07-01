@@ -245,7 +245,7 @@ class user_file(Base):
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     user_id = Column(BigInteger, index=True, nullable=False)
-    file_id = Column(BigInteger, index=True, nullable=False)
+    file_id = Column(BigInteger, index=True, nullable=True)
     type = Column(INTEGER, comment='0 file, 1 directory')
     directory_path = Column(mysql.LONGTEXT, nullable=False,
                           comment=',1,5,3,4,2,')
