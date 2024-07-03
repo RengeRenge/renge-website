@@ -46,12 +46,12 @@ class User(Base):
     nickname = Column(String(50), nullable=True, default='', comment='nickname')
     title = Column(String(50), nullable=True, default='', comment='title')
     description = Column(String(1000), nullable=True, default='', comment='user desc')
-    icon = Column(BigInteger, nullable=True, default='', comment='icon')
-    bg_image = Column(BigInteger, nullable=True, default='', comment='blog background image')
+    icon = Column(BigInteger, nullable=True, comment='icon')
+    bg_image = Column(BigInteger, nullable=True, comment='blog background image')
     style = Column(Text, nullable=True, default='', comment='css style')
 
     tag = Column(String(20), nullable=True, default='', comment='tag')
-    default_album_id = Column(BigInteger, nullable=False, default='', comment='default album')
+    default_album_id = Column(BigInteger, nullable=False, default=0, comment='default album')
 
     addtime = Column(BigInteger, nullable=False, comment='ms')
 
