@@ -105,7 +105,7 @@
     .play-list ul {
         list-style-type: none;
         list-style-image: none;
-        max-height: 300px;
+        max-height: 320px;
         overflow: auto;
         margin: 0;
         padding: 0;
@@ -117,7 +117,7 @@
         padding-bottom: 3px;
         padding-right: 10px;
         cursor: pointer;
-        height: 40px;
+        min-height: 40px;
         display: flex;
         align-items: center;
         font-size: 12px;
@@ -139,7 +139,7 @@
         /*position: absolute;*/
         height: 15px;
         left: 17px;
-        width: 40px;
+        min-width: 40px;
         text-align: center;
     }
 
@@ -173,6 +173,7 @@
 
     .search-input {
         width: 100%;
+        box-sizing: border-box;
         background-color: transparent;
         color: #ecf6fd;
         border: transparent 0px;
