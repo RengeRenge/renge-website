@@ -400,18 +400,16 @@
         </div>
 
         <img v-if="(list && fileList.length) || (epubLoaded && epubToc)" src="/static/image/menu.svg" class="menu"
-            @click="onMenuIconClick">
+            @click="onMenuIconClick" @dblclick="onMenuIconClick">
         <div v-else-if="loadedFile && !epubLoaded" class="menu">
             <img src="/static/image/file-download.svg" class="download">
             <a class="download" style="width: 100%;height: 100%; position: absolute;"
                 v-bind:href="loadedFile.downloadUrl" v-bind:download="loadedFile.name"></a>
         </div>
 
-        <div v-if="list && fileList.length && showMenu" class="play-list menu-base">
+        <div v-if="list && fileList.length && showMenu" class="play-list menu-base" @dblclick="onPlaylistDoubleClick">
             <div v-if="open_code" style="padding-left: 14px; padding-top: 5px; padding-bottom: 5px; font-size: 14px;">
                 共享的播放列表</div>
-            <input v-if="listSearchState" autofocus="autofocus" class="search-input"
-                @input="doSearch(event.target.value)">
             <ul v-bind:style="{maxHeight: Math.min(appHeight - 130, 300) + 'px'}">
                 <li v-for="(file, index) in displayList" v-bind:class="(index%2 == 0 ? 'odd' : 'even') + ' ' +
                 (selectedId == file.id ? 'selected' : '') + ' ' +
@@ -430,8 +428,11 @@
             <img class="tool" v-bind:class="!autoPlay ? 'tool-disable' : ''" v-bind:src="loopModes[loopMode]"
                 @click="switchLoopMode">
             <img class="tool" src="/static/image/list-search.svg" @click="onSearch">
-            <img class="tool" src="/static/image/list_locate.svg" @click="doScrollToPlaying">
+            <img class="tool" src="/static/image/list_locate.svg" @click="onScrollToPlaying">
             <img class="tool" src="/static/image/list_next.svg" @click="next(1)">
+            <input v-if="listSearchState" autofocus="autofocus" class="search-input"
+                placeholder="搜索文件名"
+                @input="doSearch(event.target.value)">
         </div>
 
         <div v-if="epub && showMenu && epubToc" class="menu-base epub-chapter-wrapper">
@@ -752,6 +753,7 @@
                 this.showMenu = !this.showMenu
             },
             onSearch: function (e) {
+                e.cancelBubble = true
                 this.listSearchState = !this.listSearchState
                 if (this.listSearchState) {
                     this.doSearch('')
@@ -765,12 +767,16 @@
                     return file.sortName.indexOf(text) >= 0 || file.name.indexOf(text) >= 0 || file.sortName1.indexOf(text) >= 0
                 }))
             },
-            doScrollToPlaying: function(e) {
+            onScrollToPlaying: function(e) {
+                e.cancelBubble = true
                 let playingView = document.getElementsByClassName('playing')[0]
                 playingView && playingView.scrollIntoView({
                     behavior: 'smooth',
                     block: 'center'
                 })
+            },
+            onPlaylistDoubleClick: function (e) {
+                e.cancelBubble = true
             },
             onBackgroundClick: function (e) {
                 e.cancelBubble = true
