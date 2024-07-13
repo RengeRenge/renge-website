@@ -387,15 +387,19 @@ def user_file_set(user_id, id, conn=None, args=None):
     return True if error is None else False
 
 
-def user_file_files_relative_with_id(user_id, id, conn=None):
-    sql = "SELECT \
-            user_file.id as id, \
-            user_file.file_id as file_id, \
-            user_file.type as type,\
-            user_file.personal_name as name, \
-            file.mime as mime,\
-            file.filename as filename,\
-            file.forever as forever\
+def user_file_files_relative_with_id(user_id, id, conn=None, need_filename=False):
+    # 基础SQL查询字段
+    fields = "user_file.id as id, \
+                user_file.file_id as file_id, \
+                user_file.type as type, \
+                user_file.personal_name as name, \
+                file.mime as mime, \
+                file.forever as forever"
+    if need_filename:
+        fields = f"{fields}, file.filename as filename"
+        
+    sql = f"SELECT \
+            {fields} \
             from user_file \
             left join file on user_file.file_id = file.id\
             where ((find_in_set(%(id)s, user_file.directory_path) or (user_file.id=%(id)s)) \
@@ -450,7 +454,7 @@ def user_file_need_remove_from_disk(delete_user_files, conn=None):
 
 
 def user_file_del_and_return_files(user_id, id, conn):
-    files, error = user_file_files_relative_with_id(user_id=user_id, id=id, conn=conn)
+    files, error = user_file_files_relative_with_id(user_id=user_id, id=id, conn=conn, need_filename=True)
     if error is not None:
         raise error
 
