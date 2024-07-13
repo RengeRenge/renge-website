@@ -407,7 +407,8 @@
                 v-bind:href="loadedFile.downloadUrl" v-bind:download="loadedFile.name"></a>
         </div>
 
-        <div v-if="list && fileList.length && showMenu" class="play-list menu-base" @dblclick="onPlaylistDoubleClick">
+        <div v-if="list && fileList.length && showMenu" class="play-list menu-base" 
+            @click="onPlaylistDoubleClick" @dblclick="onPlaylistDoubleClick">
             <div v-if="open_code" style="padding-left: 14px; padding-top: 5px; padding-bottom: 5px; font-size: 14px;">
                 共享的播放列表</div>
             <ul v-bind:style="{maxHeight: Math.min(appHeight - 130, 300) + 'px'}">
