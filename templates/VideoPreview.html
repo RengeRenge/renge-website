@@ -412,6 +412,7 @@
             <div v-if="open_code" style="padding-left: 14px; padding-top: 5px; padding-bottom: 5px; font-size: 14px;">
                 共享的播放列表</div>
             <input v-if="listSearchState" autofocus="autofocus" class="search-input"
+                v-model="audioSearchText"
                 placeholder="搜索文件名"
                 @input="doSearch(event.target.value)">
             <ul v-bind:style="{maxHeight: Math.min(appHeight - 130, 300) + 'px'}">
@@ -500,6 +501,7 @@
             selectedId: null,
             fileList: [],
             displayList: [],
+            audioSearchText: '',
             autoPlay: false,
             showMenu: false,
             loopMode: 0,
@@ -763,6 +765,7 @@
                 }
             },
             doSearch: function (text) {
+                this.audioSearchText = text
                 text = text.toLowerCase()
                 this.displayList = this.fileList.filter(((file, index, array) => {
                     return file.sortName.indexOf(text) >= 0 || file.name.indexOf(text) >= 0 || file.sortName1.indexOf(text) >= 0
