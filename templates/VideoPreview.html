@@ -486,6 +486,7 @@
             video: false,
             image: false,
             audio: false,
+            pathFileId: null,
             loadedFile: null,
             list: false,
             url: null,
@@ -523,6 +524,18 @@
             epubToc: null
         },
         created: function (e) {
+            URLSearchParams.prototype.toObject = function() {
+                const obj = {}
+                this.forEach((value, key) => {
+                    obj[key] = value
+                })
+                return obj
+            };
+            const params = new URLSearchParams(window.location.search).toObject()
+            if ('f' in params) {
+                this.pathFileId = params['f']
+            }
+
             let path = document.location.pathname.split("/")
             let lastPath = path[path.length - 1]
             let sv = null, pv = null
@@ -553,7 +566,11 @@
                         if (result.code === 1000) {
                             this.autoPlay = true
                             let fileList = result.data
+                            let loadId = null
                             fileList = fileList.filter(((file, index, array) => {
+                                if (this.pathFileId == file.id) {
+                                    loadId = this.pathFileId
+                                }
                                 file.sortName = pinyinUtil.getPinyin(file.name, '', false, false, false).toLowerCase()
                                 file.sortName1 = pinyinUtil.getPinyin(file.name, '', false, false, true).toLowerCase()
                                 return audioDisplaySupport(mimeType(file.name))
@@ -563,7 +580,7 @@
                             })
                             this.fileList = fileList
                             this.displayList = fileList
-                            this.loadFile(fileList[0].id)
+                            this.loadFile(loadId ? loadId : fileList[0].id)
                         }
                     },
                     error: function (e) {
@@ -599,6 +616,7 @@
                             if (file.depend_folder) {
                                 file.downloadUrl = file.downloadUrl + '?id=' + file.id
                                 file.thumb = file.downloadUrl + '&cover=1'
+                                this.updateURLParameter('f', file.id)
                             } else {
                                 file.thumb = file.downloadUrl + '?cover=1'
                             }
@@ -987,6 +1005,11 @@
 
                 })
             },
+            updateURLParameter: function(param, value) {
+                var url = new URL(window.location)
+                url.searchParams.set(param, value)
+                history.pushState({path: url.pathname}, '', url.toString())
+            }
         },
     });
 
