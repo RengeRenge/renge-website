@@ -618,7 +618,6 @@
                             if (file.depend_folder) {
                                 file.downloadUrl = file.downloadUrl + '?id=' + file.id
                                 file.thumb = file.downloadUrl + '&cover=1'
-                                this.updateURLParameter('f', file.id)
                             } else {
                                 file.thumb = file.downloadUrl + '?cover=1'
                             }
@@ -626,6 +625,8 @@
                             file.downloadUrl = '/file/user/get/' + file.id
                             file.thumb = file.downloadUrl + '?cover=1'
                         }
+
+                        this.updateURLParameterIfNeed('f', file.id)
 
                         this.loadedFile = file
 
@@ -1014,7 +1015,10 @@
 
                 })
             },
-            updateURLParameter: function(param, value) {
+            updateURLParameterIfNeed: function(param, value) {
+                if (this.fileList.length <= 0) {
+                    return
+                }
                 var url = new URL(window.location)
                 url.searchParams.set(param, value)
                 history.pushState({path: url.pathname}, '', url.toString())
