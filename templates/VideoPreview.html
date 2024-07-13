@@ -150,6 +150,7 @@
 
     .play-list .tool {
         height: 18px;
+        width: 25px;
         float: right;
         margin-right: 6px;
         cursor: pointer;
@@ -429,6 +430,7 @@
             <img class="tool" v-bind:class="!autoPlay ? 'tool-disable' : ''" v-bind:src="loopModes[loopMode]"
                 @click="switchLoopMode">
             <img class="tool" src="/static/image/list-search.svg" @click="onSearch">
+            <img class="tool" src="/static/image/list_locate.svg" @click="doScrollToPlaying">
             <img class="tool" src="/static/image/list_next.svg" @click="next(1)">
         </div>
 
@@ -761,6 +763,13 @@
                 this.displayList = this.fileList.filter(((file, index, array) => {
                     return file.sortName.indexOf(text) >= 0 || file.name.indexOf(text) >= 0 || file.sortName1.indexOf(text) >= 0
                 }))
+            },
+            doScrollToPlaying: function(e) {
+                let playingView = document.getElementsByClassName('playing')[0]
+                playingView && playingView.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                })
             },
             onBackgroundClick: function (e) {
                 e.cancelBubble = true
