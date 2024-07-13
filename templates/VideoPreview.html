@@ -411,6 +411,9 @@
             @click="onPlaylistDoubleClick" @dblclick="onPlaylistDoubleClick">
             <div v-if="open_code" style="padding-left: 14px; padding-top: 5px; padding-bottom: 5px; font-size: 14px;">
                 共享的播放列表</div>
+            <input v-if="listSearchState" autofocus="autofocus" class="search-input"
+                placeholder="搜索文件名"
+                @input="doSearch(event.target.value)">
             <ul v-bind:style="{maxHeight: Math.min(appHeight - 130, 300) + 'px'}">
                 <li v-for="(file, index) in displayList" v-bind:class="(index%2 == 0 ? 'odd' : 'even') + ' ' +
                 (selectedId == file.id ? 'selected' : '') + ' ' +
@@ -431,9 +434,6 @@
             <img class="tool" src="/static/image/list-search.svg" @click="onSearch">
             <img class="tool" src="/static/image/list_locate.svg" @click="onScrollToPlaying">
             <img class="tool" src="/static/image/list_next.svg" @click="next(1)">
-            <input v-if="listSearchState" autofocus="autofocus" class="search-input"
-                placeholder="搜索文件名"
-                @input="doSearch(event.target.value)">
         </div>
 
         <div v-if="epub && showMenu && epubToc" class="menu-base epub-chapter-wrapper">
