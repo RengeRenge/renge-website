@@ -332,28 +332,24 @@
 <body class="center" style="background-color: #4b4b4b;" onresize="onResize(event)">
 
     {% raw %}
-    <div id="videoPage" ref="videoPage" class="full center" @click="onBackgroundClick" @dblclick="onBackgroundDoubleClick">
+    <div id="videoPage" ref="videoPage" class="full center" @click="onBackgroundClick"
+        @dblclick="onBackgroundDoubleClick">
         <div v-if="url && audio && audioCover" class="background"
             v-bind:style="{backgroundImage: 'url(' + audioCover + ')' }"></div>
         <img v-if="url && audio && audioCover" v-bind:src="audioCover"
             onerror="this.src='/static/image/music_playing.svg'"
             style="max-width: 80%; max-height: 80%; position: absolute; border-radius: 4px"
             v-bind:style="{maxHeight: Math.min(appHeight * 0.8, 400) + 'px'}">
-        <audio v-if="audio" ref="audioPlayer"
-            v-bind:style="{opacity: audioPlayerOpacity}"
-            v-bind:autoplay="autoPlay ? 'autoplay' : null"
-            v-bind:loop="autoPlay && loopMode === 2 ? 'loop' : null"
-            @click="onAudioPlayerClick"
-            @ended="onEnded()"
-            @play="onStartPlay()"
-            @canplay="onCanplay()"
-            controls autobuffer>
+        <audio v-if="audio" ref="audioPlayer" v-bind:style="{opacity: audioPlayerOpacity}"
+            v-bind:autoplay="autoPlay ? 'autoplay' : null" v-bind:loop="autoPlay && loopMode === 2 ? 'loop' : null"
+            @click="onAudioPlayerClick" @ended="onEnded()" @play="onStartPlay()" @canplay="onCanplay()"
+            preload="auto" controls>
             <source v-bind:src="url" type="audio/mpeg">
             <source v-bind:src="url" type="audio/aac">
             <source v-bind:src="url" type="audio/ogg">
         </audio>
 
-        <video v-if="video" v-bind:src="url" controls autobuffer>
+        <video v-if="video" v-bind:src="url" preload="auto" controls>
         </video>
 
         <img v-if="image" v-bind:src="url" id="oImg" style="max-width: 100%; max-height: 100%">
@@ -407,14 +403,12 @@
                 v-bind:href="loadedFile.downloadUrl" v-bind:download="loadedFile.name"></a>
         </div>
 
-        <div v-if="list && fileList.length && showMenu" class="play-list menu-base" 
-            @click="onPlaylistDoubleClick" @dblclick="onPlaylistDoubleClick">
+        <div v-if="list && fileList.length && showMenu" class="play-list menu-base" @click="onPlaylistDoubleClick"
+            @dblclick="onPlaylistDoubleClick">
             <div v-if="open_code" style="padding-left: 14px; padding-top: 5px; padding-bottom: 5px; font-size: 14px;">
                 共享的播放列表</div>
-            <input v-if="listSearchState" autofocus="autofocus" class="search-input"
-                v-model="audioSearchText"
-                placeholder="搜索文件名"
-                @input="doSearch(event.target.value)">
+            <input v-if="listSearchState" autofocus="autofocus" class="search-input" v-model="audioSearchText"
+                placeholder="搜索文件名" @input="doSearch(event.target.value)">
             <ul v-bind:style="{maxHeight: Math.min(appHeight - 130, 300) + 'px'}">
                 <li v-for="(file, index) in displayList" v-bind:class="(index%2 == 0 ? 'odd' : 'even') + ' ' +
                 (selectedId == file.id ? 'selected' : '') + ' ' +
@@ -530,18 +524,9 @@
             epubToc: null
         },
         created: function (e) {
-            URLSearchParams.prototype.toObject = function() {
-                const obj = {}
-                this.forEach((value, key) => {
-                    obj[key] = value
-                })
-                return obj
-            };
-            const params = new URLSearchParams(window.location.search).toObject()
-            if ('f' in params) {
-                this.pathFileId = params['f']
-            }
+            window.addEventListener('popstate', this.handlePopState)
 
+            this.updatePathFileId()
             let path = document.location.pathname.split("/")
             let lastPath = path[path.length - 1]
             let sv = null, pv = null
@@ -559,10 +544,26 @@
                 this.loadFile(pv)
             }
         },
+        destroyed() {
+            window.removeEventListener('popstate', this.handlePopState)
+        },
         mounted: function () {
             this.onResize()
         },
         methods: {
+            updatePathFileId: function () {
+                URLSearchParams.prototype.toObject = function () {
+                    const obj = {}
+                    this.forEach((value, key) => {
+                        obj[key] = value
+                    })
+                    return obj
+                }
+                const params = new URLSearchParams(window.location.search).toObject()
+                if ('f' in params) {
+                    this.pathFileId = params['f']
+                }
+            },
             loadPlayList: function (code, open_code) {
                 file_list({
                     code,
@@ -586,13 +587,24 @@
                             })
                             this.fileList = fileList
                             this.displayList = fileList
-                            this.loadFile(loadId ? loadId : fileList[0].id)
+                            this.loadCurrentFile()
                         }
                     },
                     error: function (e) {
                         this.list = true
                     },
                 })
+            },
+            loadCurrentFile: function () {
+                let loadId = null
+                const fileList = this.fileList
+                for (const file of fileList) {
+                    if (this.pathFileId == file.id) {
+                        loadId = this.pathFileId
+                        break
+                    }
+                }
+                this.loadFile(loadId ? loadId : fileList[0].id)
             },
             loadFile: function (fid) {
                 if (fid === undefined) {
@@ -639,13 +651,12 @@
                         this.video = videoDisplaySupport(mime)
                         this.audio = audioDisplaySupport(mime)
                         this.epub = epubDisplaySupport(mime)
-                        
+
                         this.url = ''
                         this.$refs.audioPlayer && this.$refs.audioPlayer.load()
 
                         this.playingId = null
 
-                        // this.url = '/file/user/get/' + fid
                         if (this.audio) {
                             this.audioCover = file.thumb
                         }
@@ -655,13 +666,8 @@
                             this.url = file.downloadUrl
                             this.willPlayId = fid
                             this.$refs.audioPlayer && this.$refs.audioPlayer.load()
+                            this.registMetaData(this.loadedFile)
                         })
-
-                        // if (this.autoPlay) {
-                        //     setTimeout(()=> {
-                        //         this.$refs.audioPlayer.play()
-                        //     }, 1000)
-                        // }
                     }
                 })
             },
@@ -771,7 +777,7 @@
                     return file.sortName.indexOf(text) >= 0 || file.name.indexOf(text) >= 0 || file.sortName1.indexOf(text) >= 0
                 }))
             },
-            onScrollToPlaying: function(e) {
+            onScrollToPlaying: function (e) {
                 e.cancelBubble = true
                 let playingView = document.getElementsByClassName('playing')[0]
                 playingView && playingView.scrollIntoView({
@@ -1025,13 +1031,92 @@
 
                 })
             },
-            updateURLParameterIfNeed: function(param, value) {
+            updateURLParameterIfNeed: function (param, value) {
+                if (this.fileList.length <= 0) {
+                    return;
+                }
+                var currentUrl = new URL(window.location)
+                if (currentUrl.searchParams.get(param) == value) {
+                    return
+                }
+                console.log('updateURLParameterIfNeed', param, value)
+                currentUrl.searchParams.set(param, value)
+                history.pushState({ path: currentUrl.pathname }, '', currentUrl.toString())
+            },
+            handlePopState: function (event) {
                 if (this.fileList.length <= 0) {
                     return
                 }
-                var url = new URL(window.location)
-                url.searchParams.set(param, value)
-                history.pushState({path: url.pathname}, '', url.toString())
+                this.updatePathFileId()
+                this.loadCurrentFile()
+            },
+            registMetaData: function (file) {
+                let navigator = window.navigator
+                if (!navigator.mediaSession) {
+                    return
+                }
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: file.name,
+                    artwork: [
+                        {
+                            src: file.thumb,
+                            type: "image/png",
+                        }
+                    ],
+                })
+
+                const audioPlayer = this.$refs.audioPlayer;
+                if (!audioPlayer) {
+                    return
+                }
+
+                navigator.mediaSession.playbackState = 'playing'
+
+                navigator.mediaSession.setActionHandler("play", () => {
+                    audioPlayer.play();
+                })
+
+                // 设置暂停操作
+                navigator.mediaSession.setActionHandler("pause", () => {
+                    audioPlayer.pause();
+                    navigator.mediaSession.playbackState = 'paused'
+                })
+
+                // 设置停止操作
+                navigator.mediaSession.setActionHandler("stop", () => {
+                    navigator.mediaSession.playbackState = 'stopped'
+                        (audioPlayer.pause(), audioPlayer.currentTime = 0)
+                })
+
+                // 设置回退操作
+                navigator.mediaSession.setActionHandler("seekbackward", () => {
+                    const newTime = Math.max(audioPlayer.currentTime - 10, 0) // 回退10秒
+                    audioPlayer.currentTime = newTime;
+                })
+
+                // 设置快进操作
+                navigator.mediaSession.setActionHandler("seekforward", () => {
+                    const newTime = Math.min(audioPlayer.currentTime + 10, audioPlayer.duration) // 快进10秒
+                    audioPlayer.currentTime = newTime
+                })
+
+                // 设置跳转到指定时间点操作
+                navigator.mediaSession.setActionHandler("seekto", (details) => {
+                    if (details.seekTime) {
+                        const newTime = Math.min(details.seekTime, audioPlayer.duration) // 确保时间不超过音频总时长
+                        audioPlayer.currentTime = newTime
+                    }
+                })
+
+                // 设置上一首操作
+                navigator.mediaSession.setActionHandler("previoustrack", () => {
+                    history.back()
+                })
+
+                // 设置下一首操作
+                navigator.mediaSession.setActionHandler("nexttrack", () => {
+                    this.next(1)
+                })
             }
         },
     });
