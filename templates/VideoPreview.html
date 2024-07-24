@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh" xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
+<script type="text/javascript" src="/static/js/vue@2.7.16.js"></script>
 <script type="text/javascript" src="/static/jquery/jquery.min.js?ver={{js_ver}}"></script>
 <script type="text/javascript" src="/static/js/file.js?ver={{js_ver}}"></script>
 <script type="text/javascript" src="/static/js/MimeType.js?ver={{js_ver}}"></script>
@@ -629,17 +629,23 @@
                         let mime = mimeType(file.name)
 
                         file.errorThumb = mimeIconUrl(mime)
+
+                        let coverParams = 'cover=1'
+                        if (isPhoneView()) {
+                            coverParams = 'cover=1&side=1080&quality=low'
+                        }
+                        
                         if (this.open_code) {
                             file.downloadUrl = '/file/user/open/get/' + file.open_code
                             if (file.depend_folder) {
                                 file.downloadUrl = file.downloadUrl + '?id=' + file.id
-                                file.thumb = file.downloadUrl + '&cover=1'
+                                file.thumb = file.downloadUrl + '&' + coverParams
                             } else {
-                                file.thumb = file.downloadUrl + '?cover=1'
+                                file.thumb = file.downloadUrl + '?' + coverParams
                             }
                         } else {
                             file.downloadUrl = '/file/user/get/' + file.id
-                            file.thumb = file.downloadUrl + '?cover=1'
+                            file.thumb = file.downloadUrl + '?' + coverParams
                         }
 
                         this.updateURLParameterIfNeed('f', file.id)
@@ -1039,7 +1045,6 @@
                 if (currentUrl.searchParams.get(param) == value) {
                     return
                 }
-                console.log('updateURLParameterIfNeed', param, value)
                 currentUrl.searchParams.set(param, value)
                 history.pushState({ path: currentUrl.pathname }, '', currentUrl.toString())
             },

@@ -12,7 +12,7 @@ import RGUIController
 from DAO import rg_dao as dao
 from Files import RGFileOpen
 from Model import files, pic
-from RGIgnoreConfig.RGFileGlobalConfigContext import FilePreFix, RemoteFileHost, name_fix, support_image
+from Files.RGFileGlobalConfigContext import FilePreFix, RemoteFileHost, support_image
 from RGUtil import RGRequestHelp
 from RGUtil.RGCodeUtil import RGResCode
 from RGUtil.RGRequestHelp import form_res, request_value, is_int_number, request_file_size
@@ -617,10 +617,6 @@ def __get_file_stream(file, max_age=604800):
     filename = file['filename'] if file is not None and 'filename' in file else None
     mime = file['mime'] if file is not None and 'mime' in file else None
     name = file['name'] if file is not None and 'name' in file else None
-
-    img_quality = request_value(request, 'img_quality', 'original')
-    if img_quality == 'low':
-        filename = name_fix(filename=filename, thumb=True, gif_activity=False)
     if filename is None:
         return jsonify(form_res(RGResCode.not_existed))
     return handle_download_file(filename, name, mime=mime, max_age=max_age)
@@ -633,7 +629,11 @@ def handle_download_file(filename, download_name=None, mime=None, max_age=604800
     params = {
         'mime': mime,
         'name': download_name,
-        'cover': int(request_value(request, 'cover', 0))
+        'cover': int(request_value(request, 'cover', 0)),
+        'size': int(float(request_value(request, 'size', 0))),
+        'side': int(float(request_value(request, 'side', 0))),
+        'sf': int(float(request_value(request, 'sf', 1))),
+        'quality': request_value(request, 'quality', None)
     }
     req = requests.get(remote_url, headers=request.headers,
                        json=params, stream=not range_mode)

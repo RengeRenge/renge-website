@@ -8,7 +8,7 @@ from flask import json
 import User
 from DAO import rg_dao as dao
 from Model import files
-from RGIgnoreConfig.RGFileGlobalConfigContext import url_with_name
+from Files.RGFileGlobalConfigContext import url_with_name
 from RGUtil import RGTimeUtil
 from RGUtil.RGCodeUtil import RGResCode, RGVerifyType
 from User import RGOpenIdController

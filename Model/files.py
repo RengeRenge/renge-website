@@ -1,5 +1,5 @@
 from DAO import rg_dao as dao
-from RGIgnoreConfig.RGFileGlobalConfigContext import url_with_name, RGFileMaxCapacity
+from Files.RGFileGlobalConfigContext import url_with_name, RGFileMaxCapacity
 from RGUtil import RGTimeUtil
 
 

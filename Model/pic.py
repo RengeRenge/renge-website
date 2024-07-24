@@ -1,7 +1,7 @@
 import operator
 
 from DAO import rg_dao as dao
-from RGIgnoreConfig.RGFileGlobalConfigContext import url_with_name, path_with_name, support_image
+from Files.RGFileGlobalConfigContext import url_with_name, path_with_name, support_image
 from Model import album, user
 
 

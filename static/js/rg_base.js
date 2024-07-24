@@ -415,25 +415,20 @@ String.prototype.getImageUrlRelativePath = function () {
 
 String.prototype.isRGImage = function () {
     let url = this
-    let arrUrl = url.split("//");
-    if (arrUrl.length === 0)
-        return true
-    let start = arrUrl[1].indexOf("/");
-    let host = arrUrl[1].substr(0, start)
-    return document.location.host === host
+    const parsedUrl = new URL(url, window.location.href);
+    return parsedUrl.protocol === window.location.protocol && parsedUrl.hostname === window.location.hostname
 }
 
 String.prototype.originalRGSrc = function () {
     if (this.isRGImage()) {
-        let index = this.lastIndexOf('.')
-        let ext = this.substring(index)
-        let filename = this.substr(0, index)
-        if (filename.endsWith('_quality') || filename.endsWith('_thumbnail')) {
-            index = filename.lastIndexOf('_')
-            if (index > 0) {
-                return filename.substr(0, index) + ext
-            }
-        }
+        let url = this
+        const parsedUrl = new URL(url, window.location.href)
+        const params = new URLSearchParams(parsedUrl.search)
+        params.delete('side')
+        params.delete('size')
+        params.delete('quality')
+        parsedUrl.search = params.toString()
+        return parsedUrl.toString()
     }
     return this
 }
@@ -601,4 +596,21 @@ function rg_merge(obj, other) {
             obj[key] = other[key]
         }
     }
+}
+
+function getZoomFactor() {
+    return window.devicePixelRatio
+}
+
+String.prototype.my_cover = function ({side, quality}) {
+    let url = this
+    const parsedUrl = new URL(url, window.location.href)
+    if (parsedUrl.protocol === window.location.protocol && parsedUrl.hostname === window.location.hostname) {
+        const params = new URLSearchParams(parsedUrl.search)
+        if (side) { params.set('side', side) }
+        if (quality) { params.set('quality', quality) }
+        parsedUrl.search = params.toString()
+        return parsedUrl.toString()
+    }
+    return url
 }

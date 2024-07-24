@@ -265,6 +265,7 @@
                 if (result.code === 1000) {
                     let arts = result.data
                     let artsH5String = ''
+                    const params = {sf: getZoomFactor(), side: 80, quality: 'low'}
                     for (let i = 0; i < arts.length; i++) {
                         let art = arts[i]
 
@@ -285,7 +286,7 @@
                                         <div class="auto_text {5}">{3}</div> \
                                     </div> \
                                 </div> \
-                            </div>'.format(art.id, art.cover ? art.cover : '', title.encodeHtml(), art.summary.encodeHtml(), time, art.cover ? 'three_line' : 'preview_text_many')
+                            </div>'.format(art.id, art.cover ? art.cover.my_cover(params) : '', title.encodeHtml(), art.summary.encodeHtml(), time, art.cover ? 'three_line' : 'preview_text_many')
                         artsH5String += artItemString
                     }
 

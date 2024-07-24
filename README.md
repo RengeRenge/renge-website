@@ -516,8 +516,11 @@ param_error = 1016
 | Params      | Required | Type   | Description                                     |
 | ----------- | -------- | ------ | ----------------------------------------------- |
 | id          | Y        | Int    | 文件ID                                          |
-| img_quality | N        | String | "low": 图片文件返回缩略图, "original": 原始文件 |
-| cover       | N        | Int    | 1：获取文件的预览图 0: 获取原始文件             |
+| quality     | N        | String | "low": 低质量图片压缩较大, "high": 高质量图片     |
+| side        | N        | Int    | 图片最大边长                                     |
+| size        | N        | Int    | 图片大小 （优先级大于 quality）                   |
+| sf          | N        | Int    | 屏幕缩放倍率，会放大图片返回，gif图片不会应用缩放   |
+| cover       | N        | Int    | 1：获取文件的预览图 0: 获取原始文件               |
 
 **返回值**
 

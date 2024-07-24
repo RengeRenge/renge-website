@@ -1,5 +1,4 @@
 rg_database.json
-RGFileGlobalConfigContext.py
 nohup.out
 
 # Byte-compiled / optimized / DLL files
@@ -114,6 +113,6 @@ venv.bak/
 .idea/workspace.xml
 .DS_Store
 .idea
-rg_config.css
+# rg_config.css
 static/image/config
 RGIgnoreConfig

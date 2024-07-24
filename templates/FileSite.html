@@ -1179,10 +1179,12 @@
         file.downloadName = file.name
         file.sortName = pinyinUtil.getPinyin(file.name, '', false, false)
 
+        const zoomFactor = getZoomFactor()
+        thumbUrl = '/file/user/get/{0}?sf={1}&side=115&quality=low'.format(file.id, getZoomFactor())
         if (file.imageEnable) {
-            file.thumbUrl = '/file/user/get/{0}?img_quality={1}'.format(file.id, 'low')
+            file.thumbUrl = thumbUrl
         } else if (file.previewSupport) {
-            file.thumbUrl = '/file/user/get/{0}?cover=1'.format(file.id)
+            file.thumbUrl = thumbUrl + '&cover=1'
         } else {
             file.thumbUrl = file.thumbFailedUrl
             file.imageEnable = false

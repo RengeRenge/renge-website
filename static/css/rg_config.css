@@ -1,0 +1,109 @@
+.main_title_color {
+    color: #6a808d;
+}
+
+.main_title_color_background {
+    background: #6a808d;
+}
+
+.login_tip {
+    text-decoration-color: white;
+    padding-right: 5px;
+    padding-left: 5px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+
+    font-size: 13px;
+    font-family: "SF Pro Text", "SF Pro Icons", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+
+    display: inline-block;
+    float: right;
+
+    background-color: rgba(255,255,255,0.6);
+    border-radius: 4px;
+}
+
+.si-remember-password {
+    display: inline-block;
+    position: relative;
+    margin: 18px 0 16px;
+}
+
+.form-choice {
+    position: absolute;
+    top: 3px;
+    left: 0;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+    width: 16px;
+    height: 16px;
+}
+
+.form-choice~.form-label {
+    display: block;
+    padding-left: 26px;
+    margin-top: 11px;
+    margin-bottom: 0;
+    color: #333;
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -ms-user-select: none;
+}
+
+.si-remember-password label[for=remember-me] {
+    display: inline;
+    color: inherit;
+    line-height: inherit;
+    padding-top: 1px;
+}
+
+.form-choice-checkbox+.form-label .form-choice-indicator {
+    border-radius: 3px;
+}
+.form-choice~.form-label .form-choice-indicator {
+    position: absolute;
+    top: 3px;
+    left: 0;
+}
+.form-choice-indicator {
+    box-sizing: content-box;
+}
+.form-choice-indicator {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 1px solid #d6d6d6;
+    background: #fff;
+}
+.form-choice-checkbox:checked+.form-label .form-choice-indicator {
+    background: #4482a5;
+    text-align: center;
+}
+.form-choice:checked~.form-label .form-choice-indicator {
+    border: 6px solid #4482a5;
+    width: 4px;
+    height: 4px;
+}
+
+.form-choice-checkbox:checked+.form-label .form-choice-indicator:before {
+    font-size: 12px;
+    line-height: 2.5;
+    font-weight: 600;
+    letter-spacing: .015em;
+    font-family: SF Pro Display,SF Pro Icons,Helvetica Neue,Helvetica,Arial,sans-serif;
+    color: #fff;
+    top: -13px;
+    left: -10px;
+    padding: 0;
+    width: 25px;
+    vertical-align: top;
+    position: absolute;
+}
+
+.form-choice-checkbox:checked + .form-label .form-choice-indicator:before {
+    content: "√"
+}

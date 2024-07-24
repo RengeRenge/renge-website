@@ -1,6 +1,6 @@
 # encoding: utf-8
 from DAO import rg_dao as dao
-from RGIgnoreConfig.RGFileGlobalConfigContext import url_with_name
+from Files.RGFileGlobalConfigContext import url_with_name
 from Model import user
 from RGUtil import RGTimeUtil
 
