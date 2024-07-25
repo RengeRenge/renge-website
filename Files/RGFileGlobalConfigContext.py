@@ -99,12 +99,14 @@ def url_with_name(filename, original=False, thumb=False, gif_activity=True, need
         params = {'side': 640, 'quality': 'low'}
         extension = os.path.splitext(filename)[-1].split('.')[-1].lower()
         if extension.endswith('gif'):
-            if gif_activity:
+            if thumb:
+                params['side'] = 128
+            else:
                 params['side'] = 256
                 params['quality'] = 'high'
         elif extension in image_support:
             if not thumb:
-                params['side'] = 1920
+                params['side'] = 1080
                 params['quality'] = 'high'
         params_str = '?' + urllib.parse.urlencode(params)
 
