@@ -26,7 +26,7 @@
         let url = element.style.backgroundImage
         if (!url) { return }
         url = url.replace(/\burl\("([^]+)"\)/g, '$1')
-        const params = {sf: getZoomFactor(), side: 80, quality: 'low'}
+        const params = {applySF: true, side: 80, quality: 'low'}
         element.style.backgroundImage = 'url("' + url.my_cover(params) + '")'
     }
     for (const div of document.getElementsByClassName('bgNoRepeatImage blogListCover')) {

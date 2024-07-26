@@ -1180,11 +1180,13 @@
         file.sortName = pinyinUtil.getPinyin(file.name, '', false, false)
 
         const zoomFactor = getZoomFactor()
-        thumbUrl = '/file/user/get/{0}?sf={1}&side=115&quality=low'.format(file.id, getZoomFactor())
+        thumbUrl = '/file/user/get/{0}'.format(file.id)
+        let params = {side: 115, applySF:true, quality:'low'}
         if (file.imageEnable) {
-            file.thumbUrl = thumbUrl
+            file.thumbUrl = thumbUrl.my_cover(params)
         } else if (file.previewSupport) {
-            file.thumbUrl = thumbUrl + '&cover=1'
+            params['coverIn'] = true
+            file.thumbUrl = thumbUrl.my_cover(params)
         } else {
             file.thumbUrl = file.thumbFailedUrl
             file.imageEnable = false

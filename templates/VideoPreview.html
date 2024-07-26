@@ -2,6 +2,7 @@
 <html lang="zh" xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
 <script type="text/javascript" src="/static/js/vue@2.7.16.js"></script>
 <script type="text/javascript" src="/static/jquery/jquery.min.js?ver={{js_ver}}"></script>
+<script type="text/javascript" src="/static/js/rg_base.js?ver={{js_ver}}"></script>
 <script type="text/javascript" src="/static/js/file.js?ver={{js_ver}}"></script>
 <script type="text/javascript" src="/static/js/MimeType.js?ver={{js_ver}}"></script>
 <script type="text/javascript" src="/static/js/bgLayout.js?ver={{js_ver}}"></script>
@@ -630,24 +631,23 @@
 
                         file.errorThumb = mimeIconUrl(mime)
 
-                        let coverParams = 'cover=1'
+                        let params = {coverIn: true}
                         if (isPhoneView()) {
-                            coverParams = 'cover=1&side=1080&quality=low'
+                            params['side'] = 1080
+                            params['quality'] = 'low'
+                        } else {
+                            params['side'] = 1920
                         }
                         
                         if (this.open_code) {
                             file.downloadUrl = '/file/user/open/get/' + file.open_code
                             if (file.depend_folder) {
                                 file.downloadUrl = file.downloadUrl + '?id=' + file.id
-                                file.thumb = file.downloadUrl + '&' + coverParams
-                            } else {
-                                file.thumb = file.downloadUrl + '?' + coverParams
                             }
                         } else {
                             file.downloadUrl = '/file/user/get/' + file.id
-                            file.thumb = file.downloadUrl + '?' + coverParams
                         }
-
+                        file.thumb = file.downloadUrl.my_cover(params)
                         this.updateURLParameterIfNeed('f', file.id)
 
                         this.loadedFile = file

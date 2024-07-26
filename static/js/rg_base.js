@@ -602,13 +602,17 @@ function getZoomFactor() {
     return window.devicePixelRatio
 }
 
-String.prototype.my_cover = function ({side, quality}) {
+String.prototype.my_cover = function ({side, quality, size, sf, applySF, coverIn}) {
     let url = this
     const parsedUrl = new URL(url, window.location.href)
     if (parsedUrl.protocol === window.location.protocol && parsedUrl.hostname === window.location.hostname) {
         const params = new URLSearchParams(parsedUrl.search)
         if (side) { params.set('side', side) }
         if (quality) { params.set('quality', quality) }
+        if (size) { params.set('size', size) }
+        if (sf) { params.set('sf', sf) }
+        if (applySF) { params.set('sf', getZoomFactor()) }
+        if (coverIn) { params.set('cover', 1) }
         parsedUrl.search = params.toString()
         return parsedUrl.toString()
     }

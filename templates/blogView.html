@@ -265,7 +265,7 @@
                 if (result.code === 1000) {
                     let arts = result.data
                     let artsH5String = ''
-                    const params = {sf: getZoomFactor(), side: 80, quality: 'low'}
+                    const params = {applySF: true, side: 80, quality: 'low'}
                     for (let i = 0; i < arts.length; i++) {
                         let art = arts[i]
 
