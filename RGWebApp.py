@@ -49,7 +49,7 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=15)
 
 @app.route('/favicon.ico', methods=['GET'])
 def favicon():
-    return send_file("RGIgnoreConfig/favicon.ico", mimetype='image/ico', cache_timeout=0)
+    return send_file("RGIgnoreConfig/favicon.ico", mimetype='image/ico', max_age=864000)
 
 
 @app.route('/apple-touch-icon.png', methods=['GET'])
@@ -63,9 +63,9 @@ def apple_icon():
             if filename:
                 return RGFileUpDownApp.handle_download_file(filename=filename)
 
-        return send_file("RGIgnoreConfig/apple-icon.png", mimetype='image/png', cache_timeout=0)
+        return send_file("RGIgnoreConfig/apple-icon.png", mimetype='image/png', max_age=864000)
     except:
-        return send_file("RGIgnoreConfig/apple-icon.png", mimetype='image/png', cache_timeout=0)
+        return send_file("RGIgnoreConfig/apple-icon.png", mimetype='image/png', max_age=864000)
 
 
 """
