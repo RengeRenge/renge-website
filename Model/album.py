@@ -34,7 +34,7 @@ def default_album(user_id, conn=None):
     result, count, new_id, err = dao.do_execute_sql(
         sql=sql, conn=conn, args={'user_id': user_id}, commit=False)
 
-    if count is 0:
+    if count == 0:
         return new_album(user_id=user_id, title='默认相册', desc='默认相册', level=2)
     else:
         return album_obj_with_result(result[0])
