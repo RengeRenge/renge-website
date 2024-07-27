@@ -1,4 +1,5 @@
 from functools import wraps
+import traceback
 
 from flask import session, request, jsonify, make_response, redirect, url_for, json, render_template
 
@@ -49,7 +50,8 @@ def auth_handler(page=False, forceLogin=True, more_info=False, need_email=False)
                 else:
                     return func(params, *args, **kwargs)
             except Exception as ex:
-                print(ex)
+                print('Exception:', ex)
+                traceback.print_exc()
                 # token_session_remove()
                 return make_response(jsonify({'error': 'System Error'}), 500)
                 # return make_response(jsonify({'error': 'System Error'}), 500) \

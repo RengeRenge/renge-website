@@ -86,9 +86,11 @@ def do_execute_sql(sql, ret=True, kv=False, new_id=False, dp=0, args=None, conn=
                                         conn=conn,
                                         commit=True if auto_conn else commit)
     except Exception as e:
+        print('[Error] do_execute_sql', e)
         if auto_conn:
-            conn.rollback()
-            conn.commit()
+            if conn:
+                conn.rollback()
+                conn.commit()
         return None, 0, -1, e
     finally:
         if conn and auto_conn:
@@ -142,7 +144,7 @@ def do_execute_sql_with_connect(sql, ret=True, kv=False, new_id=False, dp=0, arg
                 conn.commit()
             return None, count, -1, None
     except Exception as e:
-        print(e)
+        print('[Error] do_execute_sql_with_connect', e)
         try:
             if dp > 1:
                 return
@@ -214,7 +216,7 @@ def execute_sqls(sqls, ret=True, kv=False, new_id=False, dp=0):
         conn.commit()
         return results
     except Exception as e:
-        print(e)
+        print('[Error] execute_sqls', e)
         conn.rollback()
         conn.commit()
 
