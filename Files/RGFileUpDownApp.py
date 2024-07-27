@@ -647,8 +647,11 @@ def handle_download_file(filename, download_name=None, mime=None, max_age=604800
         if req.status_code == 200:
             response.headers['Cache-Control'] = 'max-age=' + str(max_age)
             response.headers['Expires'] = gmt_time_string(timedelta(seconds=max_age))
-    for key in req.headers:
-        response.headers[key] = req.headers[key]
+
+    exclude_headers = ['Server', 'Date']
+    for key, value in req.headers.items():
+        if key not in exclude_headers:
+            response.headers[key] = value
     return response
 
 
