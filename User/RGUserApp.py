@@ -20,7 +20,7 @@ RGUserLogoutLastPath = '/logout'
 RGUserLogoutPath = 'user/' + RGUserLogoutLastPath
 
 
-with open('RGIgnoreConfig/RGMailAccount.json', 'r') as f:
+with open('RGIgnoreConfig/RGMailAccount.json', 'rb') as f:
     RGMailConfig = json.loads(f.read())
 
 """
@@ -446,7 +446,7 @@ def user_set_info(user_id):
     fast_json = {}
     file_up_info = request_value(request, 'fileUpInfo')
     if file_up_info is not None:
-        fast_json = json.loads(file_up_info, encoding="utf-8")
+        fast_json = json.loads(file_up_info)
 
     bg_id, icon_id = None, None
     req = requests.post(url=url, auth=request.authorization, cookies=request.cookies, json={"files": fast_json})

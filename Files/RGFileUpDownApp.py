@@ -179,7 +179,7 @@ def new_file(user_id):
     file_up_info = request_value(request, 'fileUpInfo')
     if file_up_info is None:
         return jsonify(form_res(RGResCode.lack_param))
-    file_up_info = json.loads(file_up_info, encoding="utf-8")
+    file_up_info = json.loads(file_up_info)
 
     for file_key in re_files:
         up_info = file_up_info.get(file_key, None)
@@ -681,8 +681,11 @@ def do_new_file():
         file_stream[file_key] = value
 
     # print('will upload')
+    
     req = requests.post(url=url, files=file_stream, data=request.form, params=None,
-                        auth=request.authorization, cookies=request.cookies, hooks=None, json=request.json, stream=True)
+                        auth=request.authorization, cookies=request.cookies, hooks=None,
+                        json=request.json if request.is_json else None,
+                        stream=True)
     # print('end upload status_code:%d' % req.status_code)
 
     if req.status_code == 200:
