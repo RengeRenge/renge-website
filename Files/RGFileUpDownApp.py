@@ -3,6 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 from functools import wraps
 
+import hashlib
 import re
 import requests
 from flask import Blueprint, request, jsonify, stream_with_context, Response, json, redirect, \
@@ -642,11 +643,15 @@ def handle_download_file(filename, download_name=None, mime=None, max_age=604800
     if range_mode:
         response = Response(req.content, 206, direct_passthrough=True)
     else:
-        response = Response(stream_with_context(
-            req.iter_content(chunk_size=2048)))
-        if req.status_code == 200:
-            response.headers['Cache-Control'] = 'max-age=' + str(max_age)
-            response.headers['Expires'] = gmt_time_string(timedelta(seconds=max_age))
+        def generate():
+            for chunk in req.iter_content(chunk_size=2048):
+                if chunk:
+                    yield chunk
+        response = Response(stream_with_context(generate()), direct_passthrough=True)
+    response.headers['Cache-Control'] = 'public, max-age=' + str(max_age)
+    response.headers['Expires'] = gmt_time_string(timedelta(seconds=max_age))
+    e_tag = filename + req.headers['Content-Disposition']
+    response.headers['ETag'] = hashlib.sha256(e_tag.encode()).hexdigest()
 
     exclude_headers = ['Server', 'Date']
     for key, value in req.headers.items():
