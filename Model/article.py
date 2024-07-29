@@ -87,7 +87,7 @@ def page_list(other_id=None, art_user_id=-1, page=1, size=10):
 
     if result is not None:
         for row in result:
-            if relation is -1 and 'relation' in row:
+            if relation == -1 and 'relation' in row:
                 relation = row['relation']
                 if relation is None:
                     relation = 0
@@ -230,9 +230,9 @@ def add_or_update_art(user_id, title=None, content='', cate=0, group_id=None, ar
 
     if 'description' in open_graph:
         p_summary = open_graph['description']
-    if p_summary is not None and len(p_summary) is 0:
+    if p_summary is not None and len(p_summary) == 0:
         p_summary = art_parse.cleaned_text
-    if p_summary is not None and len(p_summary) is not 0:
+    if p_summary is not None and len(p_summary) != 0:
         summary = p_summary
 
     if len(summary) >= 100:
@@ -240,9 +240,9 @@ def add_or_update_art(user_id, title=None, content='', cate=0, group_id=None, ar
 
     if 'image' in open_graph:
         p_cover = open_graph['image']
-    if p_cover is '' and art_parse.top_image is not None:
+    if p_cover == '' and art_parse.top_image is not None:
         p_cover = art_parse.top_image.src
-    if p_cover is not None and len(p_cover) is not 0:
+    if p_cover is not None and len(p_cover) != 0:
         cover = p_cover
     # if cover is not None and len(cover) > 0:
     #     try:
@@ -302,7 +302,7 @@ def add_or_update_art(user_id, title=None, content='', cate=0, group_id=None, ar
 
 
 def del_art(user_id, art_id=None):
-    if art_id is None or art_id is '':
+    if art_id is None or art_id == '':
         return False, 0
 
     sql = "DELETE from art where id=%(art_id)s and user_id=%(user_id)s"
@@ -477,9 +477,9 @@ def add_art_read_count(ids=None, counts=None):
         for index in range(len(ids)):
             a_id = int(ids[index])
             count = int(counts[index])
-            if count is not 0:
+            if count != 0:
                 case += ('when %ld then %ld ' % (a_id, count))
-                if index is 0:
+                if index == 0:
                     update_ids += '{}'.format(a_id)
                 else:
                     update_ids += ',{}'.format(a_id)

@@ -45,7 +45,7 @@ app.register_blueprint(RGPhotoApp.RestRouter)
 
 
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=15)
-
+app.config['JSON_AS_ASCII'] = False
 
 @app.route('/favicon.ico', methods=['GET'])
 def favicon():
@@ -108,5 +108,4 @@ def login_page():
 
 if __name__ == '__main__':
     # app.debug = True
-    app.config['JSON_AS_ASCII'] = False
     app.run(host=RGHost, port=RGPort, debug=RGDebug, threaded=True, processes=1)

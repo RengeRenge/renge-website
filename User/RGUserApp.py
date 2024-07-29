@@ -9,7 +9,7 @@ from flask import Blueprint, request, jsonify, session, json, redirect, url_for
 import RGUIController
 import User.RGOpenIdController
 from Model import user, tokens
-from RGIgnoreConfig.RGGlobalConfigContext import RGFullThisServerHost
+from RGIgnoreConfig.RGGlobalConfigContext import RGFullThisServerURL
 from RGUtil import RGTimeUtil
 from RGUtil.RGCodeUtil import RGResCode, RGVerifyType
 from RGUtil.RGRequestHelp import get_data_with_request, form_res, request_value, is_int_number
@@ -441,7 +441,7 @@ def user_edit_desc(user_id):
 def user_set_info(user_id):
     t = get_data_with_request(request)
 
-    url = RGFullThisServerHost + '/file/fastUpload'
+    url = RGFullThisServerURL + '/file/fastUpload'
 
     fast_json = {}
     file_up_info = request_value(request, 'fileUpInfo')
@@ -478,7 +478,7 @@ def user_set_info(user_id):
             return jsonify(form_res(result['code'], None))
 
     if need_upload:
-        url = RGFullThisServerHost + '/file/upload'
+        url = RGFullThisServerURL + '/file/upload'
         req = requests.post(url=url, files=file_stream, data=request.form, params=None, auth=request.authorization,
                             cookies=request.cookies, hooks=None, json=request.json, stream=True)
         res_json = req.json()
