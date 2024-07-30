@@ -116,3 +116,4 @@ venv.bak/
 # rg_config.css
 static/image/config
 RGIgnoreConfig
+/my_log

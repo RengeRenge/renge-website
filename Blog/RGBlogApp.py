@@ -20,8 +20,7 @@ def auto_blog_page(user_id):
     if user_id is None:
         return redirect(url_for('login_page'))
     else:
-        url = '/blog/%ld' % user_id + '/'
-        return redirect(url)
+        return  redirect(url_for('RGBlog.blog_page', other_id=user_id))
 
 
 @RestRouter.route('/<other_id>/', methods=["GET"])
@@ -70,8 +69,7 @@ def home_page(art_user_id):
 @RestRouter.route('/view/', methods=["GET"])
 @RGUIController.auth_handler(page=True, forceLogin=False)
 def auto_blog_view_page(other_id):
-    url = '/blog/view/%ld/' % other_id
-    return redirect(url)
+    return redirect(url_for('RGBlog.blog_view_page', other_id=other_id))
 
 
 @RestRouter.route('/view/<other_id>/', methods=["GET"])

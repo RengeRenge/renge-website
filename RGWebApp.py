@@ -1,4 +1,7 @@
 from datetime import timedelta
+import logging
+import logging.handlers
+import os
 
 from flask import Flask, send_file, redirect, url_for
 from flask.sessions import SecureCookieSessionInterface, SecureCookieSession
@@ -7,7 +10,7 @@ import RGUIController
 from Blog import RGBlogApp
 from Files import RGFileUpDownApp
 from Photos import RGPhotoApp
-from RGIgnoreConfig.RGGlobalConfigContext import RGHost, RGPort, RGDebug
+from RGIgnoreConfig.RGGlobalConfigContext import RGHost, RGLogPath, RGPort, RGDebug
 from RGUtil.RGCodeUtil import RGVerifyType
 from User import RGUserApp
 
@@ -31,6 +34,7 @@ class CacheSessionInterface(SecureCookieSessionInterface):
 
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
+app.debug = RGDebug
 app.session_interface = CacheSessionInterface()
 app.jinja_env.trim_blocks = True
 app.jinja_env.lstrip_blocks = True
@@ -46,6 +50,25 @@ app.register_blueprint(RGPhotoApp.RestRouter)
 
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=15)
 app.config['JSON_AS_ASCII'] = False
+# app.config['SERVER_NAME'] = RGDomainName
+# app.config['APPLICATION_ROOT'] = '/'
+
+app_dir = os.path.dirname(__file__)
+log_dir = os.path.join(app_dir, RGLogPath)
+os.makedirs(log_dir, exist_ok=True)
+
+log_max_bytes = 1024 * 600
+log_max_count = 5
+
+file_handler = logging.handlers.RotatingFileHandler(os.path.join(log_dir, 'app.log'), maxBytes=log_max_bytes, backupCount=log_max_count)
+file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+
+if RGDebug == 1:
+    file_handler.setLevel(logging.DEBUG)
+    app.logger.setLevel(logging.DEBUG)
+
+app.logger.addHandler(file_handler)
+
 
 @app.route('/favicon.ico', methods=['GET'])
 def favicon():
@@ -107,5 +130,4 @@ def login_page():
 
 
 if __name__ == '__main__':
-    # app.debug = True
-    app.run(host=RGHost, port=RGPort, debug=RGDebug, threaded=True, processes=1)
+    app.run(host=RGHost, port=RGPort, threaded=True, processes=1)

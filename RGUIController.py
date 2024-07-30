@@ -24,6 +24,10 @@ def auth_handler(page=False, forceLogin=True, more_info=False, need_email=False)
         @wraps(func)
         def wrapper(*args, **kwargs):
             try:
+                import RGWebApp
+                RGWebApp.app.logger.debug('Headers: %s', request.headers)
+                RGWebApp.app.logger.debug('URL: %s', request.url)
+                
                 if more_info:
                     auth, user_id, email, username = do_auth_more_info(need_request_email=need_email)
                     params = {
@@ -36,7 +40,7 @@ def auth_handler(page=False, forceLogin=True, more_info=False, need_email=False)
                     auth, user_id = do_auth()
                     params = user_id
 
-                t = get_data_with_request(request)
+                # t = get_data_with_request(request)
                 # logs = json.dumps(t, sort_keys=True, indent=4, separators=(', ', ': '))
                 # print('auth_handler -->\n{}\nuserid:{}\n{}\n'.format(request.path, user_id, logs))
 

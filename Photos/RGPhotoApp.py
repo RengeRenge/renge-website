@@ -18,8 +18,7 @@ def auto_photo_page(user_id):
     if user_id is None:
         return redirect(url_for('login_page'))
     else:
-        url = '/photo/%ld' % user_id + '/'
-        return redirect(url)
+        return redirect(url_for('photo_page', other_id=user_id))
 
 
 @RestRouter.route('/<other_id>/', methods=["GET"])
