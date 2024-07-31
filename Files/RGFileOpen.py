@@ -7,6 +7,9 @@ from RGUtil import RGRequestHelp
 from RGUtil.RGCodeUtil import RGResCode
 from RGUtil.RGRequestHelp import request_value, form_res
 from DAO import rg_dao as dao
+import logging as L
+
+logging = L.getLogger("Renge")
 
 
 class RGFileOpen(object):
@@ -67,7 +70,7 @@ def file_open_handler(wrapper_code_key=None, wrapper_path_key=None):
                 conn.commit()
                 return response
             except Exception as e:
-                print(e)
+                logging.error(e, exc_info=True)
                 conn.rollback()
                 conn.commit()
                 return jsonify(form_res(RGResCode.database_error))

@@ -2,8 +2,10 @@ import operator
 
 from DAO import rg_dao as dao
 from Files.RGFileGlobalConfigContext import url_with_name, path_with_name, support_image
-from Model import album, user
+from Model import album
+import logging as L
 
+logging = L.getLogger("Renge")
 
 def new_pic(user_id, pic_file, conn=None, album_id=-1, title='', desc='', level=0, full_url=False, original=False):
     if album_id is None or int(album_id) == -1:
@@ -68,7 +70,7 @@ def check_and_new_pic_with_hash(user_id, file_hash, filename, album_id=-1, full_
         code = RGResCode.ok
         conn.commit()
     except Exception as e:
-        print(e)
+        logging.error(e, exc_info=True)
         conn.rollback()
         conn.commit()
     finally:

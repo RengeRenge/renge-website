@@ -1,5 +1,8 @@
 from DAO import rg_dao as dao
 from RGUtil import RGTokenUtil, RGTimeUtil
+import logging as L
+
+logging = L.getLogger("Renge")
 
 
 def generate_token_ifneed(user_id, token_type):
@@ -16,7 +19,7 @@ def generate_token_ifneed(user_id, token_type):
         'new_time': new_time,
     })
 
-    print(count)
+    logging.info(count)
 
     if count > 0:
         return new_token

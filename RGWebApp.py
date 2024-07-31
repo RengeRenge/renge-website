@@ -60,15 +60,18 @@ os.makedirs(log_dir, exist_ok=True)
 log_max_bytes = 1024 * 600
 log_max_count = 5
 
-file_handler = logging.handlers.RotatingFileHandler(os.path.join(log_dir, 'app.log'), maxBytes=log_max_bytes, backupCount=log_max_count)
-file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+formater = logging.Formatter(
+    fmt="[%(asctime)s] [%(thread)s] [%(levelname)s] [%(filename)s:%(lineno)d] [%(funcName)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S %z",
+)
+log_handler = logging.handlers.RotatingFileHandler(os.path.join(log_dir, 'app.log'), maxBytes=log_max_bytes, backupCount=log_max_count)
+log_handler.setFormatter(formater)
+log_handler.setLevel(logging.WARN)
 
-if RGDebug == 1:
-    file_handler.setLevel(logging.DEBUG)
-    app.logger.setLevel(logging.DEBUG)
-
-app.logger.addHandler(file_handler)
-
+logger = logging.getLogger('Renge')
+logger.setLevel(logging.DEBUG)
+logger.addHandler(log_handler)
+app.logger = logger
 
 @app.route('/favicon.ico', methods=['GET'])
 def favicon():
@@ -130,4 +133,6 @@ def login_page():
 
 
 if __name__ == '__main__':
-    app.run(host=RGHost, port=RGPort, threaded=True, processes=1)
+    if RGDebug:
+        log_handler.setLevel(logging.DEBUG)
+    app.run(host=RGHost, debug=RGDebug, port=RGPort, threaded=True, processes=1)

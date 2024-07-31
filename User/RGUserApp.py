@@ -13,9 +13,10 @@ from RGIgnoreConfig.RGGlobalConfigContext import RGFullThisServerURL
 from RGUtil import RGTimeUtil
 from RGUtil.RGCodeUtil import RGResCode, RGVerifyType
 from RGUtil.RGRequestHelp import get_data_with_request, form_res, request_value, is_int_number
+import logging as L
 
 RestRouter = Blueprint('RGUser', __name__, url_prefix='/user', static_folder='../static')
-
+logging = L.getLogger("Renge")
 RGUserLogoutLastPath = '/logout'
 RGUserLogoutPath = 'user/' + RGUserLogoutLastPath
 
@@ -153,7 +154,7 @@ def get_verify_code():
             send_verify_mail(receiver=email, title=title, content=content)
             return jsonify(form_res(RGResCode.ok))
         except Exception as e:
-            print(e)
+            logging.error(e)
             user.update_user_info(username=username, info_payload='')
             return jsonify(form_res(RGResCode.server_error))
     return jsonify(form_res(res))

@@ -1,9 +1,11 @@
 import threading
-
+import logging as L
 import pymysql
 from flask import json
 
 from RGUtil.RGLogUtil import LogUtil
+
+logging = L.getLogger("Renge")
 
 with open('./RGIgnoreConfig/rg_database.json', 'r') as f:
     config = json.loads(f.read())
@@ -86,7 +88,7 @@ def do_execute_sql(sql, ret=True, kv=False, new_id=False, dp=0, args=None, conn=
                                         conn=conn,
                                         commit=True if auto_conn else commit)
     except Exception as e:
-        print('[Error] do_execute_sql', e)
+        logging.error(e, exc_info=True)
         if auto_conn:
             if conn:
                 conn.rollback()
@@ -144,16 +146,14 @@ def do_execute_sql_with_connect(sql, ret=True, kv=False, new_id=False, dp=0, arg
                 conn.commit()
             return None, count, -1, None
     except Exception as e:
-        print('[Error] do_execute_sql_with_connect', e)
+        logging.error(e, exc_info=True)
         try:
             if dp > 1:
                 return
             LogUtil.ErrorLog("In ExecuteSQL, " + str(e) + " | Query: << " + (u"%s" % sql) + " >>",
                              __name__, dp=dp + 1)
-        except:
-            from traceback import format_exc
-            print('ExecuteSQL Exception:')
-            print(format_exc())
+        except Exception as e:
+            logging.error(e, exc_info=True)
         return None, 0, -1, e
     finally:
         if cursor:
@@ -216,7 +216,7 @@ def execute_sqls(sqls, ret=True, kv=False, new_id=False, dp=0):
         conn.commit()
         return results
     except Exception as e:
-        print('[Error] execute_sqls', e)
+        logging.error(e, exc_info=True)
         conn.rollback()
         conn.commit()
 
@@ -225,10 +225,8 @@ def execute_sqls(sqls, ret=True, kv=False, new_id=False, dp=0):
                 return
             LogUtil.ErrorLog("In ExecuteSQL, " + str(e) + " | Query: << " + (u"%s" % sql) + " >>",
                              __name__, dp=dp + 1)
-        except:
-            from traceback import format_exc
-            print('ExecuteSQL Exception:')
-            print(format_exc())
+        except Exception as e:
+            logging.error(e, exc_info=True)
         return None
     finally:
         close(conn, cursor)

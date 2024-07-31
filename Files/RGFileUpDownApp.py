@@ -6,6 +6,7 @@ from functools import wraps
 import hashlib
 import re
 import requests
+import logging as L
 from flask import Blueprint, request, jsonify, stream_with_context, Response, json, redirect, \
     url_for, session
 
@@ -21,6 +22,7 @@ from RGUtil.RGTimeUtil import gmt_time_string
 
 RestRouter = Blueprint('RGFileUpDown', __name__, url_prefix='/' + FilePreFix)
 executor = ThreadPoolExecutor()
+logging = L.getLogger("Renge")
 
 """
 page
@@ -152,7 +154,7 @@ def __fast_up(user_id, file):
             code = RGResCode.ok
             conn.commit()
         except Exception as e:
-            print(e)
+            logging.error(e)
             file_info = None
             conn.rollback()
             conn.commit()
@@ -329,7 +331,7 @@ def user_file_del(user_id):
         conn.commit()
         return jsonify(form_res(RGResCode.ok, None))
     except Exception as e:
-        print(e)
+        logging.error(e)
         conn.rollback()
         conn.commit()
         return jsonify(form_res(RGResCode.del_fail, None))
@@ -574,7 +576,7 @@ def handler_upload_res(user_id, up_res, set_name=None,
                 raise Exception('new_user_file failed')
         conn.commit()
     except Exception as e:
-        print(e)
+        logging.error(e)
         err_msg = str(e)
         if code == RGResCode.ok:
             code = RGResCode.server_error
@@ -670,7 +672,7 @@ def handle_download_import_file(filename):
     remote_url = RemoteFileHost + '/' + FilePreFix + "download/import/" + filename
     req = requests.get(remote_url, stream=True)
     content_type = req.headers['content-type']
-    print(remote_url)
+    logging.info(remote_url)
     return Response(stream_with_context(req.iter_content(chunk_size=1024)), content_type=content_type)
 
 

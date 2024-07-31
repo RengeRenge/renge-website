@@ -8,7 +8,9 @@ from RGIgnoreConfig.RGGlobalConfigContext import RGPublicHost
 from RGUtil import RGTimeUtil
 from RGUtil.RGCodeUtil import RGResCode
 from RGUtil.RGRequestHelp import request_value, request_ip
+import logging as L
 
+logging = L.getLogger("Renge")
 CTOpenIdUserApi = "http://127.0.0.1:20721/api/user"
 CTOpenIdUserAuthApi = "http://127.0.0.1:20721/api/sauth"
 
@@ -107,13 +109,13 @@ def user_delete(username):
         return RGResCode.lack_param, None
 
     params = openid_base_params({'usernames': [username]})
-    print('Open Id -> user_update {}'.format(params))
+    logging.info('Open Id -> user_update {}'.format(params))
     req = requests.delete(
         url=CTOpenIdUserApi,
         json=params
     )
     t = req.json()
-    print(t)
+    logging.info(t)
 
     code = RGResCode.server_error
     data = None
@@ -127,14 +129,14 @@ def auth(username, password):
     params = openid_base_params({
             'username': username
     })
-    print('Open Id -> auth {}'.format(username))
+    logging.info('Open Id -> auth {}'.format(username))
     params['pwd'] = password
     req = requests.post(
         url=CTOpenIdUserAuthApi,
         json=params
     )
     t = req.json()
-    print(t)
+    logging.info(t)
     data = None
     code = RGResCode.server_error
     if 'code' in t and t['code'] == 200:

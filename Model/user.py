@@ -12,7 +12,9 @@ from Files.RGFileGlobalConfigContext import url_with_name
 from RGUtil import RGTimeUtil
 from RGUtil.RGCodeUtil import RGResCode, RGVerifyType
 from User import RGOpenIdController
+import logging as L
 
+logging = L.getLogger("Renge")
 salt = 'Renge'
 
 
@@ -282,7 +284,7 @@ def new_user_and_save_verify_code(username, email, verify_code, verify_type=RGVe
         conn.commit()
         return res_code
     except Exception as e:
-        print(e)
+        logging.error(e, exc_info=True)
         conn.rollback()
         conn.commit()
         return res_code
@@ -413,7 +415,7 @@ def verify_user(username, email, pwd, verify_code, verify_type, title='Title', d
         conn.commit()
         return _user.ID, res_code
     except Exception as e:
-        print(e)
+        logging.error(e, exc_info=True)
         conn.rollback()
         conn.commit()
         return None, res_code
@@ -472,7 +474,7 @@ def new_user(username, pwd, title='Title', desc='Desc', nick='Nickname'):
         conn.commit()
         return get_user_with_username(username, need_email=True)
     except Exception as e:
-        print(e)
+        logging.error(e, exc_info=True)
         conn.rollback()
         conn.commit()
         return None

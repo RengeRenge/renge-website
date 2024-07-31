@@ -1,5 +1,6 @@
 from functools import wraps
-import traceback
+import logging as L
+logging = L.getLogger('Renge')
 
 from flask import session, request, jsonify, make_response, redirect, url_for, json, render_template
 
@@ -24,9 +25,8 @@ def auth_handler(page=False, forceLogin=True, more_info=False, need_email=False)
         @wraps(func)
         def wrapper(*args, **kwargs):
             try:
-                import RGWebApp
-                RGWebApp.app.logger.debug('Headers: %s', request.headers)
-                RGWebApp.app.logger.debug('URL: %s', request.url)
+                logging.debug('Headers: %s', request.headers)
+                logging.debug('URL: %s', request.url)
                 
                 if more_info:
                     auth, user_id, email, username = do_auth_more_info(need_request_email=need_email)
@@ -40,9 +40,9 @@ def auth_handler(page=False, forceLogin=True, more_info=False, need_email=False)
                     auth, user_id = do_auth()
                     params = user_id
 
-                # t = get_data_with_request(request)
-                # logs = json.dumps(t, sort_keys=True, indent=4, separators=(', ', ': '))
-                # print('auth_handler -->\n{}\nuserid:{}\n{}\n'.format(request.path, user_id, logs))
+                t = get_data_with_request(request)
+                logs = json.dumps(t, sort_keys=True, indent=4, separators=(', ', ': '))
+                logging.debug('auth_handler -->\n{}\nuserid:{}\n{}\n'.format(request.path, user_id, logs))
 
                 if forceLogin:
                     if auth:
@@ -54,8 +54,7 @@ def auth_handler(page=False, forceLogin=True, more_info=False, need_email=False)
                 else:
                     return func(params, *args, **kwargs)
             except Exception as ex:
-                print('Exception:', ex)
-                traceback.print_exc()
+                logging.error(ex, exc_info=True)
                 # token_session_remove()
                 return make_response(jsonify({'error': 'System Error'}), 500)
                 # return make_response(jsonify({'error': 'System Error'}), 500) \
@@ -80,13 +79,13 @@ def check_bind():
 
                 t = get_data_with_request(request)
                 logs = json.dumps(t, sort_keys=True, indent=4, separators=(', ', ': '))
-                # print('check_bind -->\n{}\n{}\n'.format(request.path, logs))
+                logging.debug('check_bind -->\n{}\n{}\n'.format(request.path, logs))
 
                 if user_need_to_bind_page():
                     return redirect(url_for('bind_page'))
                 return func(*args, **kwargs)
             except Exception as ex:
-                print(ex)
+                logging.error(ex)
                 return func(*args, **kwargs)
         return wrapper
 
@@ -140,8 +139,7 @@ def user_need_to_bind_page():
                 else:
                     return True
             except Exception as e:
-                print('user_need_to_bind_page')
-                print(e)
+                logging.error(e)
                 return False
     return False
 

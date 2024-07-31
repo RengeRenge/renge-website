@@ -1,7 +1,9 @@
 from DAO import rg_dao as dao
 from Files.RGFileGlobalConfigContext import url_with_name, RGFileMaxCapacity
 from RGUtil import RGTimeUtil
+import logging as L
 
+logging = L.getLogger("Renge")
 
 def filter_return_file_info(file_info, need_id=False):
     user_file = {
@@ -113,7 +115,7 @@ def new_directory(user_id, directory_id=-1, name=''):
         conn.commit()
         return file
     except Exception as e:
-        print(e)
+        logging.error(e)
         conn.rollback()
         conn.commit()
         return None
@@ -166,7 +168,7 @@ def check_and_new_user_file_with_hash(user_id, directory_id=-1, file_hash=None, 
         code = RGResCode.ok
         conn.commit()
     except Exception as e:
-        print(e)
+        logging.error(e, exc_info=True)
         conn.rollback()
         conn.commit()
     finally:
@@ -228,7 +230,7 @@ def user_file_list(user_id, directory_id=None):
         conn.commit()
         return {'files': file, 'path': directory}
     except Exception as e:
-        print(e)
+        logging.error(e, exc_info=True)
         conn.rollback()
         conn.commit()
         return False
@@ -263,7 +265,7 @@ def user_file_directory_list(user_id, directory_id=None):
         conn.commit()
         return {'files': file}
     except Exception as e:
-        print(e)
+        logging.error(e, exc_info=True)
         conn.rollback()
         conn.commit()
         return False
@@ -298,7 +300,7 @@ def user_file_list_with_name(user_id, name):
         conn.commit()
         return {'files': [] if file is None else file}
     except Exception as e:
-        print(e)
+        logging.error(e, exc_info=True)
         conn.rollback()
         conn.commit()
         return False
@@ -568,7 +570,7 @@ def user_file_move(user_id, move_id, to_id):
         conn.commit()
         return True
     except Exception as e:
-        print(e)
+        logging.error(e, exc_info=True)
         conn.rollback()
         conn.commit()
         return False
