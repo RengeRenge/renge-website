@@ -84,6 +84,7 @@
         background-color: #2b2b2b;
         color: #ecf6fd;
         overflow: auto;
+        overflow-x: hidden;
         max-width: 300px;
         width: 80%;
     }
@@ -99,6 +100,27 @@
         background-color: gray;
         border-radius: 5px;
         text-align: center;
+    }
+
+    .scroll-text {
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        width: fit-content;
+        animation: scroll 10s linear infinite;
+        color: mintcream;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        font-size: small;
+    }
+
+    @keyframes scroll {
+        0% {
+            transform: translateX(0%);
+        }
+
+        100% {
+            transform: translateX(-50%);
+        }
     }
 
     .play-list {}
@@ -343,8 +365,8 @@
             v-bind:style="{maxHeight: Math.min(appHeight * 0.8, 400) + 'px'}">
         <audio v-if="audio" ref="audioPlayer" v-bind:style="{opacity: audioPlayerOpacity}"
             v-bind:autoplay="autoPlay ? 'autoplay' : null" v-bind:loop="autoPlay && loopMode === 2 ? 'loop' : null"
-            @click="onAudioPlayerClick" @ended="onEnded()" @play="onStartPlay()" @canplay="onCanplay()"
-            preload="auto" controls>
+            @click="onAudioPlayerClick" @ended="onEnded()" @play="onStartPlay()" @canplay="onCanplay()" preload="auto"
+            controls>
             <source v-bind:src="url" type="audio/mpeg">
             <source v-bind:src="url" type="audio/aac">
             <source v-bind:src="url" type="audio/ogg">
@@ -408,6 +430,9 @@
             @dblclick="onPlaylistDoubleClick">
             <div v-if="open_code" style="padding-left: 14px; padding-top: 5px; padding-bottom: 5px; font-size: 14px;">
                 共享的播放列表</div>
+            <div class="scroll-text">
+                正在播放：{{loadedFile.name}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;正在播放：{{loadedFile.name}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            </div>
             <input v-if="listSearchState" autofocus="autofocus" class="search-input" v-model="audioSearchText"
                 placeholder="搜索文件名" @input="doSearch(event.target.value)">
             <ul v-bind:style="{maxHeight: Math.min(appHeight - 130, 300) + 'px'}">
@@ -631,14 +656,14 @@
 
                         file.errorThumb = mimeIconUrl(mime)
 
-                        let params = {coverIn: true}
+                        let params = { coverIn: true }
                         if (isPhoneView()) {
                             params['side'] = 1080
                             params['quality'] = 'low'
                         } else {
                             params['side'] = 1920
                         }
-                        
+
                         if (this.open_code) {
                             file.downloadUrl = '/file/user/open/get/' + file.open_code
                             if (file.depend_folder) {
