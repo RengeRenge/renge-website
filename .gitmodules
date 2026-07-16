@@ -1,0 +1,3 @@
+[submodule "static/page"]
+	path = static/page
+	url = git@github.com:RengeRenge/renge-static-page.git
