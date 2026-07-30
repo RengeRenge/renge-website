@@ -1006,7 +1006,6 @@ const image_support = [
     'mpo',
     'msp',
     'palm',
-    'pdf',
     'sgi',
     'spider',
     'tga',
@@ -1093,8 +1092,15 @@ function epubDisplaySupport(mime) {
     return false
 }
 
+function pdfDisplaySupport(mime) {
+    if (mime && mime.indexOf('application/pdf') >= 0) {
+        return true
+    }
+    return false
+}
+
 function previewSupport(mime) {
-    if (imageDisplaySupport(mime) || videoDisplaySupport(mime) || audioDisplaySupport(mime) || epubDisplaySupport(mime)) {
+    if (imageDisplaySupport(mime) || videoDisplaySupport(mime) || audioDisplaySupport(mime) || epubDisplaySupport(mime) || pdfDisplaySupport(mime)) {
         return true
     }
     return false
