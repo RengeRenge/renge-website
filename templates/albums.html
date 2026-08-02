@@ -1,124 +1,198 @@
 <!DOCTYPE html>
 <html lang="zh">
-
-<link href="/static/css/rg_base.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_base">
-<link href="/static/css/rg_config.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_config">
-<link href="/static/css/photos.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
-
-<style>
-    .album_wrapper a {
-        background: none left;
-    }
-
-    .album_wrapper a:hover {
-        background: none left;
-        color: #0e0e0e;
-    }
-
-    .album_wrapper ul, .album_wrapper li, .album_wrapper a, .album_wrapper em {
-        height: 18px;
-        line-height: 18px;
-    }
-
-    .album_wrapper em {
-        color: #0e0e0e;
-        font-size: 14px;
-    }
-
-    .album_wrapper a:hover em {
-        color: #222;
-        font-weight: bolder;
-    }
-
-    .add_album em {
-        background: url('/static/image/add_album.png') no-repeat;
-        background-size: contain;
-    }
-
-    .manager_album em {
-        background: url('/static/image/manager_album.png') no-repeat;
-        background-size: contain;
-    }
-
-    .album_select {
-        display: none;
-        width: 20px;
-        height: 20px;
-        background: url('/static/image/select-off.png') no-repeat;
-        background-size: contain;
-        position: absolute;
-        margin-top: 5px;
-        margin-left: 5px;
-    }
-</style>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=1.0, user-scalable=yes"/>
     <title>相册</title>
+
+    <link href="/static/css/rg_base.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_base">
+    <link href="/static/css/rg-btn.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
+    <link href="/static/css/rg_config.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_config">
+    <link href="/static/css/photos.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
+
+    <script type="text/javascript" src="/static/jquery/jquery.min.js?ver={{js_ver}}"></script>
+    <script type="text/javascript" src="/static/js/rg_base.js?ver={{js_ver}}"></script>
+    <script type="text/javascript" src="/static/js/timeUtil.js?ver={{js_ver}}"></script>
 </head>
 <body>
 
-<div id="album_page">
-    {%- if list -%}
-    <div class="wrapperBg wrapperPadding">
-        <div style="height: 25px;">
-            <div class="boprt a-control" style="position: relative;float: right">
-                <ul>
-                    <li>
-                        {%- if home -%}
-                        <form class="album_wrapper add_album"><a onclick="new_album(this)" >
-                            <em>创建相册</em>
-                        </a></form>
-                        {%- endif -%}
-                    </li>
-                    <li>
-                        {%- if home -%}
-                        <form class="album_wrapper manager_album"><a onclick="manage_album()" >
-                            <em>管理相册</em>
-                        </a></form>
-                        {%- endif -%}
-                    </li>
-                </ul>
+<div id="albumsApp" class="wrapperBg wrapperPadding">
+    <div v-if="home" class="album-toolbar">
+        <button v-if="!managing" class="album-btn" :class="{ active: creating }" @click="startCreate">
+            <span class="album-btn-icon album-btn-icon--add"></span>创建相册</button>
+        <button class="album-btn" @click="toggleManage">
+            <span class="album-btn-icon album-btn-icon--manage"></span>
+            <span>[[ managing ? '完成' : '管理相册' ]]</span></button>
+        <button v-show="managing && delCount > 0" class="album-btn album-btn-danger" @click="delAlbums">
+            <span class="album-btn-icon album-btn-icon--delete"></span>
+            <span>删除 [[ delCount ]] 个相册</span></button>
+    </div>
+
+    <div v-if="list.length || creating" class="album-grid">
+        <div v-if="creating" class="album-card album-card-new" style="margin: 0;">
+            <div class="album-cover">
+                <div class="album-cover-img" style="background: rgba(0,0,0,0.03);"></div>
+            </div>
+            <div class="album-info">
+                <input v-model="newTitle" class="album-input album-input--title" placeholder="标题" maxlength="50">
+                <input v-model="newDesc" class="album-input" placeholder="描述" maxlength="200">
+                <div class="album-new-add">
+                    <button class="album-btn album-btn--mini" @click="createAlbum">创建</button>
+                </div>
             </div>
         </div>
-        <div class="collectionView" style="margin-top: 20px">
-            {%- for item in list -%}
-            <div id={{item.id}} class="collectionCell collectionWrap wrapperItemBg" style="margin: 10px;">
-                {%- if item.id != user.defaultAlbumId -%}
-                <div class="album_select"></div>
-                {%- endif -%}
-                <div onclick="goto_album(this)" class="bgNoRepeatImage" style="background-image: url('{%-if item.coverUrl -%}{{item.coverUrl}}{%-else-%}{{item.lastPicUrl}}{%-endif-%}'); width: 100%;">
-
-                </div>
-                <div class="p_title nowrapText">
-                    {%- if item.title -%}
-                        {{ item.title }}
-                    {%- else -%}
-                        <script>
-                            var timeStamp = {{item.timestamp}}
-                            var time = (new Date(timeStamp)).Format("yyyy年 MM月 dd日")
-                            var dom = document.getElementById('{{item.id}}').getElementsByClassName('p_title nowrapText')[0]
-                            dom.innerText = time
-                        </script>
-                    {%- endif -%}
-                </div>
-                <div class="p_desc nowrapText"> {{ item.description }}</div>
-                <div class="p_desc nowrapText secondTextColor" style="margin-top: 10px">
-                    <script>
-                        var timeStamp = {{item.timestamp}}
-                        var time = (new Date(timeStamp)).Format("yyyy MM dd hh:mm:ss")
-                        var dom = document.getElementById('{{item.id}}').getElementsByClassName('p_desc nowrapText secondTextColor')[0]
-                        dom.innerText = time
-                    </script>
-                </div>
+        <div v-for="item in list" :key="item.id" class="album-card"
+             :class="{ managing: managing && item.id !== defaultAlbumId }" style="margin: 0;">
+            <div v-if="item.id !== defaultAlbumId" class="album_select"
+                 :class="{ selected: !!manageList[item.id] }"></div>
+            <div class="album-cover" @click="onClickAlbum(item)">
+                <img v-if="item.coverUrl || item.lastPicUrl" class="album-cover-img"
+                     :src="item.coverUrl || item.lastPicUrl" alt="">
+                <div v-else class="album-cover-img album-cover-placeholder"></div>
             </div>
-            {% endfor %}
+            <div class="album-info">
+                <div class="album-title nowrapText">
+                    [[ item.title || formatTime(item.timestamp, 'yyyy年 MM月 dd日') ]]
+                </div>
+                <div class="album-desc nowrapText" :style="item.description ? '' : 'visibility:hidden'">
+                    [[ item.description || '.' ]]
+                </div>
+                <div class="album-time">[[ formatTime(item.timestamp, 'yyyy MM dd hh:mm:ss') ]]</div>
+            </div>
         </div>
     </div>
-    {%- endif -%}
+    <div v-else class="album-empty">
+        <div class="album-empty-icon">📷</div>
+        <div>还没有相册</div>
+        <div v-if="home" style="margin-top: 12px;">
+            <button class="album-btn" @click="startCreate">创建第一个相册</button>
+        </div>
+    </div>
 </div>
 
-<div id="del_button" onclick="del_albums(this)" class="rgButton" style="position: fixed; bottom: -64px; width: 100%; height: 64px; display: none"> 删除 </div>
+<script>
+(function() {
+    'use strict';
+
+    new Vue({
+        el: '#albumsApp',
+        delimiters: ['[[', ']]'],
+        data: {
+            list: {{ list|tojson }} || [],
+            user: {{ user|tojson }},
+            home: {{ home|int }},
+            managing: false,
+            manageList: {},
+            creating: false,
+            newTitle: '',
+            newDesc: ''
+        },
+        computed: {
+            defaultAlbumId: function() {
+                return this.user ? this.user.defaultAlbumId : null;
+            },
+            delCount: function() {
+                var count = 0;
+                for (var key in this.manageList) {
+                    if (this.manageList[key] === true) count++;
+                }
+                return count;
+            }
+        },
+        methods: {
+            formatTime: function(ts, fmt) {
+                if (!ts) return '';
+                return new Date(parseInt(ts)).Format(fmt || 'yyyy MM dd hh:mm:ss');
+            },
+            onClickAlbum: function(item) {
+                if (this.managing) {
+                    if (item.id !== this.defaultAlbumId) {
+                        this.manageList = Object.assign({}, this.manageList, {[item.id]: !this.manageList[item.id]});
+                    }
+                    return;
+                }
+                rgLoadContent('/photo/{0}/{1}'.format(this.user.ID, item.id));
+            },
+            startCreate: function() {
+                if (this.managing) return;
+                // 已处于创建模式时再次点击：取消创建，移除临时相册卡片
+                if (this.creating) {
+                    this.creating = false;
+                    return;
+                }
+                this.creating = true;
+                this.newTitle = '';
+                this.newDesc = '';
+                var self = this;
+                this.$nextTick(function() {
+                    self.$el.querySelector('.album-card-new input').focus();
+                });
+            },
+            createAlbum: function() {
+                var self = this;
+                $.ajax({
+                    type: 'POST',
+                    dataType: 'json',
+                    url: '/photo/album/new',
+                    data: {
+                        'title': this.newTitle,
+                        'desc': this.newDesc,
+                        'level': 2
+                    },
+                    success: function(result) {
+                        if (result.code !== 1000) {
+                            alert('创建失败');
+                            return;
+                        }
+                        self.list.unshift(result.data);
+                        self.creating = false;
+                        self.newTitle = '';
+                        self.newDesc = '';
+                    },
+                    error: function() {
+                    }
+                });
+            },
+            toggleManage: function() {
+                this.managing = !this.managing;
+                this.manageList = {};
+                // 进入管理模式时取消未完成的创建
+                this.creating = false;
+            },
+            delAlbums: function() {
+                if (!this.managing) return;
+                var ids = [];
+                for (var key in this.manageList) {
+                    if (this.manageList[key] === true) ids.push(key);
+                }
+                if (!ids.length) return;
+                var self = this;
+                if (confirm('确定删除选中的' + ids.length + '个相册吗')) {
+                    $.ajax({
+                        type: 'POST',
+                        dataType: 'json',
+                        url: '/photo/album/del',
+                        data: {'ids': ids},
+                        success: function(result) {
+                            if (result.code !== 1000) {
+                                alert('删除失败');
+                                return;
+                            }
+                            var map = {};
+                            ids.forEach(function(id) { map[id] = true; });
+                            self.list = self.list.filter(function(item) { return !map[item.id]; });
+                            self.toggleManage();
+                        },
+                        error: function() {
+                            alert('删除失败');
+                        }
+                    });
+                }
+            }
+        }
+    });
+})();
+</script>
 </body>
 </html>

@@ -18,13 +18,13 @@ var Pagination={
             html.push("<span class=\"dots\">...</span>");html.push("<span class=\"num\"><a href=\"javascript:;\" page ="+(pageCount-1)+">"+pageCount+"</a></span>");}
         if(pageIndex<pageCount-1){html.push("<span class=\"next\"><a href=\"javascript:;\" page="+(pageIndex+1)+" data-rec=\"下一页\"></a></span>");}
         else{html.push("<span class=\"disable next\"></span>");}
-        html.push("<span class=\"total total_page\">共"+pageCount+"页</span>");html.push("<span class=\"page_jump\">到</span><input id='pageInput' class='pageInput' oldpage='' maxlength='"+pageCount+"' type='text' ><span class=\"page_jump\">页</span><button type='button' id='pagebtn' class='pagebtn'>确定</button>");return html.join("");},
+        html.push("<span class=\"total total_page\">共"+pageCount+"页</span>");html.push("<span class=\"page_jump\">到</span><input id='pageInput' class='pageInput' autocomplete='off' oldpage='' maxlength='"+pageCount+"' type='text' ><span class=\"page_jump\">页</span><button type='button' id='pagebtn' class='pagebtn'>确定</button>");return html.join("");},
     bindListener:function(obj,callback,topFlag){
         var topFlag=topFlag||true;obj.on("click","a",function(){if(typeof callback==="function"){var index=$(this).attr("page");callback(parseInt(index));}
         if(topFlag){$(window).scrollTop(this.top);}
         return false;});obj.on("click","button",function(){var pageInput=obj.find('input');if(typeof callback==="function"){var index=pageInput.val();if(index==''){pageInput.focus();return false;}
         callback(parseInt(index)-1);}
-        return false;});obj.on("keyup","input",function(e){switch(e.keyCode){case 37:break;case 38:break;case 39:break;case 40:break;case 13:changePage();break;case 8:$(e.target).attr('oldpage',$(e.target).val());break;case 46:$(e.target).attr('oldpage',$(e.target).val());break;default:validPage();}
+        return false;});obj.on("keydown","input",function(e){if(e.keyCode===13){e.preventDefault();changePage();return false;}});obj.on("keyup","input",function(e){switch(e.keyCode){case 37:break;case 38:break;case 39:break;case 40:break;case 8:$(e.target).attr('oldpage',$(e.target).val());break;case 46:$(e.target).attr('oldpage',$(e.target).val());break;default:validPage();}
         return false;});function changePage(){var pageInput=obj.find('input');var page=pageInput.val();var maxPage=parseInt(obj.find(".total_page").html().substring(1));var pattern=new RegExp("^[1-9]\\d{0,"+maxPage.toString().length+"}$");if(page.trim()==""){pageInput.focus();return;}
         if(pattern.test(page)){page=parseInt(page);maxPage=parseInt(maxPage);if(page>maxPage||page<0){pageInput.val("").focus();return;}}else{pageInput.val("").focus();return;}
         callback(parseInt(page)-1);}

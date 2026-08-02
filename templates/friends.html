@@ -1,94 +1,104 @@
 <!DOCTYPE html>
 <html lang="zh">
-
-<link href="/static/css/rg_base.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_base">
-<link href="/static/css/rg_config.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_config">
-
-<!--page-->
-<link href="/static/css/pagination.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
-<script type="text/javascript" src="/static/js/pagination.js?ver={{js_ver}}"></script>
-
 <head>
-    <script type="text/javascript">
-        function goto_blog(e) {
-            var url = '/blog/' + e.attributes.name.value
-            window.open(url)
-        }
-        function unfollow(e) {
-            if (confirm('确定移除此好友')) {
-                $.ajax({
-                    type: 'POST',
-                    dataType: "json",
-                    url: "/user/unfollow",
-                    data: {
-                        'id': e.attributes.name.value
-                    },
-                    success: function (result) {
-                        if (result.code === 1000) {
-                            rgLoadContent('/user/friends?page={0}'.format("{{nowPage}}"))
-                        }
-                    },
-                    error: function () {
-
-                    },
-                })
-            }
-        }
-    </script>
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=1.0, user-scalable=yes"/>
     <title>我的好友</title>
 </head>
+<link href="/static/css/rg_base.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_base">
+<link href="/static/css/rg-btn.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
+<link href="/static/css/rg_config.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_config">
+<link href="/static/css/pagination.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="/static/js/pagination.js?ver={{js_ver}}"></script>
 <body>
-<div class="wrapperLR {% if count > 0 %}wrapperPadding{% endif %} wrapperBg">
+
+<div id="friendsApp" class="wrapperLR {{ 'wrapperPadding' if count > 0 }} wrapperBg">
     <div class="wrapperFull">
-        {% for item in list %}
-        <div class="wrapperItem wrapperItemBg">
-            <div class="wrapperLR wrapperXYCenter" id={{item.ID}}>
+
+        <div v-for="item in list" class="wrapperItem wrapperItemBg">
+            <div class="wrapperLR wrapperXYCenter">
                 <div class="wrapperFlex" style="padding-right: 20px">
-                    <div class="rgIcon rgHover" name={{item.ID}} onclick="goto_blog(this)" style="width: 58px; {% if item.icon %} background-image:url({{ "'"+ item.icon|safe + "'" }}) {% endif %} "></div>
-            </div>
-            <div class="wrapperFull">
-                <div class="articleTitle auto_text" name={{item.ID}} onclick="goto_blog(this)">
-                    {{ item.nickname }}
+                    <div class="rgIcon rgHover" @click="gotoBlog(item.ID)"
+                         :style="iconStyle(item.icon)"
+                         style="width: 58px;"></div>
                 </div>
-                <div class="auto_text artSubTitle">{%- if item.title|length > 0 -%} {{ item.title }} {%- else -%} {{item.desc}} {%- endif -%}</div>
-                <div class="auto_text artSubTitle secondTextColor">
-                    <script>
-                        var timeStamp = {{item.follow_time}}
-                        var time = (new Date(timeStamp)).Format("yyyy-MM-dd hh:mm:ss")
-
-                        var dom = document.getElementById('{{item.ID}}').getElementsByClassName('auto_text artSubTitle secondTextColor')[0]
-                        dom.innerText = '添加时间: ' + time
-                    </script>
+                <div class="wrapperFull">
+                    <div class="articleTitle auto_text" @click="gotoBlog(item.ID)">
+                        [[ item.nickname ]]
+                    </div>
+                    <div class="auto_text artSubTitle">
+                        [[ item.title || item.desc ]]
+                    </div>
+                    <div class="auto_text artSubTitle secondTextColor">
+                        添加时间: [[ formatDate(item.follow_time) ]]
+                    </div>
                 </div>
-            </div>
-
-            <div class="wrapperFlex rgButton" name={{item.ID}} onclick="unfollow(this)">
-                移除
+                <div class="wrapperFlex rgButton" @click="doUnfollow(item.ID)">
+                    移除
+                </div>
             </div>
         </div>
+
+        <div v-if="list.length === 0" class="nothing">
+            <a style="background-color: rgba(255,255,255,0.6);">暂时没有好友</a>
+        </div>
+        <div v-else class="ht-page" ref="pagination"></div>
     </div>
-    {% endfor %}
-    {% if count == 0 %}
-    <div class="nothing">
-        <a style="background-color: rgba(255,255,255,0.6);">暂时没有好友</a>
-    </div>
-    {% endif %}
-    {% if count > 0 %}
-    <div class="ht-page"></div>
-    <script>
-        function pageChange(i) {
-            rgLoadContent('/user/friends?page={0}'.format(i + 1))
-        }
-        Pagination.init($(".ht-page"), pageChange);
-        Pagination.Page($(".ht-page"), parseInt("{{nowPage}}") - 1, parseInt("{{count}}"), parseInt("{{pageSize}}"));
-        Pagination.bindListener($(".ht-page"), function (page) {
-            $("html,body").animate({scrollTop: $(".toolBarWrapper").offset().top - 60}, 0);
-        }, false)
-    </script>
-    {% endif %}
 </div>
+
+<script>
+(function() {
+    'use strict';
+
+    new Vue({
+        el: '#friendsApp',
+        delimiters: ['[[', ']]'],
+        data: {
+            list: {{ list|tojson }},
+            count: {{ count }},
+            nowPage: {{ nowPage }},
+            pageSize: {{ pageSize }}
+        },
+        mounted: function() {
+            var self = this;
+            var $pag = $(self.$refs.pagination);
+            Pagination.init($pag, function(i) {
+                rgLoadContent('/user/friends?page=' + (i + 1));
+            });
+            Pagination.Page($pag, self.nowPage - 1, self.count, self.pageSize);
+            Pagination.bindListener($pag, function() {
+                $('html,body').animate({scrollTop: $('.toolBarWrapper').offset().top - 60}, 0);
+            }, false);
+        },
+        methods: {
+            gotoBlog: function(id) {
+                window.open('/blog/' + id);
+            },
+            doUnfollow: function(id) {
+                if (!confirm('确定移除此好友')) return;
+                var self = this;
+                $.ajax({
+                    type: 'POST',
+                    dataType: 'json',
+                    url: '/user/unfollow',
+                    data: { id: id },
+                    success: function(result) {
+                        if (result.code === 1000) {
+                            rgLoadContent('/user/friends?page=' + self.nowPage);
+                        }
+                    }
+                });
+            },
+            iconStyle: function(icon) {
+                return icon ? { backgroundImage: 'url("' + icon + '")' } : {};
+            },
+            formatDate: function(ts) {
+                return new Date(parseInt(ts)).Format('yyyy-MM-dd hh:mm:ss');
+            }
+        }
+    });
+})();
+</script>
 </body>
 </html>

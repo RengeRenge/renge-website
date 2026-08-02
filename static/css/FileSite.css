@@ -353,41 +353,46 @@
 
 
 .menuWrap {
-    padding-top: 5px;
-    padding-bottom: 5px;
-    border-radius: 5px;
+    padding: 6px;
+    border-radius: 12px;
     overflow: hidden; /*隐藏溢出的元素*/
-    box-shadow: 0 10px 15px #88888850, 0 0 15px #cccccc50;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
     position: absolute; /*自定义菜单相对与body元素进行定位*/
-    background-color: white;
+    background-color: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     z-index: 999;
 }
 
 .menuWrap .menu {
     min-width: 130px;
-    height: 30px;
-    line-height: 30px;
-    padding: 0 20px;
+    height: 34px;
+    line-height: 34px;
+    padding: 0 14px;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 15px;
-    color: black;
+    font-size: 13px;
+    color: #444;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+    transition: background 0.2s ease, color 0.2s ease;
 }
 
 .menuWrap a:any-link {
     display: block;
     text-decoration: none;
-    color: black;
+    color: #444;
 }
 
 .menuWrap .line {
-    background-color: gainsboro;
+    background-color: rgba(0, 0, 0, 0.06);
     width: 100%;
-    height: 2px;
+    height: 1px;
+    margin: 4px 0;
 }
 
 .menuWrap .menu:hover {
-    background-color: #5496f5;
+    background-color: rgba(105, 105, 105, 0.10);
+    color: #696969;
 }

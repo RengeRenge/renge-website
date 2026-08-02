@@ -1,0 +1,174 @@
+/* ============================================================
+   全局胶囊按钮统一样式
+   ------------------------------------------------------------
+   所有胶囊按钮（实心/描边/禁用）的颜色与基础样式集中于此文件。
+   页面通过 <link> 引入本文件，尺寸/内边距等差异用局部类覆盖。
+
+   主题色：#696969（实心底）  hover：#5a5a5a
+   描边：transparent 底 + #696969 边框  禁用：半透明灰
+   ============================================================ */
+
+/* ---------- 通用实心胶囊按钮 ---------- */
+.rgButton {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 30px;
+    min-width: 60px;
+    text-decoration: none;
+    background: #696969;
+    color: #f2f2f2;
+    padding: 0 2px 0px 2px;
+    font-size: 16px;
+    font-weight: normal;
+    border-radius: 999px;
+    text-align: center;
+    -webkit-transition: all linear 0.20s;
+    -moz-transition: all linear 0.20s;
+    transition: all linear 0.20s;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.rgButton:hover {
+    background: gray;
+    cursor: pointer;
+}
+
+/* ---------- 通用描边胶囊按钮 ---------- */
+.rgButton-anti {
+    background: transparent;
+    color: #696969;
+    border: #696969 solid 1px;
+}
+
+.rgButton-anti:hover {
+    background: transparent;
+    cursor: pointer;
+    color: #4a4a4a;
+}
+
+/* ---------- 禁用态 ---------- */
+.rgButton-disable {
+    background: #69696977;
+}
+
+.rgButton-disable:hover {
+    background: #69696977;
+    cursor: default;
+}
+
+.rgButton-anti-disable {
+    color: #69696977;
+    border: #69696977 solid 1px;
+}
+
+.rgButton-anti-disable:hover {
+    color: #69696977;
+    cursor: default;
+}
+
+/* ---------- 分页「确定」按钮（配合 pagination.css 布局） ---------- */
+.ht-page .pagebtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    vertical-align: middle;
+    width: 54px;
+    height: 30px;
+    padding: 0;
+    background: #696969;
+    border: 0;
+    border-radius: 999px;
+    color: #fff;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.ht-page .pagebtn:hover {
+    background: #5a5a5a;
+}
+
+/* ---------- 文件移动对话框按钮（实心/描边/禁用） ---------- */
+.file-select-button {
+    font-style: initial;
+    box-sizing: border-box;
+    border-radius: 999px;
+    padding-left: 14px;
+    padding-right: 14px;
+    height: 34px;
+    cursor: pointer;
+}
+
+.file-select-button.rgButton {
+    background: #696969;
+    color: #fff;
+}
+
+.file-select-button.rgButton:hover {
+    background: #5a5a5a;
+    color: #fff;
+}
+
+.file-select-button.rgButton.rgButton-disable,
+.file-select-button.rgButton.rgButton-disable:hover {
+    background: #a0a6b0;
+    color: #fff;
+    cursor: default;
+}
+
+.file-select-button.rgButton-anti {
+    background: transparent;
+    color: #666;
+    border: 1px solid #d0d5dd;
+}
+
+.file-select-button.rgButton-anti:hover {
+    color: #696969;
+    border-color: rgba(105, 105, 105, 0.4);
+    background: transparent;
+}
+
+.file-select-button.rgButton-anti.rgButton-anti-disable,
+.file-select-button.rgButton-anti.rgButton-anti-disable:hover {
+    color: #a0a6b0;
+    border-color: #d8dce2;
+    cursor: default;
+}
+
+/* ---------- 弹窗按钮（vue-beauty v-button 确定/取消，胶囊化） ---------- */
+.ant-btn {
+    border-radius: 999px;
+    height: 34px;
+    padding: 0 14px;
+    font-size: 13px;
+    line-height: 32px;
+    border: 1px solid #d0d5dd;
+    background: #fff;
+    color: #555;
+    transition: all 0.2s ease;
+}
+
+.ant-btn:hover,
+.ant-btn:focus {
+    color: #696969;
+    border-color: rgba(105, 105, 105, 0.5);
+}
+
+.ant-btn-primary,
+.ant-btn-primary:active {
+    background: #696969;
+    border-color: #696969;
+    color: #fff;
+}
+
+.ant-btn-primary:hover,
+.ant-btn-primary:focus {
+    background: #5a5a5a;
+    border-color: #5a5a5a;
+    color: #fff;
+}

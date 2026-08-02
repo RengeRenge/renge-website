@@ -45,7 +45,7 @@ def video_view_page(user_file_id):
         if user_file_id == -1 or files.user_file_info(user_id=user_id, id=user_file_id, type=1) is not None:
             code = RGRequestHelp.did_encode(user_file_id, user_id)
             return redirect(url_for('RGFileUpDown.play_list_page', user_id_directory_id=code))
-    return RGUIController.ui_render_template('VideoPreview.html')
+    return RGUIController.ui_render_template('FilePreview.html')
 
 
 @RestRouter.route('/nyapass/playList/pv<user_id_directory_id>', methods=['GET'])
@@ -53,7 +53,7 @@ def play_list_page(user_id_directory_id):
     auth, user_id = RGUIController.do_auth()
     if not auth:
         return redirect(url_for('login_page'))
-    return RGUIController.ui_render_template('VideoPreview.html')
+    return RGUIController.ui_render_template('FilePreview.html')
 
 
 @RestRouter.route('/nyapass/sv<open_code>', methods=['GET'])
@@ -63,19 +63,19 @@ def share_page(open_code):
         file_info = files.user_file_info(
             user_id=u_id, id=f_id, open_code=open_code)
         if file_info is None:
-            return RGUIController.ui_render_template('VideoPreview.html')
+            return RGUIController.ui_render_template('FilePreview.html')
         if file_info['type'] == 1:
             url = url_for('RGFileUpDown.play_list_share_page',
                           open_code=open_code)
             return redirect(url)
-        return RGUIController.ui_render_template('VideoPreview.html')
+        return RGUIController.ui_render_template('FilePreview.html')
     except:
-        return RGUIController.ui_render_template('VideoPreview.html')
+        return RGUIController.ui_render_template('FilePreview.html')
 
 
 @RestRouter.route('/nyapass/playList/sv<open_code>', methods=['GET'])
 def play_list_share_page(open_code):
-    return RGUIController.ui_render_template('VideoPreview.html')
+    return RGUIController.ui_render_template('FilePreview.html')
 
 
 """

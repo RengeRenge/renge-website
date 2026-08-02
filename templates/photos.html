@@ -1,226 +1,231 @@
 <!DOCTYPE html>
 <html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=1.0, user-scalable=yes">
+    <title>相册</title>
+</head>
 
-{%- macro selectIfNeed(selectedV)-%}{%- if album.level == selectedV -%}selected="selected"{%- endif -%}{%- endmacro -%}
-
-<script>
-    this.isHome = parseInt("{{home|int}}")
-    this.albumId = "{{album.id}}"
-    this.coverId = "{{album.cover}}"
-    this.iconId = "{{user.iconId}}"
-    this.bgId = "{{user.bgId}}"
-    this.recordABTitle = "{{album.title}}"
-    this.recordABDesc = "{{album.description}}"
-    this.albumLevel = "{{album.level}}"
-    this.picList = null
-</script>
+{%- macro selectIfNeed(selectedV) -%}{%- if album and album.level == selectedV -%}selected="selected"{%- endif -%}{%- endmacro -%}
 
 <link href="/static/css/rg_base.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_base">
+<link href="/static/css/rg-btn.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
 <link href="/static/css/rg_config.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_config">
 <link href="/static/font-awesome/css/font-awesome.min.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
 
 {%- if album -%}
 <link rel="stylesheet" type="text/css" href="/static/css/weui-for-work.min.css?ver={{css_ver}}" />
 <link rel="stylesheet" type="text/css" href="/static/css/photos.css?ver={{css_ver}}" />
-
 <script type="text/javascript" src="/static/js/rgbaster.min.js?ver={{js_ver}}"></script>
-
-<!--select-->
 <link rel="stylesheet" type="text/css" href="/static/select/css/cs-select.css?ver={{css_ver}}" />
 <link rel="stylesheet" type="text/css" href="/static/select/css/cs-skin-border.css?ver={{css_ver}}" />
-
 <script type="text/javascript" src="/static/select/js/classie.js?ver={{js_ver}}"></script>
 <script type="text/javascript" src="/static/select/js/selectFx.js?ver={{js_ver}}"></script>
-
-<!--page-->
 <link href="/static/css/pagination.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
 <script type="text/javascript" src="/static/js/pagination.js?ver={{js_ver}}"></script>
-
 <script type="text/javascript" src="/static/js/photosPage.js?ver={{js_ver}}" async="async"></script>
-
 {%- endif -%}
-<style>
-    .wrapperBg a.back:any-link {
-        color: initial;
-        text-decoration: none;
-        cursor: pointer;
-    }
-    .back {
-        cursor: pointer;
-        padding-left: {% if album %}0{% else %}20{% endif %}px;
-    }
-</style>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=1.0, user-scalable=yes"/>
-    <title>相册</title>
-</head>
+
 <body>
 
-<div class="wrapperBg {% if album %} wrapperPadding {% else %} wrapperPaddingOnlyTop {% endif %}">
-    <div style="margin-bottom: 20px; margin-top: 10px">
-        <a onclick="rgLoadContent('/photo/{{user.ID}}')" class="back">返回</a>
+<div class="wrapperBg {{ 'wrapperPadding' if album else 'wrapperPaddingOnlyTop' }}">
+    <div class="photo-topbar">
+        <div class="photo-back" onclick="rgLoadContent('/photo/{{user.ID}}')">
+            <span class="photo-back-arrow">‹</span>返回相册
+        </div>
+        {%- if album and home and user -%}
+        <div class="photo-topbar-actions">
+            <select id="privacy" class="cs-select cs-skin-border">
+                <option value="0" {{selectIfNeed(0)}}>所有人可见</option>
+                <option value="1" {{selectIfNeed(1)}}>仅好友可见</option>
+                <option value="2" {{selectIfNeed(2)}}>仅自己可见</option>
+            </select>
+            <button type="button" id="uploadPhotosBtn" class="album-btn" onclick="uploadPhotos()">
+                <span class="album-btn-icon album-btn-icon--upload"></span><span>上传照片</span>
+            </button>
+        </div>
+        {%- endif -%}
     </div>
 
-    {%-if album-%}
-    <h2 class="auto_text"
-        contenteditable="{% if home %}true{% else %}false{% endif %}"
-        onblur="onBlurTitle(this)"
-        style="margin-bottom: 10px;">
-        {{-album.title-}}
-    </h2>
-    <a class="auto_text"
-       contenteditable="{% if home %}true{% else %}false{% endif %}"
-       onblur="onBlurDesc(this)"
-       style="margin-top: 20px;padding-left: 3px;display: block">
-        {{-album.description-}}
-    </a>
+    {%- if album -%}
+    <div class="photo-header">
+        <h2 class="auto_text photo-title"
+            contenteditable="{{ 'true' if home else 'false' }}"
+            onblur="onBlurTitle(this)">
+            {{ album.title }}
+        </h2>
+        <div class="auto_text photo-desc"
+             contenteditable="{{ 'true' if home else 'false' }}"
+             onblur="onBlurDesc(this)">
+            {{ album.description }}
+        </div>
 
-    {%- if home and user -%}
-    <div class="rgButton" style="width: 200px;min-height: 40px; margin-top: 20px;">上传照片</div>
-
-    <div class="privacyWrapper" style="margin-top: 20px;">隐私设置 :
-        <select id="privacy" style="min-height: 40px" class="cs-select cs-skin-border">
-            <option value="0" {{selectIfNeed(0)}}>所有人可见</option>
-            <option value="1" {{selectIfNeed(1)}}>仅好友可见</option>
-            <option value="2" {{selectIfNeed(2)}}>仅自己可见</option>
-        </select>
         {%- if home|int -%}
         <script>
-            $(function () {
-                let album_level = that.albumLevel
+        (function() {
+            var albumLevel = parseInt("{{ album.level }}");
+            $(function() {
                 new SelectFx($('#privacy')[0], {
                     stickyPlaceholder: true,
-                    onChange: function (val) {
-                        if (album_level === val)
-                            return
+                    onChange: function(val) {
+                        if (albumLevel == val) return;
                         $.ajax({
                             type: 'POST',
-                            dataType: "json",
-                            url: "/photo/album/edit",
-                            data: {
-                                'id': that.albumId,
-                                'level': val
-                            },
-                            success: function (result) {
-                                if (result.code !== 1000) {
-                                    alert('修改失败')
-                                } else {
-                                    album_level = val
-                                }
-                            },
-                            error: function () {
-                            },
-                        })
+                            dataType: 'json',
+                            url: '/photo/album/edit',
+                            data: { id: {{ album.id }}, level: val },
+                            success: function(result) {
+                                if (result.code !== 1000) alert('修改失败');
+                                else albumLevel = val;
+                            }
+                        });
                     }
                 });
-            })
+            });
+        })();
         </script>
         {%- endif -%}
     </div>
 
-    <div style="height: 1px;width: 100%; margin-top: 20px;background-color: rgba(255,255,255,0.6)">
-    </div>
-    {%- endif -%}
-
-    <div class="collectionView" style="margin-top: 30px">
-        {%- for item in list -%}
-        <div id={{item.id}} class="collectionCell collectionWrap wrapperItemBg" style="margin: 10px;">
-            <div id="{{item.qUrl}}" name="{{item.url}}" onclick="show_oPic(this)" class="bgNoRepeatImage" style="background-image: url('{{item.url}}'); width: 100%;">
-
+    <div id="photosApp" class="photo-grid">
+        <div v-for="item in list"
+             :id="item.id"
+             class="photo-cell">
+            <div :id="item.qUrl"
+                 :name="item.url"
+                 onclick="show_oPic(this)"
+                 class="bgNoRepeatImage photo-thumb"
+                 :style="{ backgroundImage: 'url(\'' + item.url + '\')', width: '100%' }">
             </div>
-            <div id={{item.id|string+'title'}} class="p_title nowrapText">
-                {%- if item.title -%}
-                {{- item.title -}}
-                {%- else -%}
-                {{- item.filename -}}
-                {%- endif -%}
-            </div>
-            <div id={{item.id|string+'description'}} class="p_desc nowrapText">
-                {{-item.description-}}
-            </div>
-            <div class="p_desc nowrapText secondTextColor">
-                <script>
-                    var timeStamp = '未知';
-                    {% if item.exif_timestamp %}
-                    timeStamp = (new Date({{item.exif_timestamp}})).Format("yyyy MM dd hh:mm:ss")
-                    {% endif %}
-                    var dom = document.getElementById('{{item.id}}').getElementsByClassName('p_desc nowrapText secondTextColor')[0]
-                    dom.innerText = '拍摄时间:' + timeStamp
-                </script>
-            </div>
-            <div class="p_desc nowrapText secondTextColor" style="margin-top: 10px">
-                上传时间:
-                <script>
-                    var timeStamp = {{item.timestamp}}
-                    var time = (new Date(timeStamp)).Format("yyyy MM dd hh:mm:ss")
-                    var dom = document.getElementById('{{item.id}}').getElementsByClassName('p_desc nowrapText secondTextColor')[1]
-                    dom.innerText = time
-                </script>
+            <div class="photo-info">
+                <div :id="item.id + 'title'" class="p_title nowrapText">
+                    [[ item.title || item.filename ]]
+                </div>
+                <div :id="item.id + 'description'" class="p_desc nowrapText">
+                    [[ item.description ]]
+                </div>
+                <div class="p_desc nowrapText secondTextColor">
+                    拍摄时间: [[ formatExifDate(item.exif_timestamp) ]]
+                </div>
+                <div class="p_desc nowrapText secondTextColor">
+                    上传时间: [[ formatUploadDate(item.timestamp) ]]
+                </div>
             </div>
         </div>
-        {% endfor %}
-    </div>
 
-    <div class="ht-page"></div>
-    <script>
-        function pageChange(i) {
-            rgLoadContent('/photo/{0}/{1}?page={2}'.format(that.userId, that.albumId, i+1))
-        }
-        Pagination.init($(".ht-page"), pageChange);
-        Pagination.Page($(".ht-page"), parseInt("{{nowPage}}" - 1), parseInt("{{count}}"), parseInt("{{pageSize}}"));
-        Pagination.bindListener($(".ht-page"), function (page) {
-            $("html,body").animate({scrollTop: $(".toolBarWrapper").offset().top - 60}, 0);
-        }, false)
-    </script>
+        <div v-if="count > 0" class="ht-page" ref="pagination"></div>
+    </div>
     {%- else -%}
     <div class="nothing"><a style="background-color: rgba(255,255,255,0.3);">内容不见了</a></div>
     {%- endif -%}
 </div>
 
+{%- if album -%}
+<script>
+(function() {
+    'use strict';
+
+    // 全局状态（photosPage.js 需要通过 that 读取）
+    that.isHome = parseInt("{{ home|int }}");
+    that.albumId = "{{ album.id }}";
+    that.coverId = "{{ album.cover }}";
+    that.iconId = "{{ user.iconId }}";
+    that.bgId = "{{ user.bgId }}";
+    that.recordABTitle = "{{ album.title }}";
+    that.recordABDesc = "{{ album.description }}";
+    that.albumLevel = "{{ album.level }}";
+    that.picList = null;
+
+    that.photosVM = new Vue({
+        el: '#photosApp',
+        delimiters: ['[[', ']]'],
+        data: {
+            list: {{ list|tojson }},
+            count: {{ count }},
+            nowPage: {{ nowPage }},
+            pageSize: {{ pageSize }}
+        },
+        mounted: function() {
+            var self = this;
+            if (!self.count) return;
+            var $pag = $(self.$refs.pagination);
+            Pagination.init($pag, function(i) {
+                rgLoadContent('/photo/' + that.userId + '/' + that.albumId + '?page=' + (i + 1));
+            });
+            Pagination.Page($pag, self.nowPage - 1, self.count, self.pageSize);
+            Pagination.bindListener($pag, function() {
+                $('html,body').animate({scrollTop: $('.toolBarWrapper').offset().top - 60}, 0);
+            }, false);
+        },
+        methods: {
+            formatExifDate: function(ts) {
+                if (!ts) return '未知';
+                return new Date(parseInt(ts)).Format('yyyy MM dd hh:mm:ss');
+            },
+            formatUploadDate: function(ts) {
+                return new Date(parseInt(ts)).Format('yyyy MM dd hh:mm:ss');
+            }
+        }
+    });
+})();
+</script>
+{%- endif -%}
+
+<!-- 全屏查看器（由 photosPage.js 管理，保持原有 onclick/ID 契约） -->
 <div class="fullScreen" style="display: none;">
-    <img id="last_button" src="/static/image/last.png" class="bgNoRepeatImage" onclick="last_oPic()">
-    <img id="display_img" src="">
-
-    <i class="weui-loading"></i>
-
-    <img id="next_button" src="/static/image/next.png" class="bgNoRepeatImage" style="right: 0;"
-         onclick="next_oPic()">
-    <div class="display_img_text_wrapper">
-        <a id="display_img_title" class="auto_text img_text {%if home %}rich rich_black{%- endif -%}" placeholder="图片标题"
-           onblur="onBlurPicInfo(this)"></a>
-        <a id="display_img_desc" class="auto_text img_text {%if home %}rich rich_black{%- endif -%}" placeholder="图片描述" style="font-size: 12px"
-           onblur="onBlurPicInfo(this)"></a>
-        <a class="auto_text img_text" style="font-size: 7px; margin-top: 15px; text-align: right; padding-right: 2%">
-            <i class="fa fa-location-arrow fa-lg" id="display_img_exif" style="line-height: 1.25em;padding: 5px"> </i>
-        </a>
+    <div class="photo-nav-btn photo-nav-prev">
+        <img id="last_button" src="/static/image/last.png" class="bgNoRepeatImage" onclick="last_oPic()">
     </div>
-    <img src="/static/image/close.png" class="close" onclick="dismiss_oPic()">
+    <img id="display_img" src="">
+    <i class="weui-loading"></i>
+    <div class="photo-nav-btn photo-nav-next">
+        <img id="next_button" src="/static/image/next.png" class="bgNoRepeatImage" onclick="next_oPic()">
+    </div>
 
-    <div style="min-height: 40px;
-             margin-top:10px;
-             padding-right: 55px;
-             float: right">
-        <div id="display_img_privacy" style="display: inline-block; font-weight: 700;">
+    <!-- 顶部工具条：关闭 + 隐私 + 更多 -->
+    <div class="fullscreen-topbar">
+        <div class="fullscreen-actions">
+            <div id="display_img_privacy"></div>
+            <div class="nav">
+                <span>更多
+                    <ul>
+                        {%- if home and user -%}
+                        <li onclick="coverSet()">设为封面</li>
+                        <li onclick="iconSet()">设为头像</li>
+                        <li onclick="bgSet()">设为背景</li>
+                        <li onclick="movePic()">移动到...</li>
+                        <li onclick="delPic()">删除图片</li>
+                        {%- endif -%}
+                        <li onclick="showOriginal()">查看原图</li>
+                    </ul>
+                </span>
+            </div>
         </div>
+        <div class="photo-nav-btn photo-close-btn">
+            <img src="/static/image/close.png" class="close" onclick="dismiss_oPic()">
+        </div>
+    </div>
 
-
-        <div class="nav">
-        <span>更多
-            <ul>
-                {%- if home and user -%}
-                <li onclick="coverSet()">设为封面</li>
-                <li onclick="iconSet()">设为头像</li>
-                <li onclick="bgSet()">设为背景</li>
-                <li>移动到...</li>
-                <li onclick="delPic()">删除图片</li>
-                {%- endif -%}
-                <li onclick="showOriginal()">查看原图</li>
-            </ul>
-        </span>
+    <!-- 底部信息面板 -->
+    <div class="display_img_text_wrapper">
+        <a id="display_img_title" class="auto_text img_text {{ 'rich rich_black' if home else '' }}" placeholder="图片标题"
+           onblur="onBlurPicInfo(this)"></a>
+        <a id="display_img_desc" class="auto_text img_text {{ 'rich rich_black' if home else '' }}" placeholder="图片描述"
+           onblur="onBlurPicInfo(this)"></a>
+        <div class="photo-exif">
+            <i class="fa fa-location-arrow fa-lg" id="display_img_exif"></i>
         </div>
     </div>
 </div>
+
+<!-- 移动照片到相册面板 -->
+{%- if home and user -%}
+<div class="move-mask" id="moveMask" style="display: none;" onclick="closeMovePanel()"></div>
+<div class="move-panel" id="movePanel" style="display: none;">
+    <div class="move-panel-title">移动到相册</div>
+    <div class="move-panel-list" id="movePanelList"></div>
+    <div class="move-panel-cancel" onclick="closeMovePanel()">取消</div>
+</div>
+{%- endif -%}
 </body>
 </html>

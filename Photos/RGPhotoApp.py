@@ -33,9 +33,13 @@ def photo_page(other_id):
 
 def photo_page_render(user_id, other_id):
     albums, re_relation = album.album_list(user_id, other_id)
+    _user = user.get_user(other_id)
     t = {
         "list": albums,
-        "user": user.get_user(other_id),
+        "user": {
+            "ID": _user.ID,
+            "defaultAlbumId": _user.defaultAlbumId,
+        },
         "home": user.isHome(user_id, other_id),
     }
     return RGUIController.ui_render_template("albums.html", **t)
@@ -196,9 +200,21 @@ def album_new(user_id):
 
     if flag is not None:
         code = RGResCode.ok
+        t = {
+            "id": flag.ID,
+            "userId": flag.userId,
+            "title": flag.title,
+            "description": flag.desc,
+            "cover": flag.cover,
+            "level": flag.level,
+            "timestamp": flag.timestamp,
+            "coverUrl": None,
+            "lastPicUrl": None
+        }
     else:
         code = RGResCode.update_fail
-    return jsonify(form_res(code, flag))
+        t = None
+    return jsonify(form_res(code, t))
 
 
 @RestRouter.route('album/del', methods=['POST'])
@@ -218,6 +234,39 @@ def album_del(user_id):
     else:
         code = RGResCode.update_fail
     return jsonify(form_res(code, None))
+
+
+@RestRouter.route('move', methods=['POST'])
+@RGUIController.auth_handler(page=False)
+def pic_move(user_id):
+    t = get_data_with_request(request)
+
+    p_id = t['id'] if 'id' in t else None
+    album_id = t['albumId'] if 'albumId' in t else None
+
+    if p_id is None or album_id is None:
+        return jsonify(form_res(RGResCode.lack_param, None))
+
+    # 校验目标相册归属，防止移动到他人相册
+    flag, _album = album.album_detail(album_id, -1)
+    if flag is False or _album['user_id'] != user_id:
+        return jsonify(form_res(RGResCode.auth_fail, None))
+
+    moved = pic.move_to_album(user_id=user_id, p_id=p_id, album_id=album_id)
+    if moved is True:
+        code = RGResCode.ok
+    else:
+        code = RGResCode.update_fail
+    return jsonify(form_res(code, None))
+
+
+@RestRouter.route('album/list', methods=['POST'])
+@RGUIController.auth_handler(page=False)
+def photo_album_list(user_id):
+    albums, _ = album.album_list(user_id, user_id)
+    if albums is None:
+        albums = []
+    return jsonify(form_res(RGResCode.ok, albums))
 
 
 @RestRouter.route('preList', methods=['POST'])

@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<script type="text/javascript" src="/static/js/vue@2.7.16.js"></script>
+<script type="text/javascript" src="/static/jquery/jquery.min.js?ver={{js_ver}}"></script>
+<script type="text/javascript" src="/static/js/rg_base.js?ver={{js_ver}}"></script>
+<script type="text/javascript" src="/static/js/file.js?ver={{js_ver}}"></script>
+<script type="text/javascript" src="/static/js/MimeType.js?ver={{js_ver}}"></script>
+<script type="text/javascript" src="/static/js/bgLayout.js?ver={{js_ver}}"></script>
+
+<script type="text/javascript" src="/static/pinyin/pinyin_dict_notone.js?ver={{js_ver}}"></script>
+<script type="text/javascript" src="/static/pinyin/pinyinUtil.js?ver={{js_ver}}"></script>
+
+<script type="text/javascript" src="/static/js/jszip.min.js?ver={{js_ver}}"></script>
+<script type="text/javascript" src="/static/js/epub.min.js?ver={{js_ver}}"></script>
+<script type="text/javascript" src="/static/js/pdf.min.js?ver={{js_ver}}"></script>
+<script>
+    if (typeof pdfjsLib !== 'undefined') {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '/static/js/pdf.worker.min.js?ver={{js_ver}}';
+    }
+</script>
+<script type="text/javascript" src="/static/js/viewers/pdfViewer.js?ver={{js_ver}}"></script>
+<script type="text/javascript" src="/static/js/viewers/epubViewer.js?ver={{js_ver}}"></script>
+<script type="text/javascript" src="/static/js/viewers/audioPlayer.js?ver={{js_ver}}"></script>
+
+<link rel="stylesheet" type="text/css" href="/static/css/viewers/pdfViewer.css?ver={{js_ver}}">
+<link rel="stylesheet" type="text/css" href="/static/css/viewers/epubViewer.css?ver={{js_ver}}">
+<link rel="stylesheet" type="text/css" href="/static/css/viewers/audioPlayer.css?ver={{js_ver}}">
+
+<style>
+    .full,
+    html,
+    body {
+        height: 100%;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+    }
+
+    .center {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    video {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .no-support {
+        color: #ecf6fd;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+    }
+
+    .no-support img {
+        max-width: 80%;
+        max-height: 50%;
+    }
+
+    .menu {
+        position: absolute;
+        right: 20px;
+        top: 20px;
+        height: 20px;
+        transform: scaleX(-1);
+        cursor: pointer;
+    }
+
+    .pointer {
+        cursor: pointer;
+    }
+
+    .download {
+        height: 20px;
+        cursor: pointer;
+        top: 0;
+        right: 0;
+    }
+
+    .menu-base {
+        border-radius: 5px;
+        position: absolute;
+        right: 20px;
+        top: 60px;
+        background-color: #2b2b2b;
+        color: #ecf6fd;
+        overflow: auto;
+        overflow-x: hidden;
+        max-width: 300px;
+        width: 80%;
+    }
+
+    .menu-base::-webkit-scrollbar,
+    .menu-base ul::-webkit-scrollbar {
+        background-color: rgba(0, 0, 0, 0);
+        width: 10px;
+    }
+
+    .menu-base::-webkit-scrollbar-thumb,
+    .menu-base ul::-webkit-scrollbar-thumb {
+        background-color: gray;
+        border-radius: 5px;
+        text-align: center;
+    }
+
+    .full-ab {
+        height: 100%;
+        width: 100%;
+        position: absolute;
+    }
+
+    .center-column {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .list-style-none {
+        list-style-type: none;
+        list-style-image: none;
+    }
+
+    .transition {
+        transition: all 0.4s ease-in-out;
+    }
+
+    .shadow {
+        box-shadow: 0 3px 6px 1px rgba(0, 0, 0, .22);
+    }
+</style>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=1.0, user-scalable=yes" />
+    <title>预览</title>
+    {% raw %}
+    <script type="text/x-template" id="item-template">
+        <li>
+          <div
+            :class="'epub-bold'"
+            @click="$emit('select', item)">
+            {{ item.label }}
+          </div>
+          <ul class="epub-ul" v-show="isOpen" v-if="isFolder">
+            <tree-item
+              class="epub-item"
+              v-for="(child, index) in item.subitems"
+              :key="index"
+              :item="child"
+              @select="$emit('select', $event)"
+            ></tree-item>
+          </ul>
+        </li>
+    </script>
+    {% endraw %}
+</head>
+
+<body class="center" style="background-color: #4b4b4b;" onresize="onResize(event)">
+
+    {% raw %}
+    <div id="videoPage" ref="videoPage" class="full center">
+
+        <audio-player v-if="audio" ref="audioPlayerComponent" :url="url" :file="loadedFile"
+            :file-list="fileList" :will-play-id="willPlayId" :list="list" :show-menu="showMenu"
+            :phone-view="phoneView" :app-height="appHeight" :has-open-code="!!open_code"
+            @load-file="onAudioLoadFile" @playing="onAudioPlaying"></audio-player>
+
+        <video v-if="video" v-bind:src="url" preload="auto" controls>
+        </video>
+
+        <img v-if="image" v-bind:src="url" id="oImg" style="max-width: 100%; max-height: 100%">
+
+        <div v-if="loaded && !image && !video && !audio && !pdf" class="no-support transition"
+            v-bind:style="{opacity: previewOpacity}">
+            <img id="cover" v-if="loadedFile" v-bind:class="epub ? 'pointer' : ''" v-bind:src="loadedFile.thumb"
+                @error="onThumbError(loadedFile)" @click="onThumbClick">
+            <div v-if="loadedFile" style="margin-bottom: 40px; margin-top: 20px">{{loadedFile.name}}</div>
+            <div v-if="!loadedFile && open_code">共享内容已取消</div>
+        </div>
+
+        <div v-if="list && !fileList.length" class="no-support">
+            没有可播放的内容
+        </div>
+
+
+        <pdf-viewer v-if="pdf" :url="url" @loaded="onPdfLoaded" @page-change="onPdfPageChange"></pdf-viewer>
+
+        <epub-viewer ref="epubViewer" v-if="epub" :file="loadedFile" :phone-view="phoneView"
+            :show-menu="showMenu" @loaded="onEpubLoaded" @opening="onEpubOpening"></epub-viewer>
+
+        <img v-if="(list && fileList.length) || (epub && epubComponentToc) || (pdf && pdfComponentLoaded)" src="/static/image/menu.svg" class="menu"
+            @click="onMenuIconClick" @dblclick="onMenuIconClick">
+        <div v-else-if="loadedFile && !epub && !pdf" class="menu">
+            <img src="/static/image/file-download.svg" class="download">
+            <a class="download" style="width: 100%;height: 100%; position: absolute;"
+                v-bind:href="loadedFile.downloadUrl" v-bind:download="loadedFile.name"></a>
+        </div>
+
+        <div v-if="pdf && showMenu && pdfComponentLoaded" class="menu-base" style="padding: 16px; font-size: 14px; color: #ecf6fd;">
+            <div style="font-weight: bold; margin-bottom: 14px; font-size: 16px;">
+                <div class="two_line">{{ loadedFile.name }}</div>
+            </div>
+            <div style="line-height: 2;">
+                <div>页数：{{ pdfTotalPages }}</div>
+                <div>当前页：{{ pdfCurrentPage }}</div>
+                <div>格式：PDF</div>
+            </div>
+            <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.15);">
+                <a v-bind:href="loadedFile.downloadUrl" v-bind:download="loadedFile.name"
+                    style="color: #6db3f2; text-decoration: none; display: flex; align-items: center; gap: 6px;">
+                    <img src="/static/image/file-download.svg" style="height: 16px; filter: invert(70%) sepia(50%) saturate(500%) hue-rotate(180deg);">
+                    下载文件
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% endraw %}
+
+</body>
+<script>
+    function getUrlSearch(name) {
+        [].join()
+        if (!name) return null;
+        let after = window.location.search;
+        after = after.substr(1) || window.location.hash.split('?')[1];
+        if (!after) return null;
+        if (after.indexOf(name) === -1) return null;
+        var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)');
+        var r = decodeURI(after).match(reg);
+        if (!r) return null;
+        return r[2];
+    }
+
+    Vue.component("tree-item", {
+        template: "#item-template",
+        props: {
+            item: Object
+        },
+        data: function () {
+            return {
+                isOpen: true
+            };
+        },
+        computed: {
+            isFolder: function () {
+                return this.item.subitems && this.item.subitems.length;
+            }
+        },
+        methods: {
+            select: function () {
+                this.$emit("select", this.item);
+            },
+        }
+    });
+
+    const videoPage = new Vue({
+        el: '#videoPage',
+        data: {
+            loaded: false,
+            mimeType: null,
+            video: false,
+            image: false,
+            audio: false,
+            pathFileId: null,
+            loadedFile: null,
+            list: false,
+            url: null,
+            audioCover: null,
+            willPlayId: null,
+            fileList: [],
+            showMenu: false,
+            previewOpacity: 1,
+            appWidth: 0,
+            appHeight: 0,
+            open_code: null,
+            phoneView: isPhoneView(),
+
+            epub: false,
+            epubComponentToc: null,
+
+            pdf: false,
+            pdfComponentLoaded: false,
+            pdfCurrentPage: 1,
+            pdfTotalPages: 0
+        },
+        created: function (e) {
+            window.addEventListener('popstate', this.handlePopState)
+
+            this.updatePathFileId()
+            let path = document.location.pathname.split("/")
+            let lastPath = path[path.length - 1]
+            let sv = null, pv = null
+            if (lastPath.indexOf('pv') === 0) {
+                pv = lastPath.substr(2)
+            } else if (lastPath.indexOf('sv') === 0) {
+                sv = lastPath.substr(2)
+                document.title = '共享'
+                this.open_code = sv
+            }
+            if (path.indexOf('playList') >= 0) {
+                document.title = '播放列表'
+                this.loadPlayList(pv, sv)
+            } else {
+                this.loadFile(pv)
+            }
+        },
+        destroyed() {
+            window.removeEventListener('popstate', this.handlePopState)
+        },
+        mounted: function () {
+            this.onResize()
+        },
+        methods: {
+            updatePathFileId: function () {
+                URLSearchParams.prototype.toObject = function () {
+                    const obj = {}
+                    this.forEach((value, key) => {
+                        obj[key] = value
+                    })
+                    return obj
+                }
+                const params = new URLSearchParams(window.location.search).toObject()
+                if ('f' in params) {
+                    this.pathFileId = params['f']
+                }
+            },
+            loadPlayList: function (code, open_code) {
+                file_list({
+                    code,
+                    open_code,
+                    success: (result) => {
+                        this.list = true
+                        if (result.code === 1000) {
+                            let fileList = result.data
+                            let loadId = null
+                            fileList = fileList.filter(((file, index, array) => {
+                                if (this.pathFileId == file.id) {
+                                    loadId = this.pathFileId
+                                }
+                                file.sortName = pinyinUtil.getPinyin(file.name, '', false, false, false).toLowerCase()
+                                file.sortName1 = pinyinUtil.getPinyin(file.name, '', false, false, true).toLowerCase()
+                                return audioDisplaySupport(mimeType(file.name))
+                            }))
+                            fileList.sort((a, b) => {
+                                return a.sortName.localeCompare(b.sortName)
+                            })
+                            this.fileList = fileList
+                            this.loadCurrentFile()
+                        }
+                    },
+                    error: function (e) {
+                        this.list = true
+                    },
+                })
+            },
+            loadCurrentFile: function () {
+                let loadId = null
+                const fileList = this.fileList
+                for (const file of fileList) {
+                    if (this.pathFileId == file.id) {
+                        loadId = this.pathFileId
+                        break
+                    }
+                }
+                this.loadFile(loadId ? loadId : fileList[0].id)
+            },
+            loadFile: function (fid) {
+                if (fid === undefined) {
+                    this.loaded = true
+                    return
+                }
+                if (fid !== null) {
+                    fid = parseInt(fid)
+                }
+                userFileInfo({
+                    file_id: fid,
+                    open_code: this.open_code,
+                    error: () => {
+                        this.loaded = true
+                    },
+                    success: (result) => {
+                        this.loaded = true
+                        this.pdf = false
+                        this.previewOpacity = 1
+                        this.pdfComponentLoaded = false
+                        this.pdfCurrentPage = 1
+                        this.pdfTotalPages = 0
+                        if (result.code !== 1000) {
+                            return
+                        }
+                        let file = result.data.file
+                        let mime = mimeType(file.name)
+
+                        file.errorThumb = mimeIconUrl(mime)
+
+                        let params = { coverIn: true }
+                        if (isPhoneView()) {
+                            params['side'] = 1080
+                            params['quality'] = 'low'
+                        } else {
+                            params['side'] = 1920
+                        }
+
+                        if (this.open_code) {
+                            file.downloadUrl = '/file/user/open/get/' + file.open_code
+                            if (file.depend_folder) {
+                                file.downloadUrl = file.downloadUrl + '?id=' + file.id
+                            }
+                        } else {
+                            file.downloadUrl = '/file/user/get/' + file.id
+                        }
+                        file.thumb = file.downloadUrl.my_cover(params)
+                        this.updateURLParameterIfNeed('f', file.id)
+
+                        this.loadedFile = file
+
+                        this.mimeType = mime
+                        this.image = imageDisplaySupport(mime)
+                        this.video = videoDisplaySupport(mime)
+                        this.audio = audioDisplaySupport(mime)
+                        this.epub = epubDisplaySupport(mime)
+                        this.pdf = pdfDisplaySupport(mime)
+
+                        this.url = ''
+
+                        if (this.audio) {
+                            this.audioCover = file.thumb
+                        }
+                        document.title = file.name
+
+                        this.$nextTick(function () {
+                            this.url = file.downloadUrl
+                            this.willPlayId = fid
+                        })
+                    }
+                })
+            },
+            onMenuIconClick: function (e) {
+                e.cancelBubble = true
+                this.showMenu = !this.showMenu
+            },
+            onResize: function () {
+                this.appHeight = this.$refs.videoPage.offsetHeight
+                this.appWidth = this.$refs.videoPage.offsetWidth
+            },
+            onThumbError(file) {
+                file.thumb = file.errorThumb
+            },
+            onThumbClick: function (e) {
+                if (this.epub && this.$refs.epubViewer) {
+                    this.$refs.epubViewer.open()
+                    return
+                }
+            },
+            onEpubLoaded: function (payload) {
+                this.epubComponentToc = payload.toc
+            },
+            onEpubOpening: function () {
+                var self = this
+                this.$nextTick(function () {
+                    setTimeout(function () {
+                        self.previewOpacity = 0
+                    }, 10)
+                })
+            },
+            onPdfLoaded: function (payload) {
+                this.pdfComponentLoaded = payload.loaded
+                this.pdfTotalPages = payload.totalPages
+            },
+            onPdfPageChange: function (payload) {
+                this.pdfCurrentPage = payload.currentPage
+            },
+            onAudioLoadFile: function (payload) {
+                this.loadFile(payload.id)
+            },
+            onAudioPlaying: function (payload) {
+                this.willPlayId = payload.id
+            },
+            updateURLParameterIfNeed: function (param, value) {
+                if (this.fileList.length <= 0) {
+                    return;
+                }
+                var currentUrl = new URL(window.location)
+                if (currentUrl.searchParams.get(param) == value) {
+                    return
+                }
+                currentUrl.searchParams.set(param, value)
+                history.pushState({ path: currentUrl.pathname }, '', currentUrl.toString())
+            },
+            handlePopState: function (event) {
+                if (this.fileList.length <= 0) {
+                    return
+                }
+                this.updatePathFileId()
+                this.loadCurrentFile()
+            }
+        },
+    });
+
+    function onResize(e) {
+        videoPage.onResize()
+    }
+</script>
+
+</html>

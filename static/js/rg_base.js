@@ -3,7 +3,7 @@ that.isEditing = false
 that.bdapi = 'QU2tzWyb5MoEcgv54sijXzruRKLTy5gL'
 that.rg_contentUrl = null
 
-function rgLoadContent(url, need_login=false) {
+function rgLoadContent(url, need_login) {
     that.rg_contentUrl = url
     function handleRes(res) {
         if (that.rg_contentUrl !== url)
@@ -11,8 +11,8 @@ function rgLoadContent(url, need_login=false) {
         if (res.code !== 1000) {
             return
         }
-        let data = res["data"]
-        that.auth = data['auth']
+        var body = res["data"]
+        that.auth = body['auth']
 
         if (need_login) {
             if (!that.auth) {
@@ -21,20 +21,20 @@ function rgLoadContent(url, need_login=false) {
             }
         }
 
-        let oldStyle = that.style
+        var oldStyle = that.style
 
-        that.userId = data['user']['ID']
-        that.home = data['home']
-        that.relation = data['relation']
-        that.re_relation = data['re_relation']
-        that.ubg = data['user']['bgImage']
-        that.style = data['user']['style']
+        that.userId = body['user']['ID']
+        that.home = body['home']
+        that.relation = body['relation']
+        that.re_relation = body['re_relation']
+        that.ubg = body['user']['bgImage']
+        that.style = body['user']['style']
 
-        that.title = data['user']['title']
-        that.desc = data['user']['desc']
+        that.title = body['user']['title']
+        that.desc = body['user']['desc']
 
 
-        let controlH5 =
+        var controlH5 =
         '<div id="topControl" class="boprt a-control" style="top: 20px; opacity: 1;">\
             <ul>\
                 <li>\
@@ -48,24 +48,22 @@ function rgLoadContent(url, need_login=false) {
             </ul>\
         </div>'
 
-        let a = that.home ? '<a href="/blog/edit" class="boprt09" target="_top"><em>写日志</em></a>':
+        var a = that.home ? '<a href="/blog/edit" class="boprt09" target="_top"><em>写日志</em></a>':
             that.auth&&that.userId ?
                 '<a id="followItem" target="_top"><em></em></a>' :
                 ''
-        let b = that.home ? '<a href="/user/set" class="boprt05" target="_top"><em>设置</em></a>':
+        var b = that.home ? '<a href="/user/set" class="boprt05" target="_top"><em>设置</em></a>':
             that.auth ?
                 '<a href="/" class="boprt01" target="_top"><em>回家</em></a>':
                 '<a href="/" class="boprt01" target="_top"><em>登录</em></a>'
         $('#topControl').remove()
         $(document.body).append($(controlH5.format(a, b)))
 
-        let equal = getJSONLength(oldStyle) === getJSONLength(that.style)
+        var equal = getJSONLength(oldStyle) === getJSONLength(that.style)
         if (equal) {
-            for(let key in oldStyle) {
-
-                let value = oldStyle[key]
+            for(var key in oldStyle) {
+                var value = oldStyle[key]
                 if (typeof (value) === 'function') continue
-
                 if (that.style.hasOwnProperty(key)) {
                     if (that.style[key] !== value) {
                         equal = false
@@ -89,14 +87,17 @@ function rgLoadContent(url, need_login=false) {
 
         configToolBarItem()
         configFollowItem()
-        $("#rg_content").html(data['render'])
-    };
+
+        $("#rg_content").html(body['render'])
+    }
+
+    var ajaxData = {'user_id': that.userId, 'needUserInfo': 1};
 
     $.ajax({
         type: 'GET',
         dataType: "json",
         url: url,
-        data: {'user_id': that.userId, 'needUserInfo':1},
+        data: ajaxData,
         success: handleRes,
         error: function (e) {
 
@@ -253,16 +254,16 @@ function configFollowItem() {
 }
 
 function configToolBarItem() {
-    let controlH5 = null
+    var controlH5 = null;
     if (that.home) {
         if (!$('.toolBarLogin').length) {
-            controlH5 = '<a id="tool-100" class="toolBarItem toolBarLogin" onclick="onChangeToolBar(this)">文件</a>'
-            $('.toolBarWrapper').append($(controlH5))
-            controlH5 = '<a id="tool-3" class="toolBarItem toolBarLogin" onclick="onChangeLoginToolBar(this)">好友</a>'
-            $('.toolBarWrapper').append($(controlH5))
+            controlH5 = '<a id="tool-files" class="toolBarItem toolBarLogin" data-tab="files">文件</a>';
+            $('.toolBarWrapper').append($(controlH5));
+            controlH5 = '<a id="tool-friends" class="toolBarItem toolBarLogin" data-tab="friends" data-need-login="true">好友</a>';
+            $('.toolBarWrapper').append($(controlH5));
         }
     } else {
-        $('.toolBarLogin').remove()
+        $('.toolBarLogin').remove();
     }
 }
 
@@ -351,20 +352,6 @@ function configTitle() {
     else
         title = "My Blog" + ' ' + this.desc
     $("title").text(title)
-}
-
-function getContentIdCookie()  {
-    if (document.cookie.match(/contentId=([^;]+)(;|$)/)!=null){
-        let arr=document.cookie.match(/contentId=([^;]+)(;|$)/); //cookies中不为空，则读取iframe的src
-        let contentId = arr[1]
-        if (contentId.length)
-            return contentId
-    }
-    return null
-}
-
-function setContentIdCookie(contentId)  {
-    document.cookie = "contentId={0}".format(contentId)
 }
 
 String.prototype.format = function () {

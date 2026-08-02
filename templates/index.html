@@ -1,146 +1,151 @@
 <!DOCTYPE html>
 <html lang="zh">
-
-<script type="text/javascript">
-        this.userId = {{user.ID}}
-        this.relation = {{relation}}
-        this.re_relation = {{re_relation}}
-        this.ubg = "{{user.bgImage}}"
-        this.home = {{home|int}}
-        this.style = {{user.style|default('')|tojson}}
-</script>
-
-<link href="/static/css/rg_base.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_base">
-<link href="/static/css/rg_config.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_config">
-<link href="/static/css/blog.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
-
-<script type="text/javascript" src="/static/jquery/jquery.min.js?ver={{js_ver}}"></script>
-<!--bg-->
-<script type="text/javascript" src="/static/js/rg_base.js?ver={{js_ver}}"></script>
-<script type="text/javascript" src="/static/js/bgLayout.js?ver={{js_ver}}"></script>
-
-<script type="text/javascript" src="/static/js/timeUtil.js?ver={{js_ver}}"></script>
-<script type="text/javascript" src="/static/js/MimeType.js?ver={{js_ver}}"></script>
-<script type="text/javascript" src="/static/js/albumPage.js?ver={{js_ver}}"></script>
-
-<script type="text/javascript" src="/static/js/groupModal.js?ver={{js_ver}}"></script>
-
-<script type="text/javascript" src="/static/js/vue@2.7.16.js"></script>
-<script type="text/javascript" src="/static/js/file.js?ver={{js_ver}}"></script>
-<link rel="stylesheet" href="/static/vue-beauty/vue-beauty.css">
-<script type="text/javascript" src="/static/vue-beauty/vue-beauty.min.js"></script>
-
-<link rel="stylesheet" href="/static/circle-progress/circle-progress.css">
-<script type="text/javascript" src="/static/circle-progress/circle-progress.js"></script>
-
-<script type="text/javascript" src="/static/pinyin/pinyin_dict_notone.js?ver={{js_ver}}"></script>
-<script type="text/javascript" src="/static/pinyin/pinyinUtil.js?ver={{js_ver}}"></script>
-
-<script>
-    bg_layout_init()
-    keyboardInit()
-    autoTitleEnable('{{user.title}}', '{{user.desc}}')
-    if (isPhoneView()) {
-        let css = document.getElementById("rg_base");
-        editRule(css.sheet, '.blogListCoverWrapper', 'display:none')
-    }
-</script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=1.0, user-scalable=yes"/>
     <title></title>
+
+    <link href="/static/css/rg_base.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_base">
+    <link href="/static/css/rg-btn.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
+    <link href="/static/css/rg_config.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_config">
+    <link href="/static/css/blog.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
+    <link href="/static/css/photos.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
+
+    <script type="text/javascript" src="/static/jquery/jquery.min.js?ver={{js_ver}}"></script>
+    <script type="text/javascript" src="/static/js/rg_base.js?ver={{js_ver}}"></script>
+    <script type="text/javascript" src="/static/js/bgLayout.js?ver={{js_ver}}"></script>
+    <script type="text/javascript" src="/static/js/timeUtil.js?ver={{js_ver}}"></script>
+    <script type="text/javascript" src="/static/js/MimeType.js?ver={{js_ver}}"></script>
+    <script type="text/javascript" src="/static/js/albumPage.js?ver={{js_ver}}"></script>
+    <script type="text/javascript" src="/static/js/groupModal.js?ver={{js_ver}}"></script>
+    <script type="text/javascript" src="/static/js/vue@2.7.16.js"></script>
+    <script type="text/javascript" src="/static/js/file.js?ver={{js_ver}}"></script>
+    <link rel="stylesheet" href="/static/vue-beauty/vue-beauty.css">
+    <script type="text/javascript" src="/static/vue-beauty/vue-beauty.min.js"></script>
+    <link rel="stylesheet" href="/static/circle-progress/circle-progress.css">
+    <script type="text/javascript" src="/static/circle-progress/circle-progress.js"></script>
+    <link href="/static/css/pagination.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
+    <script type="text/javascript" src="/static/js/pagination.js?ver={{js_ver}}"></script>
+    <script type="text/javascript" src="/static/pinyin/pinyin_dict_notone.js?ver={{js_ver}}"></script>
+    <script type="text/javascript" src="/static/pinyin/pinyinUtil.js?ver={{js_ver}}"></script>
 </head>
 <body>
 
 <div class="page_wrapper">
 
     <div class="main_title_color page_wrapper titleWrapper">
-        <h1 class="auto_text pageTitle {% if home %}editEnableWrapper{% endif %}"
-            contenteditable="{% if home %}true{%else%}false{%endif%}"
-            id='title'
+        <h1 class="auto_text pageTitle {{ 'editEnableWrapper' if home }}"
+            contenteditable="{{ 'true' if home else 'false' }}"
+            id="title"
             onblur="editName(this)"
             onfocus="recordName(this)"
             placeholder="博客标题">
-            {{-user.title-}}
+            {{ user.title }}
         </h1>
-        <h3 class="auto_text pageTitle {% if home %}editEnableWrapper{% endif %}"
-            contenteditable="{% if home %}true{%else%}false{%endif%}"
-            id='desc'
+        <h3 class="auto_text pageTitle {{ 'editEnableWrapper' if home }}"
+            contenteditable="{{ 'true' if home else 'false' }}"
+            id="desc"
             onblur="editDesc(this)"
             onfocus="recordDesc(this)"
             placeholder="博客描述">
-            {{-user.desc-}}
+            {{ user.desc }}
         </h3>
     </div>
 
-
-    {%- if user -%}
+    {% if user %}
     <div style="margin-bottom: 20px; opacity: 0" class="toolBarWrapper">
-        <a id="tool-0" class="toolBarItem toolBarItem-selected" onclick="onChangeToolBar(this)">动态</a>
-        <a id="tool-1" class="toolBarItem" onclick="onChangeToolBar(this)">相册</a>
-        <a id="tool-2" class="toolBarItem" onclick="onChangeToolBar(this)">归档</a>
+        <a id="tool-home" class="toolBarItem toolBarItem-selected" data-tab="home">动态</a>
+        <a id="tool-photos" class="toolBarItem" data-tab="photos">相册</a>
+        <a id="tool-archive" class="toolBarItem" data-tab="archive">归档</a>
     </div>
 
     <div id="rg_content" style="opacity: 0"></div>
-
-    <script type="text/javascript">
-
-        $(function () {
-            $('.toolBarWrapper').animate({opacity: 1}, 1000)
-            $('#rg_content').animate({opacity: 1}, 1000)
-            let contentId = getContentIdCookie()
-            let tools = []
-            if (contentId) {
-                tools = $('#{0}'.format(contentId))
-            }
-            if (tools.length) {
-                loadContent(tools[0])
-            } else {
-                loadContent($('#tool-0')[0])
-            }
-        })
-
-        function onChangeToolBar(e) {
-            loadContent(e, false)
-        }
-
-        function onChangeLoginToolBar(e) {
-            loadContent(e, true)
-        }
-
-        function loadContent(e, needLogin) {
-            setContentIdCookie(e.id)
-            let url = '/blog/home/{{user.ID}}'
-            switch (parseInt(e.id.split('-')[1])) {
-                case 0:
-                    url = '/blog/home/{{user.ID}}'
-                    break;
-                case 1:
-                    url = '/photo/{{user.ID}}'
-                    break;
-                case 100:
-                    if (that.home) {url = '/file/user/Desktop'}
-                    break;
-                case 2:
-                    url = '/blog/view/{{user.ID}}'
-                    break;
-                case 3:
-                    if (that.home) {url = '/user/friends'}
-                    break;
-            }
-            $(".toolBarItem-selected").removeClass('toolBarItem-selected')
-            $(e).addClass('toolBarItem-selected')
-            rgLoadContent(url, needLogin)
-        }
-
-        function configHeight() {
-            $('#rg_content').css('minHeight', '{0}px'.format(scH*0.8))
-        }
-        configHeight()
-        $(window).resize(configHeight);
-    </script>
-    {%- endif -%}
+    {% endif %}
 </div>
+
+{% if user %}
+<script type="text/javascript">
+(function () {
+    'use strict';
+
+    // ====== 服务端注入的用户状态 ======
+    var that = window;
+    that.userId = {{ user.ID }};
+    that.relation = {{ relation }};
+    that.re_relation = {{ re_relation }};
+    that.ubg = {{ user.bgImage|default('')|tojson }};
+    that.home = {{ home|int }};
+    that.style = {{ user.style|default('')|tojson }};
+
+    // ====== Tab URL 映射 ======
+        var TAB_URLS = {
+            'home': '/blog/home/{{ user.ID }}',
+            'photos': '/photo/{{ user.ID }}',
+            'archive': '/blog/view/{{ user.ID }}',
+            'friends': '/user/friends',
+            'files': '/file/user/Desktop'
+        };
+        // Vue 驱动的 tab：home、photos、friends
+        var VUE_TABS = {'home': true, 'photos': true, 'friends': true};
+
+    function getActiveTabId() {
+        var hash = location.hash.replace('#', '');
+        if (hash && TAB_URLS.hasOwnProperty(hash)) {
+            return hash;
+        }
+        return 'home';
+    }
+
+    function setActiveTabId(tabId) {
+        var newHash = '#' + tabId;
+        if (location.hash !== newHash) {
+            history.replaceState(null, '', newHash);
+        }
+    }
+
+    function loadContent(el, needLogin) {
+        var tabId = el.getAttribute('data-tab');
+        var url = TAB_URLS[tabId];
+        if (!url) return;
+        setActiveTabId(tabId);
+        $('.toolBarItem').removeClass('toolBarItem-selected');
+        $(el).addClass('toolBarItem-selected');
+        rgLoadContent(url, needLogin, !!VUE_TABS[tabId]);
+    }
+
+    // ====== 初始化 ======
+    bg_layout_init();
+    keyboardInit();
+    autoTitleEnable({{ user.title|tojson }}, {{ user.desc|tojson }});
+
+    if (isPhoneView()) {
+        editRule(document.getElementById('rg_base').sheet,
+                 '.blogListCoverWrapper', 'display:none');
+    }
+
+    function setContentMinHeight() {
+        $('#rg_content').css('minHeight', scH * 0.8 + 'px');
+    }
+    setContentMinHeight();
+    $(window).resize(setContentMinHeight);
+
+    // 事件委托：工具栏所有按钮（包括动态生成的）统一处理
+    $('.toolBarWrapper').on('click', '.toolBarItem', function () {
+        var needLogin = $(this).data('need-login') === true;
+        loadContent(this, needLogin);
+    });
+
+    $(function () {
+        $('.toolBarWrapper').animate({ opacity: 1 }, 1000);
+        $('#rg_content').animate({ opacity: 1 }, 1000);
+
+        var tabId = getActiveTabId();
+        var $tool = $('#tool-' + tabId);
+        loadContent($tool.length ? $tool[0] : $('#tool-home')[0]);
+    });
+})();
+</script>
+{% endif %}
 </body>
 </html>

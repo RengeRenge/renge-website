@@ -20,7 +20,7 @@
     float: right;
 
     background-color: rgba(255,255,255,0.6);
-    border-radius: 4px;
+    border-radius: 6px;
 }
 
 .si-remember-password {
@@ -62,7 +62,7 @@
 }
 
 .form-choice-checkbox+.form-label .form-choice-indicator {
-    border-radius: 3px;
+    border-radius: 6px;
 }
 .form-choice~.form-label .form-choice-indicator {
     position: absolute;

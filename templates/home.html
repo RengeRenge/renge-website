@@ -1,94 +1,98 @@
 <!DOCTYPE html>
 <html lang="zh">
-
-<link href="/static/css/rg_base.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_base">
-<link href="/static/css/rg_config.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_config">
-<link href="/static/css/blog.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
-
-<!--page-->
-<link href="/static/css/pagination.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
-<script type="text/javascript" src="/static/js/pagination.js?ver={{js_ver}}"></script>
-
 <head>
     <meta charset="UTF-8">
 </head>
+<link href="/static/css/rg_base.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_base">
+<link href="/static/css/rg-btn.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
+<link href="/static/css/rg_config.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_config">
+<link href="/static/css/blog.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
+<link href="/static/css/pagination.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="/static/js/pagination.js?ver={{js_ver}}"></script>
 <body>
-<script>
-    function goto_blog(e) {
-        let url = e.id
-        if (!url) {
-            url = e.attributes.name.value
-        }
-        url = '/blog/art/' + url
-        window.open(url)
-    }
-    function modifyCoverUrlAndApply(element) {
-        let url = element.style.backgroundImage
-        if (!url) { return }
-        url = url.replace(/\burl\("([^]+)"\)/g, '$1')
-        const params = {applySF: true, side: 80, quality: 'low'}
-        element.style.backgroundImage = 'url("' + url.my_cover(params) + '")'
-    }
-    for (const div of document.getElementsByClassName('bgNoRepeatImage blogListCover')) {
-        modifyCoverUrlAndApply(div)
-    }
-</script>
 
-<div class="wrapperLR wrapperBg {% if count > 0 %}wrapperPadding{% endif %}">
-        <div class="wrapperFull">
-            {%- for item in list -%}
-            <div class="wrapperLR wrapperItem wrapperItemBg">
-                <div class="">
-                    <div class="articleTitle auto_text" id="{{item.id}}" onclick="goto_blog(this)">
-                        {%- if item.title -%}
-                            {{ item.title }}
-                        {%- else -%}
-                            <script>
-                            var time = (new Date(parseInt("{{item.addtime}}"))).Format("yyyy年 MM月 dd日")
-                            var dom = document.getElementById('{{item.id}}')
-                            dom.innerText = time
-                            </script>
-                        {%- endif -%}
-                    </div>
-                    <div class="auto_text artSubTitle"> {{ item.summary }}</div>
-                    <div class="auto_text artSubTitle secondTextColor" style="margin-top: 10px">
-                    <script>
-                        var time = (new Date(parseInt("{{item.addtime}}"))).Format("yyyy-MM-dd hh:mm:ss")
-                        var dom = document.getElementById('{{item.id}}').parentElement.getElementsByClassName('auto_text artSubTitle secondTextColor')[0]
-                        dom.innerText = time
-                    </script>
+<div id="homeApp" class="wrapperLR wrapperBg {{ 'wrapperPadding' if count > 0 }}">
+    <div class="wrapperFull">
+
+        <div v-for="item in list" class="wrapperLR wrapperItem wrapperItemBg">
+            <div>
+                <div class="articleTitle auto_text" @click="gotoBlog(item.id)">
+                    [[ item.title || formatDate(item.addtime) ]]
                 </div>
-                </div>
-                <div class="blogListCoverWrapper">
-                    <div class="bgNoRepeatImage blogListCover"
-                         {% if item.cover %} style='background-image: url("{{item.cover|safe}}");' {% endif %}
-                         onclick="goto_blog(this)"
-                         name="{{item.id}}"
-                    >
-                    </div>
+                <div class="auto_text artSubTitle">[[ item.summary ]]</div>
+                <div class="auto_text artSubTitle secondTextColor" style="margin-top: 10px">
+                    [[ formatDateTime(item.addtime) ]]
                 </div>
             </div>
-
-            {% endfor %}
-            {% if count == 0 %}
-                <div class="nothing">
-                    <div style="background-color: rgba(255,255,255,0.3);">暂时没有内容 {% if home %}<a style="text-decoration: #bbb9b4; color: inherit;" href="/blog/edit"> 去写日志</a>{% endif %}</div>
+            <div class="blogListCoverWrapper">
+                <div class="bgNoRepeatImage blogListCover"
+                     :style="coverStyle(item.cover)"
+                     @click="gotoBlog(item.id)">
                 </div>
-            {% else %}
-            <div class="ht-page"></div>
-            <script>
-                function pageChange(i) {
-                    let nextUrl = '/blog/home/{0}?'.format(that.userId) + 'page=' + (i + 1)
-                    rgLoadContent(nextUrl)
-                }
-                Pagination.init($(".ht-page"), pageChange);
-                Pagination.Page($(".ht-page"), parseInt("{{nowPage}}") - 1, parseInt("{{count}}"), parseInt("{{pageSize}}"));
-                Pagination.bindListener($(".ht-page"), function (page) {
-                    $("html,body").animate({scrollTop: $(".toolBarWrapper").offset().top - 60}, 0);
-                }, false)
-            </script>
-            {% endif %}
+            </div>
         </div>
+
+        <div v-if="list.length === 0" class="nothing">
+            <div style="background-color: rgba(255,255,255,0.3);">
+                暂时没有内容
+                {% if home %}<a style="text-decoration: #bbb9b4; color: inherit;" href="/blog/edit"> 去写日志</a>{% endif %}
+            </div>
+        </div>
+        <div v-else class="ht-page" ref="pagination"></div>
     </div>
+</div>
+
+<script>
+(function() {
+    'use strict';
+
+    new Vue({
+        el: '#homeApp',
+        delimiters: ['[[', ']]'],
+        data: {
+            list: {{ list|tojson }},
+            count: {{ count }},
+            nowPage: {{ nowPage }},
+            pageSize: {{ pageSize }}
+        },
+        mounted: function() {
+            var self = this;
+            Pagination.init($(self.$refs.pagination), function(i) {
+                rgLoadContent('/blog/home/' + that.userId + '?page=' + (i + 1));
+            });
+            Pagination.Page($(self.$refs.pagination), self.nowPage - 1, self.count, self.pageSize);
+            Pagination.bindListener($(self.$refs.pagination), function() {
+                $('html,body').animate({scrollTop: $('.toolBarWrapper').offset().top - 60}, 0);
+            }, false);
+
+            // 应用封面缩略图优化
+            this.$nextTick(function() {
+                var params = {applySF: true, side: 80, quality: 'low'};
+                var covers = document.getElementsByClassName('blogListCover');
+                for (var i = 0; i < covers.length; i++) {
+                    var url = covers[i].style.backgroundImage;
+                    if (!url) continue;
+                    url = url.replace(/\burl\("([^]+)"\)/g, '$1');
+                    covers[i].style.backgroundImage = 'url("' + url.my_cover(params) + '")';
+                }
+            });
+        },
+        methods: {
+            gotoBlog: function(id) {
+                window.open('/blog/art/' + id);
+            },
+            coverStyle: function(cover) {
+                return cover ? { backgroundImage: 'url("' + cover + '")' } : {};
+            },
+            formatDate: function(ts) {
+                return new Date(parseInt(ts)).Format('yyyy年 MM月 dd日');
+            },
+            formatDateTime: function(ts) {
+                return new Date(parseInt(ts)).Format('yyyy-MM-dd hh:mm:ss');
+            }
+        }
+    });
+})();
+</script>
 </body>
 </html>

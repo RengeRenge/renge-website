@@ -1,337 +1,222 @@
 <!DOCTYPE html>
 <html lang="zh">
-
-<link href="/static/css/rg_base.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_base">
-<link href="/static/css/rg_config.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_config">
-<link href="/static/css/photos.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
-<link href="/static/css/timeline.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
-
-<link rel="stylesheet" type="text/css" href="/static/css/groupModal.css?ver={{css_ver}}" />
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=1.0, user-scalable=yes">
     <title>归档</title>
 </head>
-<body>
+
+<link href="/static/css/rg_base.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_base">
+<link href="/static/css/rg-btn.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
+<link href="/static/css/rg_config.css?ver={{css_ver}}" rel="stylesheet" type="text/css" id="rg_config">
+<link href="/static/css/photos.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
+<link href="/static/css/timeline.css?ver={{css_ver}}" rel="stylesheet" type="text/css">
+<link rel="stylesheet" type="text/css" href="/static/css/groupModal.css?ver={{css_ver}}" />
+
 <style>
-
-    .wrapperItemBg {
-        background-color: rgba(255, 255, 255, 0);
-    }
-
-    .wrapperItemBg:hover {
-        cursor: pointer;
-    }
-
-    .wrapperItemBg:hover:after {
-        pointer-events: none;
-        content: attr(hoverTitle);
-        color: white;
-        text-align: center;
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        line-height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: rgba(20, 20, 20, 0.85);
-        font-weight: bold;
-        font-style: normal;
-        font-size: 18px;
-        font-family: "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", tahoma, arial, simsun, "宋体";
-        align-self: flex-start;
-        /*cursor: pointer;*/
-        /*background-color: #9b9b9b;*/
-    }
-
-    .bg-blur {
-        -webkit-filter: blur(15px);
-        -moz-filter: blur(15px);
-        -o-filter: blur(15px);
-        -ms-filter: blur(15px);
-        filter: blur(15px);
-    }
-
-    .collectionCell .bgNoRepeatImage {
-        width: 100%;
-    }
-
-    .bgNoRepeatImage .auto_text {
-        width: 90%;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-
-        /*padding-left: 10px;*/
-        /*padding-right: 10px;*/
-
-        margin-left: 5%;
-
-        font-family: "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", tahoma, arial, simsun, "宋体";
-
-        position: relative;
-        float: left;
-    }
-
-    .two_line {
-        max-lines: 2;
-        -webkit-line-clamp: 2;
-        margin-top: 16px;
-        font-size: 16px;
-    }
-
-    .three_line {
-        max-lines: 3;
-        -webkit-line-clamp: 3;
-        font-size: 14px;
-        padding-top: 5px;
-        line-height: 30px;
-        color: grey;
-    }
-
-    .preview_text_many {
-        max-lines: 4;
-        -webkit-line-clamp: 4;
-        font-size: 13px;
-        color: grey;
-        line-height: 22px;
-    }
-
-    .groupButton {
-        font-weight: 700;
-        padding: 1em;
-    }
-
-    .groupButton:hover {
-        cursor: pointer;
-    }
-
+    /* ===== 归档页：分类选择器（其余卡片/时间轴样式见 timeline.css） ===== */
     .privacyWrapper {
-        /*margin-top: 20px;*/
-        height: 30px;
-        text-align: center;
         display: flex;
-        align-content: center;
-        /*justify-content: center;*/
-        flex-direction: row;
         align-items: center;
-        font-size: 14px;
-        font-family: 微软雅黑, 宋体, Arial, Helvetica, Verdana, sans-serif;
+        gap: 10px;
+        height: auto;
+        margin-top: 10px;
+        margin-left: 4px !important;
+        padding-bottom: 4px;
+        font-size: 13px;
+        color: #888;
+    }
+    .groupButton {
+        font-weight: 500;
+        padding: 6px 16px;
+        border-radius: 999px;
+        font-size: 13px;
+        color: #696969;
+        background: rgba(105, 105, 105, 0.10);
+        cursor: pointer;
+        transition: background 0.2s ease, color 0.2s ease;
+    }
+    .groupButton:hover {
+        color: #696969;
+        background: rgba(105, 105, 105, 0.18);
     }
 </style>
-<script>
-    preventEnterEnable(true, function (e) {
-        return true
-    })
-
-    $(function () {
-        initGroupModal(null, 'groupNameButton', '全部分类', that.relation < 0,
-            function (id, name, level) {
-                $('#groupNameButton').text(name)
-                loadTimeLine(id)
-            }, function (group) {
-                $('#groupNameButton').text(group.name)
-            })
-        this.timezone = rg_getTimezone()
-        loadTimeLine(null)
-    })
-
-    function loadTimeLine (groupId) {
-        $.ajax({
-            type: 'GET',
-            url: "/blog/month/view",
-            data: {
-                'user_id': that.userId,
-                'timezone': this.timezone,
-                'group_id': groupId,
-            },
-            success: function (result) {
-                if (result.code === 1000) {
-                    let year = null
-                    let last_year = null
-                    let years = []
-                    if (!result.data.length) {
-                        result.data = [{count: 0, months: (new Date()).Format("yyyy-MM")}]
-                    }
-                    for (let i = 0; i < result.data.length; i++) {
-                        let monthView = result.data[i]
-                        let month = monthView['months']
-                        year = month.split('-')[0]
-                        if (last_year !== year) {
-                            years.push({
-                                year: year,
-                                count: 0,
-                                months: []
-                            })
-                            last_year = year
-                        }
-                        years[years.length - 1]['months'].push(monthView)
-                        years[years.length - 1]['count'] += monthView['count']
-                    }
-                    drawMonths(years)
-                } else {
-                    alert('加载失败')
-                }
-            },
-            error: function (e) {
-                alert(e.errorText)
-            },
-        })
-    }
-
-    function drawMonths (data) {
-        let htmlString = ''
-
-        let active_y = true
-        let active_m = true
-        let firstMonth = true
-
-        for (let i = 0; i < data.length; i++) {
-            let year = data[i]
-
-            let monthString = ''
-            for (let j = 0; j < year.months.length; j++) {
-                let month = year.months[j]
-                let monthNumber = month.months.split('-')[1]
-                let monthCount = month.count < 10 ? ('0' + month.count) : (month.count + '')
-                let monthDesc = monthNumber + '月' + '({0})'.format(monthCount)
-                monthString += '<li class="{1}" name="{2}"><a>{0}</a></li>'.format(monthDesc, active_m ? 'active' : '', month.months)
-                active_m = false
-
-                if (firstMonth) {
-                    loadArt(year.year, monthNumber)
-                }
-                firstMonth = false
-            }
-
-            let yearH5 =
-            '<li class="{3}"> \
-                <div class="year-button"> {0} ({1}) </div> \
-                <ul class="month"> \
-                    {2} \
-                </ul> \
-            </li>'.format(year.year, year.count < 10 ? ('0' + year.count) : (year.count + ''), monthString, active_y?'active':'')
-            htmlString += yearH5
-            active_y = false
-        }
-        $('#timeLineYearWrapper').html(htmlString)
-        configTimeLineClick()
-
-        if (!data.length) {
-            $('#artCollectionView').html('')
-        }
-    }
-
-    function configTimeLineClick() {
-        //隐藏所有子栏目（除第一个栏目外）
-        $(".year:not(:first)").find(".month").hide();
-        //点击大栏目
-        $(".year>li").click(function () {
-            $("li.active", $(this).parent()).removeClass("active");
-            $(this).addClass("active");
-            var $ul = $("ul>li:first", this)
-            $ul.addClass("active");
-
-            let name = $ul[0].attributes.name.value.split('-')
-            loadArt(name[0], name[1])
-        });
-        $(".month>li").click(function () {
-            var $ul = $(this).parent();
-            $ul.find(".active").removeClass("active");
-            $(this).addClass("active");
-
-            let name = this.attributes.name.value.split('-')
-            loadArt(name[0], name[1])
-
-            return false;
-        });
-    }
-
-    function loadArt(year, month) {
-        $.ajax({
-            type: 'GET',
-            url: "/blog/month/list",
-            data: {
-                user_id: that.userId,
-                timezone: this.timezone,
-                year: year,
-                month: month,
-                group_id: groupSelf.modal_selected_groupId
-            },
-            success: function (result) {
-                if (result.code === 1000) {
-                    let arts = result.data
-                    let artsH5String = ''
-                    const params = {applySF: true, side: 80, quality: 'low'}
-                    for (let i = 0; i < arts.length; i++) {
-                        let art = arts[i]
-
-                        let timeStamp = art.addtime
-                        let add_date = new Date(timeStamp)
-                        let time = add_date.Format("MM-dd")
-                        let title = art.title ? art.title : add_date.Format("yyyy MM-dd")
-                        let artItemString =
-                            '<div class="collectionCell collectionWrap wrapperItemBg" style="margin: 10px;padding: 0; height: unset" hoverTitle="{4}"> \
-                                <div onclick="goto_blog(this)" id="{0}" class="bgNoRepeatImage" \
-                                     style=" \
-                                     background-image: url({1});"> \
-                                    <div class="bgNoRepeatImage" \
-                                         style=" \
-                                         float: left; \
-                                         background-color: rgba(255,255,255,0.82);"> \
-                                        <div class="auto_text articleTitle two_line">{2}</div> \
-                                        <div class="auto_text {5}">{3}</div> \
-                                    </div> \
-                                </div> \
-                            </div>'.format(art.id, art.cover ? art.cover.my_cover(params) : '', title.encodeHtml(), art.summary.encodeHtml(), time, art.cover ? 'three_line' : 'preview_text_many')
-                        artsH5String += artItemString
-                    }
-
-                    $('#artCollectionView').html(artsH5String)
-                } else {
-                    alert('加载失败')
-                }
-            },
-            error: function (e) {
-                alert(e.errorText)
-            },
-        })
-    }
-
-    function goto_blog(e) {
-        var url = '/blog/art/' + e.id
-        window.open(url)
-    }
-</script>
+<body>
 
 <div class="wrapperBg wrapperPadding">
     <div class="privacyWrapper" style="margin-top: 10px; margin-left: 10px">
         日志分类 :
-        <div id="groupNameButton" class="groupButton">
-            全部日志
-        </div>
+        <div id="groupNameButton" class="groupButton">全部分类</div>
     </div>
+
     <div class="wrapperLR" style="padding-bottom: 160px;">
         <div class="timeline" style="margin-top: 10px">
-            <ul id="timeLineYearWrapper" class="year">
-            </ul>
+            <ul id="timeLineYearWrapper" class="year"></ul>
         </div>
         <div style="width: 100%">
-            <div id="artCollectionView" class="collectionView">
-
-            </div>
+            <div id="artCollectionView" class="collectionView"></div>
         </div>
     </div>
 </div>
+
 <script>
-    function configHeight() {
-        $('#blogViewContent').css('minHeight', '{0}px'.format(scH*0.6))
+(function() {
+    'use strict';
+
+    // 以下函数暴露为全局（动态生成的 HTML onclick 需要调用）
+    // - goto_blog, loadArt, loadTimeLine
+
+    var timezone = rg_getTimezone();
+
+    preventEnterEnable(true, function() { return true; });
+
+    $(function() {
+        initGroupModal(null, 'groupNameButton', '全部分类', that.relation < 0,
+            function(id, name, level) {
+                $('#groupNameButton').text(name);
+                loadTimeLine(id);
+            }, function(group) {
+                $('#groupNameButton').text(group.name);
+            });
+        loadTimeLine(null);
+    });
+
+    window.loadTimeLine = function(groupId) {
+        $.ajax({
+            type: 'GET',
+            url: '/blog/month/view',
+            data: {
+                user_id: that.userId,
+                timezone: timezone,
+                group_id: groupId
+            },
+            success: function(result) {
+                if (result.code !== 1000) { alert('加载失败'); return; }
+                var data = result.data;
+                if (!data.length) data = [{count: 0, months: (new Date()).Format('yyyy-MM')}];
+
+                var years = [];
+                var lastYear = null;
+                for (var i = 0; i < data.length; i++) {
+                    var monthView = data[i];
+                    var month = monthView.months;
+                    var year = month.split('-')[0];
+                    if (lastYear !== year) {
+                        years.push({ year: year, count: 0, months: [] });
+                        lastYear = year;
+                    }
+                    var cur = years[years.length - 1];
+                    cur.months.push(monthView);
+                    cur.count += monthView.count;
+                }
+                drawMonths(years);
+            },
+            error: function(e) { alert(e.errorText); }
+        });
+    };
+
+    function drawMonths(data) {
+        var htmlString = '';
+        var firstMonth = true;
+
+        for (var i = 0; i < data.length; i++) {
+            var year = data[i];
+            var monthString = '';
+            var isActiveYear = (i === 0);
+
+            for (var j = 0; j < year.months.length; j++) {
+                var month = year.months[j];
+                var monthNumber = month.months.split('-')[1];
+                var countStr = month.count < 10 ? '0' + month.count : '' + month.count;
+                var isActiveMonth = (firstMonth);
+
+                monthString += '<li class="' + (isActiveMonth ? 'active' : '')
+                    + '" name="' + month.months + '"><a>' + monthNumber + '月(' + countStr + ')</a></li>';
+
+                if (firstMonth) loadArt(year.year, monthNumber);
+                firstMonth = false;
+            }
+
+            htmlString += '<li class="' + (isActiveYear ? 'active' : '') + '">'
+                + '<div class="year-button">' + year.year + ' (' + (year.count < 10 ? '0' + year.count : year.count) + ')</div>'
+                + '<ul class="month">' + monthString + '</ul></li>';
+        }
+
+        $('#timeLineYearWrapper').html(htmlString);
+        configTimeLineClick();
+        if (!data.length) $('#artCollectionView').html('');
     }
-    configHeight()
-    $(window).resize(configHeight);
+
+    function configTimeLineClick() {
+        $('.year:not(:first)').find('.month').hide();
+
+        $('.year>li').click(function() {
+            $('li.active', $(this).parent()).removeClass('active');
+            $(this).addClass('active');
+            var $firstUl = $('ul>li:first', this);
+            $firstUl.addClass('active');
+            var name = $firstUl[0].attributes.name.value.split('-');
+            loadArt(name[0], name[1]);
+        });
+
+        $('.month>li').click(function() {
+            var $ul = $(this).parent();
+            $ul.find('.active').removeClass('active');
+            $(this).addClass('active');
+            var name = this.attributes.name.value.split('-');
+            loadArt(name[0], name[1]);
+            return false;
+        });
+    }
+
+    window.loadArt = function(year, month) {
+        $.ajax({
+            type: 'GET',
+            url: '/blog/month/list',
+            data: {
+                user_id: that.userId,
+                timezone: timezone,
+                year: year,
+                month: month,
+                group_id: groupSelf.modal_selected_groupId
+            },
+            success: function(result) {
+                if (result.code !== 1000) { alert('加载失败'); return; }
+                var arts = result.data;
+                var artsHTML = '';
+                var params = {applySF: true, side: 80, quality: 'low'};
+
+                for (var i = 0; i < arts.length; i++) {
+                    var art = arts[i];
+                    var addDate = new Date(art.addtime);
+                    var time = addDate.Format('MM-dd');
+                    var title = art.title || addDate.Format('yyyy MM-dd');
+
+                    artsHTML +=
+                        '<div class="collectionCell collectionWrap wrapperItemBg" style="margin: 10px;padding: 0; height: unset" hoverTitle="' + time + '">'
+                        + '<div onclick="goto_blog(this)" id="' + art.id + '" class="bgNoRepeatImage" '
+                        + 'style="background-image: url(' + (art.cover ? art.cover.my_cover(params) : '') + ');">'
+                        + '<div class="bgNoRepeatImage" style="float: left; background-color: rgba(255,255,255,0.82);">'
+                        + '<div class="auto_text articleTitle two_line">' + title.encodeHtml() + '</div>'
+                        + '<div class="auto_text ' + (art.cover ? 'three_line' : 'preview_text_many') + '">' + art.summary.encodeHtml() + '</div>'
+                        + '</div></div></div>';
+                }
+                $('#artCollectionView').html(artsHTML);
+            },
+            error: function(e) { alert(e.errorText); }
+        });
+    };
+
+    window.goto_blog = function(e) {
+        window.open('/blog/art/' + e.id);
+    };
+
+    function setMinHeight() {
+        $('#blogViewContent').css('minHeight', (scH * 0.6) + 'px');
+    }
+    setMinHeight();
+    $(window).resize(setMinHeight);
+})();
 </script>
 </body>
 </html>

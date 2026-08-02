@@ -89,19 +89,21 @@ def album_list(user_id, other_id):
     lastPicUrl = 'lastPicUrl'
     coverUrl = 'coverUrl'
 
-    sql = "SELECT ab.*, covers.filename as '{}', jp.filename as '{}' \
-                    FROM \
-                    album as ab \
-                    left join (select file.filename, pic.album_id \
-                        from pic, file \
+    # lastPicUrl：该相册内 file.timestamp 最新的一张（相关子查询按相册取值，
+    #    避免原先全局 limit 1 导致只有"碰巧持有全局最新文件"的相册才有封面）
+    # coverUrl：显式设置的封面（ab.cover 指向的 pic），并要求该 pic 仍属于本相册，
+    #    否则视为失效封面回退到 lastPicUrl
+    sql = "SELECT ab.*, \
+                    (select file.filename from pic, file \
                         where pic.file_id = file.id and pic.user_id = %(other_id)s \
-                        order by file.timestamp desc limit 1) as jp \
-                            on jp.album_id = ab.id \
-                    left join (select file.filename, pic.id \
-                          from pic, file \
-                          where pic.file_id = file.id and pic.user_id = %(other_id)s) as covers \
-                          on covers.id = ab.cover \
-                    where ab.user_id=%(other_id)s {} order by ab.id desc".format(coverUrl, lastPicUrl, '{}')
+                        and pic.album_id = ab.id \
+                        order by file.timestamp desc limit 1) as '{}', \
+                    (select file.filename from pic, file \
+                        where pic.file_id = file.id and pic.user_id = %(other_id)s \
+                        and pic.id = ab.cover and pic.album_id = ab.id \
+                        limit 1) as '{}' \
+                    FROM album as ab \
+                    where ab.user_id=%(other_id)s {} order by ab.id desc".format(lastPicUrl, coverUrl, '{}')
 
     if user.isHome(user_id, other_id):
         sql = sql.format('')

@@ -219,6 +219,16 @@ def update_info(p_id=None, user_id=None, title=None, desc=None, level=None):
         return False
 
 
+def move_to_album(user_id, p_id, album_id):
+    sql = "UPDATE pic SET album_id=%(album_id)s where id=%(p_id)s and user_id=%(user_id)s"
+    result, count, new_id = dao.execute_sql(sql, ret=False, args={
+        'user_id': user_id,
+        'album_id': album_id,
+        'p_id': p_id
+    })
+    return count > 0
+
+
 def delete(user_id, p_id):
     sql = 'delete from pic where id=%(p_id)s and user_id=%(user_id)s'
     dao.execute_sql(sql, args={
