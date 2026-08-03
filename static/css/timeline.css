@@ -277,17 +277,65 @@
     pointer-events: none;
 }
 
-/* 移动端 */
+/* 移动端：年份一行横排滚动，激活年份的月份显示在下一行（两层结构，互不挤压） */
 @media screen and (max-width: 768px) {
     .wrapperLR {
         flex-wrap: wrap;
     }
 
     .timeline {
+        position: relative;
         width: 100%;
         min-width: 0;
         float: none;
-        margin-bottom: 8px;
+        overflow: visible;
+        margin-bottom: 40px;
+    }
+
+    /* 第一行：年份胶囊换行横排（不可滚动，避免裁剪下方月份行）
+       position: static 使月份行的包含块回到 .timeline，保证其定位在整个年份列表下方 */
+    .timeline .year {
+        position: static;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        padding: 2px 0;
+    }
+
+    .timeline .year > li {
+        position: static;
+        flex-shrink: 0;
+        margin-bottom: 0;
+    }
+
+    .timeline .year > li::before {
+        display: none;
+    }
+
+    /* 第二行：激活年份的月份，绝对定位在年份行下方，自身横向滚动 */
+    .timeline .active > .month {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: 6px;
+        margin: 0;
+        padding: 2px 0 0;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .timeline .active > .month::-webkit-scrollbar {
+        display: none;
+    }
+
+    .timeline .month > li {
+        flex-shrink: 0;
     }
 
     .year {

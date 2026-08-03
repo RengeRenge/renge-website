@@ -71,8 +71,33 @@
     text-align: center;
 }
 
-.pdf-download {
-    color: #ecf6fd;
-    text-decoration: none;
-    margin-left: 10px;
+/* 小屏（手机）：工具栏紧凑化，避免溢出换行 */
+@media screen and (max-width: 480px) {
+    .pdf-controls {
+        bottom: 10px;
+        padding: 8px 12px;
+        gap: 6px;
+        max-width: calc(100vw - 20px);
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .pdf-controls button {
+        padding: 5px 7px;
+        font-size: 15px;
+    }
+
+    .pdf-controls .zoom-info {
+        min-width: 38px;
+        font-size: 12px;
+    }
+
+    .pdf-controls .page-info {
+        min-width: 44px;
+        font-size: 13px;
+    }
+
+    .pdf-controls .pdf-page-input {
+        width: 40px;
+    }
 }

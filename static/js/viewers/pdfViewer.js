@@ -13,7 +13,7 @@ Vue.component('pdf-viewer', {
     <div class="full-ab">\
         <div ref="pdfContainer" class="pdf-container"></div>\
         <div class="pdf-controls">\
-            <button @click="zoomOut" :disabled="scale <= 0.5">&minus;</button>\
+            <button @click="zoomOut" :disabled="scale <= 0.25">&minus;</button>\
             <span class="zoom-info">{{ Math.round(scale * 100) }}%</span>\
             <button @click="zoomIn" :disabled="scale >= 5.0">+</button>\
             <button @click="prevPage" :disabled="currentPage <= 1">&lsaquo;</button>\
@@ -21,7 +21,6 @@ Vue.component('pdf-viewer', {
                 @change="goToPage" class="pdf-page-input">\
             <span class="page-info">/ {{ totalPages }}</span>\
             <button @click="nextPage" :disabled="currentPage >= totalPages">&rsaquo;</button>\
-            <a v-bind:href="url" download class="pdf-download">下载</a>\
         </div>\
     </div>\
     ',
@@ -36,7 +35,8 @@ Vue.component('pdf-viewer', {
             pdfDocument: null,
             currentPage: 1,
             totalPages: 0,
-            scale: this.initScale
+            scale: this.initScale,
+            autoFit: true
         }
     },
     watch: {
@@ -53,11 +53,19 @@ Vue.component('pdf-viewer', {
         }
     },
     mounted: function() {
+        var self = this
+        this._resizeHandler = function() {
+            if (self.autoFit && self.loaded) {
+                self.renderAllPages()
+            }
+        }
+        window.addEventListener('resize', this._resizeHandler)
         if (this.url) {
             this.loadPdf(this.url)
         }
     },
     beforeDestroy: function() {
+        window.removeEventListener('resize', this._resizeHandler)
         if (this.$refs.pdfContainer) {
             this.$refs.pdfContainer.removeEventListener('scroll', this.onScroll)
         }
@@ -104,9 +112,19 @@ Vue.component('pdf-viewer', {
             var oldPage = this.currentPage
             var self = this
 
+            // 锁定垂直滚动条，避免渲染过程中滚动条出现导致容器宽度变化（fit 比例不一致）
+            container.style.overflowY = 'scroll'
+            var containerWidth = container.clientWidth
+
             function renderPage(pageNum) {
                 return self.pdfDocument.getPage(pageNum).then(function(page) {
-                    var viewport = page.getViewport({ scale: self.scale })
+                    var baseViewport = page.getViewport({ scale: 1 })
+                    // autoFit：按容器宽度等比缩放，避免页面超宽出现横向滚动
+                    var scale = self.autoFit ? (containerWidth / baseViewport.width) : self.scale
+                    if (self.autoFit) {
+                        self.scale = scale
+                    }
+                    var viewport = page.getViewport({ scale: scale })
                     var canvas = document.createElement('canvas')
                     var context = canvas.getContext('2d')
                     canvas.height = viewport.height
@@ -129,6 +147,8 @@ Vue.component('pdf-viewer', {
             }
 
             Promise.all(promises).then(function() {
+                // 恢复自动滚动条（内容超高时滚动条自然保留，宽度不再变化）
+                container.style.overflowY = ''
                 self.$nextTick(function() {
                     self.scrollToPage(oldPage)
                 })
@@ -169,11 +189,13 @@ Vue.component('pdf-viewer', {
             }
         },
         zoomIn: function() {
+            this.autoFit = false
             this.scale = Math.min(this.scale + 0.25, 5.0)
             this.renderAllPages()
         },
         zoomOut: function() {
-            this.scale = Math.max(this.scale - 0.25, 0.5)
+            this.autoFit = false
+            this.scale = Math.max(this.scale - 0.25, 0.25)
             this.renderAllPages()
         },
         goToPage: function(e) {
