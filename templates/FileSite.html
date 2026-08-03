@@ -383,6 +383,24 @@
         border-color: #696969;
         box-shadow: 0 0 0 3px rgba(105, 105, 105, 0.12);
     }
+
+    /* 手机端：路径栏与搜索栏分行，搜索栏独占一行，避免遮挡桌面按钮 */
+    @media screen and (max-width: 768px) {
+        .first-tool-wrap {
+            flex-wrap: wrap;
+            row-gap: 6px;
+        }
+
+        .file-pathWrap {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .file-searchWrap {
+            width: 100%;
+            margin-left: 0;
+        }
+    }
 </style>
 
 <body>
